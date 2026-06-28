@@ -128,7 +128,7 @@ public final class TimeStore: ObservableObject {
     public func saveCSVToDesktop() -> URL? {
         let csv = exportCSV()
         let fm = FileManager.default
-        let desktop = fm.urls(for: .desktopDirectory, in: .userDomainMask).first!
+        guard let desktop = fm.urls(for: .desktopDirectory, in: .userDomainMask).first else { return nil }
         let df = DateFormatter()
         df.dateFormat = "yyyy-MM-dd_HHmmss"
         let url = desktop.appendingPathComponent("CubeNotch_times_\(df.string(from: Date())).csv")
@@ -161,7 +161,7 @@ public final class TimeStore: ObservableObject {
     public func saveCSTimerToDesktop() -> URL? {
         let json = exportCSTimerJSON()
         let fm = FileManager.default
-        let desktop = fm.urls(for: .desktopDirectory, in: .userDomainMask).first!
+        guard let desktop = fm.urls(for: .desktopDirectory, in: .userDomainMask).first else { return nil }
         let df = DateFormatter()
         df.dateFormat = "yyyy-MM-dd_HHmmss"
         let url = desktop.appendingPathComponent("CubeNotch_cstimer_\(df.string(from: Date())).txt")
@@ -217,10 +217,10 @@ public final class TimeStore: ObservableObject {
 
     private func loadPBs() {
         if let dict = UserDefaults.standard.dictionary(forKey: pbKey) as? [String: TimeInterval] {
-            pbSingle = dict["single"] ?? -1; if pbSingle! < 0 { pbSingle = nil }
-            pbAo5 = dict["ao5"] ?? -1; if pbAo5! < 0 { pbAo5 = nil }
-            pbAo12 = dict["ao12"] ?? -1; if pbAo12! < 0 { pbAo12 = nil }
-            pbAo100 = dict["ao100"] ?? -1; if pbAo100! < 0 { pbAo100 = nil }
+            pbSingle = dict["single"].flatMap { $0 < 0 ? nil : $0 }
+            pbAo5    = dict["ao5"].flatMap    { $0 < 0 ? nil : $0 }
+            pbAo12   = dict["ao12"].flatMap   { $0 < 0 ? nil : $0 }
+            pbAo100  = dict["ao100"].flatMap  { $0 < 0 ? nil : $0 }
         }
     }
 
@@ -249,13 +249,14 @@ public final class TimeStore: ObservableObject {
     }
 
     private func trimmedMean(count: Int, trim: Int) -> TimeInterval? {
-        let valid = solves.filter { $0.penalty != .dnf }
-        guard valid.count >= count else { return nil }
-        let times = Array(valid.prefix(count).map { effectiveTime($0) }.sorted())
+        guard solves.count >= count else { return nil }
+        let window = Array(solves.prefix(count))
+        let times = window.map { effectiveTime($0) }.sorted()
         let trimmed = Array(times.dropFirst(trim).dropLast(trim))
         guard !trimmed.isEmpty else { return nil }
-        let sum = trimmed.reduce(0, +)
-        return sum / Double(trimmed.count)
+        // WCA: if any remaining time is infinity (DNF), the average is DNF
+        if trimmed.contains(.greatestFiniteMagnitude) { return nil }
+        return trimmed.reduce(0, +) / Double(trimmed.count)
     }
 
     private func meanOfLast(_ n: Int) -> TimeInterval? {

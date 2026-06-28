@@ -40,7 +40,7 @@ public struct TimerView: View {
                     .contentTransition(.numericText())
                     .animation(reduceMotion ? nil : .easeInOut(duration: 0.08), value: timer.formattedTime)
                     .padding(.vertical, 8)
-                    .foregroundColor(timer.isRunning ? .primary : (timer.state == .stopped ? .orange : .green))
+                    .foregroundColor(timer.isRunning ? .primary : (timer.state == .stopped ? .primary : .green))
             }
 
             Group {

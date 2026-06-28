@@ -233,8 +233,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func handleKeyEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
-        // Only act on key down
         guard type == .keyDown else { return Unmanaged.passUnretained(event) }
+        // Ignore key-repeat events (held key) — prevents spurious solve starts/stops
+        guard event.getIntegerValueField(.keyboardEventAutorepeat) == 0 else {
+            return Unmanaged.passUnretained(event)
+        }
 
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let spaceKeyCode: CGKeyCode = 49 // kVK_Space

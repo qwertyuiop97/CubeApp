@@ -21,7 +21,8 @@ public final class FloatingOverlayWindow: NSPanel {
         self.ignoresMouseEvents = false
         self.titleVisibility = .hidden
         self.titlebarAppearsTransparent = true
-        self.becomesKeyOnlyIfNeeded = true   // helps non-activating behavior
+        self.becomesKeyOnlyIfNeeded = true
+        self.hidesOnDeactivate = false
 
         positionAtAnchor(.topRight, size: initialSize)
     }
@@ -107,7 +108,7 @@ public final class FloatingOverlayWindow: NSPanel {
     }
 
     public func showWindow() {
-        self.makeKeyAndOrderFront(nil)
+        self.orderFront(nil)
     }
 
     public func hideWindow() {
