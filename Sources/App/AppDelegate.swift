@@ -36,8 +36,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         solveTimer = SolveTimer()
 
         let timeStore = TimeStore()
-        solveTimer.onSolveFinished = { time, scramble in
-            timeStore.addSolve(time: time, scramble: scramble)
+        solveTimer.onSolveFinished = { time, scramble, penalty in
+            timeStore.addSolve(time: time, scramble: scramble, penalty: penalty)
         }
 
         let rootView = ContentView()

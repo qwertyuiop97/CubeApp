@@ -8,12 +8,16 @@ public struct ContentView: View {
     @AppStorage("anchorPosition") private var anchorPosition: Anchor = .topRight
     @AppStorage("followActiveScreen") private var followActiveScreen: Bool = false
     @AppStorage("preferredScreen") private var preferredScreen: String = ""
+    @AppStorage("blurIntensity") private var blurIntensity: Double = 0.5
+    @AppStorage("backgroundTint") private var backgroundTint: String = "neutral"
     @State private var showSettings = false
     @State private var caseCategory: String = "OLL" // "F2L" | "OLL" | "PLL"
     @State private var detailCase: CubeCase? = nil
     @State private var launchAtLoginEnabled: Bool = LaunchAtLogin.isEnabled
     @State private var mode: String = "Cases" // "Cases" | "Timer"
     @State private var showSavedFeedback = false
+    @State private var showCopiedFeedback = false
+    @State private var searchText: String = ""
 
     private var sizeBinding: Binding<SizeMode> {
         Binding(
@@ -36,11 +40,20 @@ public struct ContentView: View {
     }
 
     private var filteredCases: [CubeCase] {
+        let base: [CubeCase]
         switch caseCategory {
-        case "F2L": return F2LDatabase.f2lCases
-        case "OLL": return AlgorithmDatabase.ollCases
-        case "PLL": return AlgorithmDatabase.pllCases
-        default: return AlgorithmDatabase.ollCases
+        case "F2L": base = F2LDatabase.f2lCases
+        case "OLL": base = AlgorithmDatabase.ollCases
+        case "PLL": base = AlgorithmDatabase.pllCases
+        default: base = AlgorithmDatabase.ollCases
+        }
+        guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return base }
+        let q = searchText.lowercased()
+        return base.filter { c in
+            c.name.lowercased().contains(q) ||
+            c.caseType.lowercased().contains(q) ||
+            String(c.caseNumber).contains(q) ||
+            c.primaryAlgorithm.lowercased().contains(q)
         }
     }
 
@@ -59,7 +72,9 @@ public struct ContentView: View {
                 browserMain
             }
             .frame(width: currentWindowSize.width, height: currentWindowSize.height)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(Color.black.opacity(blurIntensity * 0.45))
+            .overlay(tintColor.opacity(0.10))
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .strokeBorder(Color.white.opacity(0.15), lineWidth: 1)
@@ -211,37 +226,48 @@ public struct ContentView: View {
     }
 
     private var caseListView: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 2) {
-                ForEach(filteredCases) { c in
-                    Button(action: {
-                        detailCase = c
-                    }) {
-                        HStack {
-                            Text("\(c.caseNumber). \(c.name)")
-                                .font(.system(size: manager.sizeMode == .compact ? 12 : 13))
-                                .foregroundStyle(.primary)
-                            Spacer()
-                            if c.id == manager.currentCase.id {
-                                Image(systemName: "checkmark")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            c.id == manager.currentCase.id
-                                ? Color.white.opacity(0.08)
-                                : Color.clear
-                        )
-                        .cornerRadius(6)
-                        .accessibilityLabel("\(c.caseType) \(c.caseNumber) \(c.name)\(c.id == manager.currentCase.id ? ", current" : "")")
+        VStack(spacing: 4) {
+            if mode == "Cases" && detailCase == nil {
+                TextField("Search cases…", text: $searchText)
+                    .textFieldStyle(.roundedBorder)
+                    .controlSize(.small)
+                    .padding(.horizontal, 8)
+                    .onChange(of: caseCategory) { _, _ in
+                        searchText = ""
                     }
-                    .buttonStyle(.plain)
-                }
             }
-            .padding(.horizontal, 8)
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 2) {
+                    ForEach(filteredCases) { c in
+                        Button(action: {
+                            detailCase = c
+                        }) {
+                            HStack {
+                                Text("\(c.caseNumber). \(c.name)")
+                                    .font(.system(size: manager.sizeMode == .compact ? 12 : 13))
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                if c.id == manager.currentCase.id {
+                                    Image(systemName: "checkmark")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                c.id == manager.currentCase.id
+                                    ? Color.white.opacity(0.08)
+                                    : Color.clear
+                            )
+                            .cornerRadius(6)
+                            .accessibilityLabel("\(c.caseType) \(c.caseNumber) \(c.name)\(c.id == manager.currentCase.id ? ", current" : "")")
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 8)
+            }
         }
     }
 
@@ -257,13 +283,37 @@ public struct ContentView: View {
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 12)
 
-                Text(c.primaryAlgorithm)
-                    .font(.system(.body, design: .monospaced))
-                    .padding(8)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 6))
-                    .padding(.horizontal, 10)
-                    .accessibilityLabel("Primary algorithm: \(c.primaryAlgorithm)")
+                HStack {
+                    Text(c.primaryAlgorithm)
+                        .font(.system(.body, design: .monospaced))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityLabel("Primary algorithm: \(c.primaryAlgorithm)")
+
+                    Button(action: {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(c.primaryAlgorithm, forType: .string)
+                        withAnimation { showCopiedFeedback = true }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                            withAnimation { showCopiedFeedback = false }
+                        }
+                    }) {
+                        Image(systemName: "doc.on.doc")
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                    .help("Copy primary algorithm")
+                }
+                .padding(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 6))
+                .padding(.horizontal, 10)
+
+                if showCopiedFeedback {
+                    Text("Copied")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 2)
+                }
             }
 
             if !c.alternativeAlgorithms.isEmpty {
@@ -347,6 +397,31 @@ public struct ContentView: View {
                 }
             }
 
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Blur")
+                    .font(.caption.weight(.medium))
+                Slider(value: $blurIntensity, in: 0...1)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Tint")
+                    .font(.caption.weight(.medium))
+                HStack(spacing: 8) {
+                    ForEach(["neutral", "dark", "light", "blue", "purple", "green"], id: \.self) { tint in
+                        Circle()
+                            .fill(tintSwatchColor(for: tint))
+                            .frame(width: 18, height: 18)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.primary.opacity(0.6), lineWidth: backgroundTint == tint ? 2 : 0)
+                            )
+                            .onTapGesture {
+                                backgroundTint = tint
+                            }
+                    }
+                }
+            }
+
             Button("Close") {
                 showSettings = false
             }
@@ -373,54 +448,26 @@ public struct ContentView: View {
         case .bottomCenter: return "Bottom Center"
         }
     }
-}
 
-public struct CubeCanvasView: View {
-    let currentCase: CubeCase
-    let visualMode: VisualMode
-
-    public var body: some View {
-        Canvas { context, size in
-            drawTopDownCube(context: context, size: size)
+    private var tintColor: Color {
+        switch backgroundTint {
+        case "dark": return .black
+        case "light": return .white
+        case "blue": return .blue
+        case "purple": return .purple
+        case "green": return .green
+        default: return .clear
         }
-        .background(Color.black.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
-    private func drawTopDownCube(context: GraphicsContext, size: CGSize) {
-        let w = size.width
-        let h = size.height
-        let face = min(w, h) * 0.82
-        let s = face / 3
-        let ox = (w - face) / 2
-        let oy = (h - face) / 2 + 4
-
-        let colors: [Color] = [
-            .white, .yellow, .red, .orange, .blue, .green
-        ]
-
-        // Draw 3x3 grid representing top face (U) + front face hint
-        for row in 0..<3 {
-            for col in 0..<3 {
-                let x = ox + CGFloat(col) * s
-                let y = oy + CGFloat(row) * s
-                let rect = CGRect(x: x + 1, y: y + 1, width: s - 2, height: s - 2)
-
-                let stickerColor: Color
-                if row == 1 && col == 1 {
-                    stickerColor = .gray // center
-                } else {
-                    // Use deterministic color cycling based on case number
-                    let idx = (currentCase.caseNumber + row * 3 + col) % colors.count
-                    stickerColor = colors[idx]
-                }
-
-                context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(stickerColor))
-                context.stroke(Path(roundedRect: rect, cornerRadius: 3), with: .color(.black.opacity(0.5)), lineWidth: 1)
-            }
+    private func tintSwatchColor(for tint: String) -> Color {
+        switch tint {
+        case "dark": return .black
+        case "light": return .white
+        case "blue": return .blue
+        case "purple": return .purple
+        case "green": return .green
+        default: return Color.gray.opacity(0.3)
         }
-
-        // Simple U-layer label
-        context.draw(Text("U").font(.caption2.bold()), at: CGPoint(x: ox + face / 2, y: oy - 12))
     }
 }

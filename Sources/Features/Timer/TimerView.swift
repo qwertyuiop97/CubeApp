@@ -73,8 +73,30 @@ public struct TimerView: View {
                 stat("ao5", store.ao5)
                 stat("ao12", store.ao12)
                 stat("ao100", store.ao100)
+                if let best = store.bestTime {
+                    Text("Best: \(formatTime(best))").font(.caption)
+                }
             }
             .font(.caption)
+
+            // Penalty buttons (only after stop, before new scramble)
+            if timer.state == .stopped {
+                HStack(spacing: 8) {
+                    Button("+2") {
+                        timer.applyPenalty(.plusTwo)
+                        store.updateLastSolve(addPenalty: .plusTwo)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    Button("DNF") {
+                        timer.applyPenalty(.dnf)
+                        store.updateLastSolve(addPenalty: .dnf)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+                .font(.caption)
+            }
 
             // Recent solves
             if !store.solves.isEmpty {
@@ -82,8 +104,14 @@ public struct TimerView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         ForEach(store.solves.prefix(10)) { rec in
                             HStack {
-                                Text(formatTime(rec.time))
-                                    .font(.system(.caption, design: .monospaced))
+                                if rec.penalty == .dnf {
+                                    Text("DNF")
+                                        .font(.system(.caption, design: .monospaced))
+                                } else {
+                                    let shown = rec.penalty == .plusTwo ? rec.time + 2.0 : rec.time
+                                    Text(formatTime(shown))
+                                        .font(.system(.caption, design: .monospaced))
+                                }
                                 Text(rec.scramble.prefix(28) + (rec.scramble.count > 28 ? "…" : ""))
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)

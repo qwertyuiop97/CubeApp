@@ -37,9 +37,9 @@
 
 ---
 
-## CURRENT: Phase 8A — HUD Polish & Missing Requirements
+## Phase 8A — HUD Polish & Missing Requirements
 
-**Status: IN PROGRESS**
+**Status: DONE** (2026-06-27)
 
 These are required items from CLAUDE.md that were never implemented, plus real UX gaps.
 
