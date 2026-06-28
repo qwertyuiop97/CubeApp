@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          set -o pipefail
+          swift build 2>&1 | tee /tmp/build.log
+
+      - name: Check for warnings
+        run: |
+          if grep -q ": warning:" /tmp/build.log; then
+            echo "❌ Build warnings found (Phase 11A requires zero warnings):"
+            grep ": warning:" /tmp/build.log
+            exit 1
+          fi
+          echo "✓ No warnings"
+
+      - name: Test
+        run: swift test 2>&1
