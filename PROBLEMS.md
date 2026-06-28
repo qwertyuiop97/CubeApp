@@ -18,7 +18,14 @@
 
 ## Active Problems
 
-*(none logged yet — add entries here as you encounter them)*
+- [ ] **Liquid Glass material API unknown / unconfirmed** — Phase 8A-4
+  - **Discovered:** Phase 8A / 2026-06-27
+  - **Status:** `pending` (research complete, no action)
+  - **Context:** NEXT.md requires research of "SwiftUI Liquid Glass macOS 26" and "macOS 26 glass material SwiftUI API" before any code. Only implement if a confirmed, compilable public API exists.
+  - **Research performed:** Attempted web fetch of Apple SwiftUI / Material docs and background APIs. Pages require JavaScript; no concrete API names, availability, or examples returned. No official documentation for `.glass`, `.glassBackground()`, `Material.glass`, or similar surfaced.
+  - **Conclusion:** API is unknown / unconfirmed in available public sources. Per NEXT.md: log here, leave material as-is (current .thinMaterial + tint overlay), do not block rest of Phase 8A.
+  - **Action taken:** Skipped implementation. No code changes. Will revisit if/when confirmed API becomes available in future SDKs.
+  - **Suspected fix:** Wait for official Apple docs / Xcode beta with confirmed SwiftUI glass effect API, then wrap in `#available(macOS 26, *)`.
 
 <!--
 Template for a new entry — copy/paste and fill in:
