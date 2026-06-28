@@ -32,6 +32,42 @@
 
 ---
 
+## RESEARCH PHASE (separate from coding — use Claude Code or Grok DeepSearch, not Kilo Code)
+
+**Goal:** Search the web for resources, libraries, communities, and data sources useful for a speedcubing HUD app. Compile findings and decide what to integrate.
+
+**Search for:**
+- Better/more complete OLL, PLL, F2L algorithm databases (e.g. algdb.net, speedsolving.com wiki)
+- Fingertrick notation or groupings used by top cubers
+- WCA official algorithm sets and any community-preferred alternatives
+- Open source speedcubing tools or libraries (timers, scramblers, cube state simulators)
+- CSTimer's export format spec (for future time export compatibility)
+- Any Swift or macOS libraries relevant to cube visualization or timers
+- Popular community sites where users share algorithm sets (CubeSkills, JPerm, etc.)
+- Standard scramble generator specs (WCA scramblers are open source)
+
+**Output:** Add a `RESOURCES.md` file to the project listing what was found and whether each is worth integrating, linking to, or referencing for data.
+
+---
+
+## MARKET RESEARCH PHASE (separate from coding — use Claude Code or Grok DeepSearch)
+
+**Goal:** Research whether this app has real commercial potential, who the target users are, how to reach them, and how to make money from it.
+
+**Search for:**
+- Size of the speedcubing community (WCA registered competitors, active hobbyists, YouTube/Reddit/Discord audience)
+- Existing competing apps on Mac App Store — what do they charge, how many reviews, what's missing
+- What speedcubers currently complain about in their tools (Reddit: r/Rubik's, r/Cubers, Speedsolving.com forums)
+- Pricing models that work for niche Mac utilities (one-time purchase vs subscription vs freemium)
+- Mac App Store vs direct distribution (Gumroad, Paddle, own website) — fees, discoverability, pros/cons
+- Whether top cubers or YouTubers (JPerm, CubeSkills, etc.) do sponsorships or promotions for tools
+- Any Kickstarters, Patreons, or indie dev success stories in the cubing tool niche
+- App Store optimization keywords for speedcubing apps
+
+**Output:** Add a `MARKET.md` file with: honest assessment of market potential, recommended monetization model, suggested price point, and top 3 marketing channels to pursue.
+
+---
+
 ## RULES (always apply)
 - Never modify or remove existing OLL/PLL cases in AlgorithmDatabase.swift
 - Window must remain non-activating at all times except global hotkeys (CGEventTap)
