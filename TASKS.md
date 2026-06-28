@@ -14,40 +14,58 @@
 - [x] Size modes: Compact / Medium / Large with @AppStorage persistence, window resizes on change
 
 ## Phase 2 — Core Content UI
-- [ ] OLL/PLL case browser: segmented/tab picker, scrollable case list
-- [ ] Case detail view: primary algorithm text + alternatives, WCA notation display
-- [ ] Settings tray: slide-out panel for size mode, corner snap, visualizer mode toggle
+- [x] OLL/PLL case browser: segmented picker (OLL / PLL tabs), scrollable case list
+- [x] Case detail view: primary algorithm text + all alternatives, WCA notation display
+- [x] Settings tray: custom slide-out panel (right edge) for size, anchor, visual mode
 
 ## Phase 3 — Canvas Visualizer (CubeStateView.swift)
-- [ ] CubeStateView.swift: SwiftUI Canvas 2D sticker diagram (Sources/Features/CubeDisplay/)
-- [ ] Draw 2D top-down last layer with correct OLL/PLL sticker colors
-- [ ] Mode 1 — Pre-Execution: sticker layout user must recognize before executing
-- [ ] Mode 2 — Setup State: invert algorithm sequence, show scramble text + inverted sticker state
-- [ ] Mode 3 — Text-Only: collapse Canvas entirely, show algorithm string only with clean transition
-- [ ] Canvas scales with Compact / Medium / Large size modes
+- [x] CubeStateView.swift: SwiftUI Canvas 2D sticker diagram (Sources/Features/CubeDisplay/)
+- [x] Draw 2D top-down last layer with correct OLL/PLL sticker colors (U + side hints)
+- [x] Mode 1 — Pre-Execution: sticker layout user must recognize before executing
+- [x] Mode 2 — Setup State: invert algorithm sequence, show inverted sticker state
+- [x] Mode 3 — Text-Only: collapse Canvas entirely (hidden when .textOnly)
+- [x] Canvas scales with Compact / Medium / Large size modes
 
-## Phase 4 — Polish & Extras
-- [ ] Global hotkey / menu bar icon for quick show/hide toggle
-- [ ] Multiple monitor + notch-safe positioning (follow active screen or stay on primary)
-- [ ] Unit tests for AlgorithmDatabase integrity (57 OLL + 21 PLL, no empty alternatives)
-- [ ] Launch-at-login support (LSUIElement / accessory activation policy)
-- [ ] Accessibility (VoiceOver, keyboard nav)
+## Phase 4 — Polish & System
+- [x] Global hotkey (Option+Space) + menu bar icon for quick show/hide toggle
+- [x] Multiple monitor + notch-safe positioning (follow active screen toggle + per-screen anchoring)
+- [x] Unit tests for AlgorithmDatabase integrity (57 OLL + 21 PLL, no empty alternatives)
+- [x] Launch-at-login support (SMAppService + toggle in settings)
+- [x] Accessibility (VoiceOver labels, keyboard nav on core controls)
 
-## Future / Stretch
-- [ ] Persistence for favorites / learning progress
+## Phase 5 — Animation & Positioning
+- [ ] Spring slide-in/slide-out: window glides out from anchor corner on show, retracts on double-click (NSAnimationContext spring, not linear)
+- [ ] Expand snap positions to 6: Top-Left, Top-Right, Bottom-Left, Bottom-Right, Notch (top-center, notch-safe), Bottom-Center
+- [ ] Monitor selector: let user pick which connected display the overlay lives on (NSScreen list in settings)
+- [ ] Focus-safe overlay: always non-activating — clicking overlay or settings tray never steals keyboard focus
+
+## Phase 6 — Built-in Timer & Training
+- [ ] Scramble generator: WCA-valid 3x3 random-move scrambles (displayed before each solve)
+- [ ] Built-in solve timer: start/stop via global spacebar hotkey (registered globally so browser/other apps don't intercept it)
+  - DESIGN NOTE: window is non-activating, so spacebar must be captured via CGEventTap or global hotkey — not standard key press. Implement carefully to avoid breaking spacebar in other contexts when timer is not active.
+- [ ] Time history: store solve times locally (ao5, ao12, ao100, session view)
+- [ ] Session management: start new session, view past sessions
+- [ ] Cross practice mode: generate scrambles and prompt user to solve only the white cross; track cross solve count per session
+- [ ] Screenshot feature: capture the current overlay state as an image, save to Desktop or clipboard (NSImage / CGWindowListCreateImage)
+
+## Phase 7 — Algorithm Data Expansion
+- [ ] Add all 41 F2L cases to AlgorithmDatabase.swift (primary + ≥2 alternatives each, same rules as OLL/PLL)
+- [ ] F2L tab added to case browser (alongside OLL / PLL)
+
+## Stretch / Future
+- [ ] Export times in CSTimer-compatible JSON format for manual import
+- [ ] Favorites + learning progress persistence
 - [ ] iCloud sync
-- [ ] Community algorithm contributions
 - [ ] Auto-hide when full-screen apps are active
+- [ ] Community algorithm contributions
 
 ---
-
-## Feature Reference
-Full user-authored feature checklist is in `SCRATCHPAD.md` under "Canonical Feature Checklist".
 
 ## Guiding Principles
 - Four-layer architecture: Window Engine → State Manager → Canvas Visualizer → UI Assembly
 - AppKit owns the window. SwiftUI Canvas owns all visuals.
 - Data exclusively from protected `AlgorithmDatabase.swift` — never duplicate.
-- Non-activating at all times. Spacebar must always reach background timer.
+- Window is non-activating at all times EXCEPT global hotkeys (spacebar timer, Option+Space toggle) which are registered via CGEventTap.
+- Spring animations on all show/hide transitions — no linear easing.
 
 Last updated: 2026-06-27
