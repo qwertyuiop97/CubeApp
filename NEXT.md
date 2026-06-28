@@ -304,7 +304,7 @@ This phase does NOT add features. It systematically finds and fixes real bugs, c
 
 ## Phase 11C — Code Review & Force Unwrap Audit
 
-**Status: NOT STARTED** (hand off to Claude Code — do not attempt)
+**Status: DONE** (2026-06-27) (Claude Code — guard Desktop URL in ScreenshotService, all other unwraps verified safe)
 
 ---
 
@@ -394,6 +394,164 @@ Data portability and multi-session tracking.
 - [ ] Export times in CSTimer-compatible JSON format
 - [ ] CSTimer format: array of `[penalty, time_ms, comment, timestamp]` tuples
 - [ ] Save as `.txt` file that can be imported into csTimer.net
+
+---
+
+## Phase 15 — Visual Polish (Liquid Glass + Typography + Accessibility)
+
+**Status: NOT STARTED** (do not begin until Phase 14A is done)
+
+Apply the confirmed macOS 26 Liquid Glass APIs and typography rules from DESIGN.md throughout the app. This is a pure visual upgrade — no new features.
+
+### 15A-1: Liquid Glass on Controls (macOS 26+)
+- [ ] Create `Sources/UI/GlassModifier.swift` with the `cubeNotchGlass(shape:)` extension (backward-compat, see CLAUDE.md)
+- [ ] In ContentView: wrap the bottom controls toolbar (scramble button, settings gear, tab picker) in `GlassEffectContainer { }.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12, style: .continuous))`
+- [ ] In TrainerView: apply `.glassEffect()` to the filter picker + action buttons area
+- [ ] In TimerView: apply `.glassEffect()` to the penalty buttons (DNF/+2) and "New Scramble" button
+- [ ] Do NOT apply glass to: algorithm text, timer display, scramble text, case lists, card content
+- [ ] Verify: `#available(macOS 26.0, *)` gating on all glass calls; `.ultraThinMaterial` fallback on earlier macOS
+- [ ] Test with Reduce Transparency ON — must fall back to solid readable UI
+- [ ] `make build` clean
+
+### 15A-2: Timer Display Polish
+- [ ] In `TimerView.swift`: ensure timer Text uses `.monospacedDigit()` and `.contentTransition(.numericText())`
+- [ ] Add `.animation(.easeInOut(duration: 0.08), value: timerDisplayString)` for smooth digit cross-fade
+- [ ] Timer font: `.font(.system(size: 72, weight: .light, design: .default))` — do not use `.monospaced` design, just `.monospacedDigit()` modifier
+- [ ] Ao5/Ao12 stats: 20pt regular with `.monospacedDigit()`
+- [ ] State color: `.green` when armed/ready (inspection done), `.orange` during inspection < 5s, `.primary` when running
+
+### 15A-3: Typography Scale Enforcement
+- [ ] Audit all Text views in HUD (ContentView, TimerView, MainOverlayViews) against typography scale in CLAUDE.md
+- [ ] Case labels: `.font(.system(size: 17, weight: .semibold, design: .rounded))`
+- [ ] Group/category names: `.font(.system(size: 13, design: .rounded)).foregroundStyle(.secondary)`
+- [ ] Algorithm moves: `.font(.system(size: 15, weight: .medium, design: .monospaced))`
+- [ ] Alternative algorithms: `.font(.system(size: 13, design: .monospaced)).foregroundStyle(.secondary)`
+- [ ] Move counts: `.font(.system(size: 11)).foregroundStyle(.secondary)`
+
+### 15A-4: Accessibility Pass
+- [ ] Add `@Environment(\.accessibilityReduceMotion)` to all views with spring animations — conditionally skip animation when true
+- [ ] Add `@Environment(\.accessibilityReduceTransparency)` to ContentView — when true, use `.regularMaterial` instead of glass/thin material
+- [ ] Ensure all buttons have proper `.accessibilityLabel()` strings
+- [ ] Scramble text: minimum font size 13pt — do not drop below on compact mode
+
+### 15A-5: Corner Radius + Spacing Audit
+- [ ] All card backgrounds: `RoundedRectangle(cornerRadius: 12, style: .continuous)`
+- [ ] All buttons: `RoundedRectangle(cornerRadius: 8, style: .continuous)` or `Capsule()` for pill style
+- [ ] All padding: multiples of 8pt — replace any arbitrary values (7pt, 9pt, 11pt, etc.)
+- [ ] `make build` clean
+
+---
+
+## Phase 16 — Stats Dashboard & Progress Tracking
+
+**Status: NOT STARTED** (do not begin until Phase 15 is done)
+
+A dedicated Stats tab in the HUD showing real progress data that makes users want to open the app daily.
+
+### 16A-1: Personal Records
+- [ ] Add to `TimeStore`: `pbSingle`, `pbAo5`, `pbAo12`, `pbAo100` (updated on every solve)
+- [ ] Display in a "Records" card: "PB: 9.84 | Ao5: 11.23 | Ao12: 12.01"
+- [ ] Records persist across sessions — never cleared by "New Session"
+- [ ] Show "🎉 New PB!" banner overlay for 2s when a PB is set (animate in/out, respects reduceMotion)
+
+### 16A-2: Session Stats View
+- [ ] Add "Stats" tab to HUD tab picker (alongside Cases / Timer / Train)
+- [ ] StatsView shows:
+  - Current session: solve count, mean, ao5, ao12, best of session
+  - All-time personal records
+  - Total solves ever (lifetime counter)
+  - "Daily streak" — days in a row where at least one solve was logged
+- [ ] Stats tab shows "No solves yet — start the timer!" when session is empty
+
+### 16A-3: Session Graph (Sparkline)
+- [ ] Draw a simple time graph of the last 12 solves using SwiftUI `Path` (no external charting library)
+- [ ] Each data point: a circle at the Y position for that solve time
+- [ ] Connect with a smooth line (`addCurve(to:controlPoint1:controlPoint2:)`)
+- [ ] Highlight the best time with an accent color dot
+- [ ] DNF solves shown as a red X above the graph baseline, not plotted on the line
+
+---
+
+## Phase 17 — WCA-Accurate Scrambles
+
+**Status: NOT STARTED** (do not begin until Phase 16 is done)
+
+The current scrambler prevents same-face repeats but not opposite-face repeats (U then D is legal in WCA scramblers but creates cancellations). Upgrade to proper WCA scramble logic.
+
+### 17A-1: Axis-Aware Scramble Generator
+- [ ] Update `ScrambleGenerator.swift` (replace `generate3x3()` logic)
+- [ ] WCA rule: no two consecutive moves on the same face; AND no same-axis-opposite-face on back-to-back moves
+  - Axis pairs: (U, D) = Y axis; (F, B) = Z axis; (L, R) = X axis
+  - After U: disallow U and D. After F: disallow F and B. Etc.
+- [ ] Deterministic selection: build allowed list, pick from it — never a loop
+- [ ] Keep producing exactly 20 moves with suffixes `''`, `'`, `2`
+- [ ] Update `ScrambleGeneratorTests.swift` to verify axis-pair rule (no consecutive same-axis moves)
+
+### 17A-2: Inspection Timer
+- [ ] WCA rules include a 15-second inspection period before each solve
+- [ ] Add `isInspecting: Bool` and `inspectionRemaining: TimeInterval` to `SolveTimer`
+- [ ] Pressing space after a solve is stored starts a 15-second countdown (optional — user can skip via Settings)
+- [ ] Timer display shows inspection countdown in orange (< 5 seconds threshold)
+- [ ] After 15s: +2 penalty applied automatically; after 17s: DNF applied automatically (WCA rule)
+- [ ] Settings toggle: "WCA Inspection" on/off (default: on)
+
+---
+
+## Phase 18 — Onboarding & First-Run Experience
+
+**Status: NOT STARTED** (do not begin until Phase 17 is done)
+
+Users who open a utility app and don't immediately understand what it does uninstall it. This phase adds zero-friction onboarding.
+
+### 18A-1: First Launch Detection
+- [ ] `@AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding = false`
+- [ ] On first launch only: show an `OnboardingView` as a sheet over the HUD
+- [ ] Three swipeable cards (no scroll view, just a PageTabViewStyle picker):
+  1. "Your Speedcubing HUD" — what the app does in one sentence + screenshot
+  2. "Algorithm Library" — "57 OLL + 21 PLL cases always one glance away"
+  3. "Train Your Recognition" — quick explainer of the trainer mode
+- [ ] Final card has "Get Started" button that sets `hasCompletedOnboarding = true` and dismisses
+- [ ] Onboarding can be re-triggered from Settings: "Show Intro Again"
+
+### 18A-2: Accessibility Permission Prompt
+- [ ] CGEventTap requires Accessibility permission — if denied, the spacebar timer won't work
+- [ ] On first launch, if the tap fails to create, show a sheet: "Spacebar Timer Needs Accessibility Access"
+  - Explain in plain language why
+  - "Open System Settings" button → `NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)`
+- [ ] After user grants permission, re-create the event tap (via NotificationCenter observer for NSWorkspace didActivateApplication, or a "Retry" button)
+
+### 18A-3: Settings — Hotkey Tooltip
+- [ ] In Settings, below the hotkey customizer, add: "Tip: Option+Space works even while another app is in focus"
+- [ ] First time settings drawer opens: show a brief pulse animation on the "Hotkey" row to draw attention
+
+---
+
+## Phase 19 — App Icon, About Window, Distribution Prep
+
+**Status: NOT STARTED** (do not begin until Phase 18 is done)
+
+Make the app feel finished and distributable.
+
+### 19A-1: App Icon
+- [ ] Generate a macOS app icon set using SF Symbol `cube.fill` as the base
+- [ ] Create `Assets.xcassets/AppIcon.appiconset` with sizes: 16, 32, 64, 128, 256, 512, 1024pt (1x and 2x where needed)
+- [ ] Icon design: dark background (#1A1A1A), centered cube.fill in accent blue, subtle glass sheen overlay
+- [ ] All sizes must be PNG with correct naming per Apple spec
+
+### 19A-2: About Window
+- [ ] `@objc func showAbout()` in AppDelegate — opens a small centered `NSWindow` (400×280, titled, non-resizable)
+- [ ] Content: app icon, "CubeNotch" title, version string, "Made for speedcubers. Built with ❤️"
+- [ ] Add "About CubeNotch" to status bar menu
+- [ ] Version pulled from `Bundle.main.infoDictionary["CFBundleShortVersionString"]`
+
+### 19A-3: Entitlements & Sandboxing Prep
+- [ ] Audit current entitlements — if no `CubeNotch.entitlements` file exists, create it
+- [ ] Required entitlements:
+  - `com.apple.security.app-sandbox`: true (required for App Store)
+  - `com.apple.security.temporary-exception.mach-lookup.global-name` — if needed for CGEventTap workaround
+  - `com.apple.security.files.user-selected.read-write`: true (for CSV export to Desktop)
+- [ ] Note: CGEventTap requires Accessibility permission (`com.apple.security.automation.apple-events`) or special entitlement — document this in PROBLEMS.md
+- [ ] `make build` clean with entitlements file present
 
 ---
 
