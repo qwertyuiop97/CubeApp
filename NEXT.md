@@ -292,7 +292,7 @@ This phase does NOT add features. It systematically finds and fixes real bugs, c
 
 ## Phase 11B — Unit Test Expansion
 
-**Status: NOT STARTED** (Kilo Code can do this — no handoff needed)
+**Status: DONE** (2026-06-27) (Kilo Code)
 
 - [ ] `Tests/CubeNotchTests/F2LDatabaseTests.swift` — 41 cases, all `caseType == "F2L"`, all have primary + ≥2 alts, no duplicate case numbers
 - [ ] `Tests/CubeNotchTests/ScrambleGeneratorTests.swift` — exactly 20 moves, no consecutive same face, all valid faces, run 100 times
