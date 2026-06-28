@@ -11,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var eventTap: CFMachPort?
     private var libraryWindowController: LibraryWindowController?
+    private var armWorkItem: DispatchWorkItem?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Headless / accessory mode: no Dock icon, no menu bar app windows
@@ -233,7 +234,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func handleKeyEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
-        guard type == .keyDown else { return Unmanaged.passUnretained(event) }
         // Ignore key-repeat events (held key) — prevents spurious solve starts/stops
         guard event.getIntegerValueField(.keyboardEventAutorepeat) == 0 else {
             return Unmanaged.passUnretained(event)
@@ -242,13 +242,45 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let spaceKeyCode: CGKeyCode = 49 // kVK_Space
 
+        guard let w = window, w.isVisible, let t = solveTimer, t.isTimerTabActive else {
+            return Unmanaged.passUnretained(event)
+        }
+
         if keyCode == spaceKeyCode {
-            // Only consume if window visible + timer tab active (now supports stopped/inspection too)
-            guard let w = window, w.isVisible, let t = solveTimer, t.isTimerTabActive else {
+            if type == .keyDown {
+                if t.state == .running {
+                    // immediate stop on space while running (no hold required)
+                    DispatchQueue.main.async { t.toggle() }
+                    return nil
+                }
+                if t.state == .idle {
+                    // start hold-to-arm: cancel any prior, schedule arm after 0.4s, consume
+                    armWorkItem?.cancel()
+                    let work = DispatchWorkItem { [weak self] in
+                        self?.solveTimer?.arm()
+                    }
+                    armWorkItem = work
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: work)
+                    return nil
+                }
+                if t.isInspecting {
+                    // existing inspection behavior
+                    DispatchQueue.main.async { t.toggle() }
+                    return nil
+                }
                 return Unmanaged.passUnretained(event)
+            } else if type == .keyUp {
+                if t.isArmed {
+                    // release while armed starts the solve
+                    DispatchQueue.main.async { t.startFromArm() }
+                    return nil
+                } else {
+                    // release before 0.4s: pass through to other apps (typing etc)
+                    armWorkItem?.cancel()
+                    armWorkItem = nil
+                    return Unmanaged.passUnretained(event)
+                }
             }
-            DispatchQueue.main.async { t.toggle() }
-            return nil
         }
         return Unmanaged.passUnretained(event)
     }

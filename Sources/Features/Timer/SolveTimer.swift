@@ -20,6 +20,7 @@ public final class SolveTimer: ObservableObject {
     // 17A-2 Inspection
     @Published public var isInspecting: Bool = false
     @Published public var inspectionRemaining: TimeInterval = 15.0
+    @Published public var isArmed: Bool = false
 
     public private(set) var startTime: Date?
     public private(set) var finalTime: TimeInterval?
@@ -27,6 +28,7 @@ public final class SolveTimer: ObservableObject {
     private var updateTimer: Timer?
     private var inspectionTimer: Timer?
     private var pendingPenalty: Penalty = .none
+    private var armWorkItem: DispatchWorkItem?
 
     private var wcaInspectionEnabled: Bool {
         UserDefaults.standard.object(forKey: UDKey.wcaInspection) as? Bool ?? true
@@ -97,6 +99,23 @@ public final class SolveTimer: ObservableObject {
         finalTime = nil
         displayElapsed = 0
         lastSolvePenalty = .none
+        isArmed = false
+    }
+
+    public func arm() {
+        guard state == .idle else { return }
+        isArmed = true
+    }
+
+    public func disarm() {
+        isArmed = false
+    }
+
+    public func startFromArm() {
+        guard isArmed, state == .idle else { return }
+        isArmed = false
+        reset()
+        start()
     }
 
     public func incrementCrossCount() {
@@ -141,7 +160,7 @@ public final class SolveTimer: ObservableObject {
                 start()
             }
         } else {
-            start()
+            // idle: do nothing — arm/startFromArm handle hold-to-arm start
         }
     }
 

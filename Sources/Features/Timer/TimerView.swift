@@ -43,6 +43,16 @@ public struct TimerView: View {
                     .foregroundColor(timer.isRunning ? .primary : (timer.state == .stopped ? .primary : .green))
             }
 
+            if timer.isArmed {
+                Text("Release to start")
+                    .font(.caption.bold())
+                    .foregroundStyle(.green)
+            } else if timer.state == .idle {
+                Text("Hold Space")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Group {
                 if #available(macOS 26.0, *) {
                     GlassEffectContainer(spacing: 8) {
