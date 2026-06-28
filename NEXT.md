@@ -4,7 +4,7 @@
 > Run `make build` after every phase. Fix all errors before moving to the next phase.
 > Update this file when a phase is complete: mark it done and set the next phase as current.
 > Log any blockers in PROBLEMS.md immediately. Do not leave them undocumented.
-> **STOP at Phase 11A. Do not attempt it. Tell the user "Ready for Phase 11A — hand off to Claude Code." Then wait.**
+> **STOP at Phase 11A and 11C. Do not attempt them. Tell the user "Ready for Phase 11A/11C — hand off to Claude Code." Then wait. Phase 11B is fine to do.**
 
 ---
 
@@ -290,9 +290,27 @@ This phase does NOT add features. It systematically finds and fixes real bugs, c
 
 ---
 
+## Phase 11B — Unit Test Expansion
+
+**Status: NOT STARTED** (Kilo Code can do this — no handoff needed)
+
+- [ ] `Tests/CubeNotchTests/F2LDatabaseTests.swift` — 41 cases, all `caseType == "F2L"`, all have primary + ≥2 alts, no duplicate case numbers
+- [ ] `Tests/CubeNotchTests/ScrambleGeneratorTests.swift` — exactly 20 moves, no consecutive same face, all valid faces, run 100 times
+- [ ] `Tests/CubeNotchTests/SolveTimerTests.swift` — idle→running→stopped state machine, toggle() from stopped starts fresh, reset() clears finalTime
+- [ ] `Tests/CubeNotchTests/TimeStoreTests.swift` — ao5 nil when <5 solves, ao5 excludes best+worst, bestTime returns minimum, clearSession() empties
+- [ ] `swift test 2>&1` exits 0 with no failures
+
+---
+
+## Phase 11C — Code Review & Force Unwrap Audit
+
+**Status: NOT STARTED** (hand off to Claude Code — do not attempt)
+
+---
+
 ## Phase 12A — Algorithm Trainer Mode
 
-**Status: NOT STARTED** (do not begin until Phase 11A is done)
+**Status: NOT STARTED** (do not begin until Phase 11B is done)
 
 A "Train" mode in the HUD. Shows a random OLL/PLL case diagram, user recalls the algorithm from memory, taps to reveal. Tracks accuracy per case.
 
