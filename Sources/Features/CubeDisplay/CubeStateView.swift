@@ -22,7 +22,7 @@ public struct CubeStateView: View {
                 drawLastLayer(context: context, size: size)
             }
             .background(Color.black.opacity(0.06))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
     }
 

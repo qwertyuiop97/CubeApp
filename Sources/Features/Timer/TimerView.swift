@@ -3,6 +3,7 @@ import SwiftUI
 public struct TimerView: View {
     @EnvironmentObject private var timer: SolveTimer
     @EnvironmentObject private var store: TimeStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showNewPB = false
     @State private var newPBText = ""
     @State private var exportFeedback = ""
@@ -28,52 +29,109 @@ public struct TimerView: View {
                 .font(.system(size: 72, weight: .light))
                 .monospacedDigit()
                 .contentTransition(.numericText())
-                .animation(.easeInOut(duration: 0.08), value: timer.formattedTime)
+                .animation(reduceMotion ? nil : .easeInOut(duration: 0.08), value: timer.formattedTime)
                 .padding(.vertical, 8)
                 .foregroundColor(timer.isRunning ? .primary : (timer.state == .stopped ? .orange : .green))
 
-            HStack(spacing: 10) {
-                Button("New") {
-                    timer.newScramble()
-                    timer.reset()
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
+            Group {
+                if #available(macOS 26.0, *) {
+                    GlassEffectContainer(spacing: 8) {
+                        HStack(spacing: 10) {
+                            Button("New") {
+                                timer.newScramble()
+                                timer.reset()
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                            .cubeNotchGlass(cornerRadius: 6)
 
-                if timer.isRunning {
-                    Button("Stop") {
-                        timer.stop()
+                            if timer.isRunning {
+                                Button("Stop") {
+                                    timer.stop()
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.small)
+                                .cubeNotchGlass(cornerRadius: 6)
+                            } else {
+                                Button(timer.state == .stopped ? "Reset" : "Start") {
+                                    timer.toggle()
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.small)
+                                .cubeNotchGlass(cornerRadius: 6)
+                            }
+                        }
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
-                    .cubeNotchGlass(cornerRadius: 6)
                 } else {
-                    Button(timer.state == .stopped ? "Reset" : "Start") {
-                        timer.toggle()
+                    HStack(spacing: 10) {
+                        Button("New") {
+                            timer.newScramble()
+                            timer.reset()
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                        .cubeNotchGlass(cornerRadius: 6)
+
+                        if timer.isRunning {
+                            Button("Stop") {
+                                timer.stop()
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.small)
+                            .cubeNotchGlass(cornerRadius: 6)
+                        } else {
+                            Button(timer.state == .stopped ? "Reset" : "Start") {
+                                timer.toggle()
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.small)
+                            .cubeNotchGlass(cornerRadius: 6)
+                        }
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
-                    .cubeNotchGlass(cornerRadius: 6)
                 }
             }
 
             if timer.state == .stopped {
-                HStack(spacing: 8) {
-                    Button("+2") {
-                        timer.applyPenalty(.plusTwo)
-                        store.updateLastSolve(addPenalty: .plusTwo)
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .cubeNotchGlass(cornerRadius: 6)
+                Group {
+                    if #available(macOS 26.0, *) {
+                        GlassEffectContainer(spacing: 8) {
+                            HStack(spacing: 8) {
+                                Button("+2") {
+                                    timer.applyPenalty(.plusTwo)
+                                    store.updateLastSolve(addPenalty: .plusTwo)
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                                .cubeNotchGlass(cornerRadius: 6)
 
-                    Button("DNF") {
-                        timer.applyPenalty(.dnf)
-                        store.updateLastSolve(addPenalty: .dnf)
+                                Button("DNF") {
+                                    timer.applyPenalty(.dnf)
+                                    store.updateLastSolve(addPenalty: .dnf)
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                                .cubeNotchGlass(cornerRadius: 6)
+                            }
+                        }
+                    } else {
+                        HStack(spacing: 8) {
+                            Button("+2") {
+                                timer.applyPenalty(.plusTwo)
+                                store.updateLastSolve(addPenalty: .plusTwo)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                            .cubeNotchGlass(cornerRadius: 6)
+
+                            Button("DNF") {
+                                timer.applyPenalty(.dnf)
+                                store.updateLastSolve(addPenalty: .dnf)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                            .cubeNotchGlass(cornerRadius: 6)
+                        }
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .cubeNotchGlass(cornerRadius: 6)
                 }
             }
 
@@ -207,8 +265,8 @@ public struct TimerView: View {
     private func stat(_ label: String, _ value: TimeInterval?) -> some View {
         let s = value.map { formatTime($0) } ?? "—"
         return VStack(spacing: 1) {
-            Text(label).foregroundStyle(.secondary)
-            Text(s).font(.system(.caption, design: .monospaced))
+            Text(label).font(.caption).foregroundStyle(.secondary)
+            Text(s)
         }
     }
 

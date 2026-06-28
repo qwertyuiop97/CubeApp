@@ -3,6 +3,7 @@ import AppKit
 
 public struct TrainerView: View {
     @EnvironmentObject private var store: TrainerStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var filter: String = "Both" // OLL | PLL | Both
     @State private var currentCase: CubeCase? = nil
     @State private var isRevealed = false
@@ -20,14 +21,29 @@ public struct TrainerView: View {
     public var body: some View {
         VStack(spacing: 12) {
             // Filter
-            Picker("Show", selection: $filter) {
-                Text("Both").tag("Both")
-                Text("OLL").tag("OLL")
-                Text("PLL").tag("PLL")
+            Group {
+                if #available(macOS 26.0, *) {
+                    GlassEffectContainer(spacing: 8) {
+                        Picker("Show", selection: $filter) {
+                            Text("Both").tag("Both")
+                            Text("OLL").tag("OLL")
+                            Text("PLL").tag("PLL")
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(width: 160)
+                        .cubeNotchGlass(cornerRadius: 8)
+                    }
+                } else {
+                    Picker("Show", selection: $filter) {
+                        Text("Both").tag("Both")
+                        Text("OLL").tag("OLL")
+                        Text("PLL").tag("PLL")
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 160)
+                    .cubeNotchGlass(cornerRadius: 8)
+                }
             }
-            .pickerStyle(.segmented)
-            .frame(width: 160)
-            .cubeNotchGlass(cornerRadius: 8)
             .onChange(of: filter) { _, _ in
                 pickNewCase()
             }
@@ -36,7 +52,7 @@ public struct TrainerView: View {
             if let c = currentCase {
                 CubeStateView(currentCase: c, visualMode: .preExecution, sizeMode: .large)
                     .frame(width: 220, height: 180)
-                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
                 if isRevealed {
                     VStack(spacing: 4) {
@@ -54,26 +70,53 @@ public struct TrainerView: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    HStack(spacing: 12) {
-                        Button("Got it ✓") {
-                            recordResult(correct: true)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
-                        .cubeNotchGlass(cornerRadius: 6)
+                    Group {
+                        if #available(macOS 26.0, *) {
+                            GlassEffectContainer(spacing: 8) {
+                                HStack(spacing: 12) {
+                                    Button("Got it ✓") {
+                                        recordResult(correct: true)
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    .controlSize(.small)
+                                    .cubeNotchGlass(cornerRadius: 6)
 
-                        Button("Missed ✗") {
-                            recordResult(correct: false)
+                                    Button("Missed ✗") {
+                                        recordResult(correct: false)
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .controlSize(.small)
+                                    .cubeNotchGlass(cornerRadius: 6)
+                                }
+                            }
+                        } else {
+                            HStack(spacing: 12) {
+                                Button("Got it ✓") {
+                                    recordResult(correct: true)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.small)
+                                .cubeNotchGlass(cornerRadius: 6)
+
+                                Button("Missed ✗") {
+                                    recordResult(correct: false)
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                                .cubeNotchGlass(cornerRadius: 6)
+                            }
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        .cubeNotchGlass(cornerRadius: 6)
                     }
                 } else {
                     Button("Reveal") {
-                        withAnimation {
+                        if reduceMotion {
                             isRevealed = true
                             updateAccuracyText(for: c)
+                        } else {
+                            withAnimation {
+                                isRevealed = true
+                                updateAccuracyText(for: c)
+                            }
                         }
                     }
                     .buttonStyle(.borderedProminent)

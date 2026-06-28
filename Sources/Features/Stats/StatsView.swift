@@ -27,7 +27,6 @@ public struct StatsView: View {
             }
         }
         .padding()
-        .cubeNotchGlass(cornerRadius: 12)
     }
 
     private func pbRow(_ label: String, _ value: TimeInterval?) -> some View {

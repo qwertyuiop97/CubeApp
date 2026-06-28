@@ -106,15 +106,15 @@ public struct ContentView: View {
             .overlay(Color.black.opacity(blurIntensity * 0.45))
             .overlay(tintColor.opacity(0.10))
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .strokeBorder(Color.white.opacity(0.15), lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 8)
 
             settingsDrawer
                 .offset(x: showSettings ? (currentWindowSize.width - drawerWidth) : currentWindowSize.width)
-                .animation(.easeInOut(duration: 0.2), value: showSettings)
+                .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: showSettings)
         }
         .padding(8)
         .onReceive(NotificationCenter.default.publisher(for: .cubeStateDidChange)) { _ in }
@@ -131,9 +131,14 @@ public struct ContentView: View {
         ScreenshotService.copyToClipboard(img)
         if let url = ScreenshotService.saveToDesktop(img) {
             // brief feedback
-            withAnimation { showSavedFeedback = true }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-                withAnimation { showSavedFeedback = false }
+            if reduceMotion {
+                showSavedFeedback = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { showSavedFeedback = false }
+            } else {
+                withAnimation { showSavedFeedback = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    withAnimation { showSavedFeedback = false }
+                }
             }
             // Optional: log or print path in console for now
             print("Screenshot saved:", url.path)
@@ -306,7 +311,7 @@ public struct ContentView: View {
                     if searchText.isEmpty && mode == "Cases" {
                         let recents = recentCaseIDs.compactMap { id in filteredCases.first(where: { $0.id == id }) }.prefix(5)
                         if !recents.isEmpty {
-                            Text("Recent").font(.caption.weight(.medium)).foregroundStyle(.secondary).padding(.horizontal, 12).padding(.top, 4)
+                            Text("Recent").font(.system(size: 13, design: .rounded)).foregroundStyle(.secondary).padding(.horizontal, 12).padding(.top, 4)
                             ForEach(Array(recents)) { c in
                                 caseRow(for: c)
                             }
@@ -368,7 +373,7 @@ public struct ContentView: View {
                     ? Color.white.opacity(0.08)
                     : Color.clear
             )
-            .cornerRadius(6)
+            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
             .accessibilityLabel("\(c.caseType) \(c.caseNumber) \(c.name)\(c.id == manager.currentCase.id ? ", current" : "")")
         }
         .buttonStyle(.plain)
@@ -429,9 +434,14 @@ public struct ContentView: View {
                     Button(action: {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(c.primaryAlgorithm, forType: .string)
-                        withAnimation { showCopiedFeedback = true }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                            withAnimation { showCopiedFeedback = false }
+                        if reduceMotion {
+                            showCopiedFeedback = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { showCopiedFeedback = false }
+                        } else {
+                            withAnimation { showCopiedFeedback = true }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                withAnimation { showCopiedFeedback = false }
+                            }
                         }
                     }) {
                         Image(systemName: "doc.on.doc")
@@ -442,7 +452,7 @@ public struct ContentView: View {
                 }
                 .padding(8)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 6))
+                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
                 .padding(.horizontal, 10)
 
                 if showCopiedFeedback {
@@ -468,7 +478,7 @@ public struct ContentView: View {
                                     .foregroundStyle(.secondary)
                                     .padding(.vertical, 3)
                                     .padding(.horizontal, 8)
-                                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
+                                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4, style: .continuous))
                                     .accessibilityLabel("Alternative \(idx + 1): \(alt)")
                             }
                         }

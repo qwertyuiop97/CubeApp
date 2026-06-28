@@ -149,7 +149,7 @@ struct LibraryView: View {
                             // Larger diagram
                             CubeStateView(currentCase: c, visualMode: .preExecution, sizeMode: .large)
                                 .frame(width: 320, height: 260)
-                                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
                             // Primary
                             VStack(alignment: .leading, spacing: 4) {

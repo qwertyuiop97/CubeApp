@@ -399,7 +399,7 @@ Data portability and multi-session tracking.
 
 ## Phase 15 — Visual Polish (Liquid Glass + Typography + Accessibility)
 
-**Status: NOT STARTED** (do not begin until Phase 14A is done)
+**Status: DONE** (2026-06-27)
 
 Apply the confirmed macOS 26 Liquid Glass APIs and typography rules from DESIGN.md throughout the app. This is a pure visual upgrade — no new features.
 
