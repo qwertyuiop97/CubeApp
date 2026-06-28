@@ -68,6 +68,31 @@
 
 ---
 
+## LONG-TERM VISION — Full Speedcubing Library App
+
+The app has two modes that coexist:
+
+**HUD Mode** (current focus): floating borderless overlay, compact, non-activating, for use during active solving sessions on top of a timer.
+
+**Library Mode** (future): a full native Mac window that opens on demand — organized, comprehensive, beautiful. The goal is to be the macOS equivalent of SpeedCubeDB: a one-stop-shop for all CFOP algorithm sets, organized by method and subset.
+
+### Library Mode should eventually contain:
+- **CFOP full coverage:** Cross, F2L (41 cases), OLL (57 cases), PLL (21 cases)
+- **Advanced subsets:** ZBLL, COLL, CMLL, OLLCP, Winter Variation, VLS, HLS, WVLS
+- **Other methods:** Roux, ZZ, Petrus — at minimum as reference
+- **Each case:** primary algorithm, community alternatives, fingertrick notes, diagram, recognition tips
+- **Search & filter:** by case name, AUF, recognition pattern, subset
+- **User customization:** mark favorites, set personal best algorithm per case, track learning progress
+- **Algorithm comparison:** side-by-side view of alternatives with move count
+
+### Architecture note for future agents:
+- HUD mode uses the existing FloatingOverlayWindow (NSPanel, non-activating, compact)
+- Library mode opens a standard NSWindow (activating, resizable, full chrome)
+- Both read from the same AlgorithmDatabase — never duplicate data
+- Library mode is a separate window controller, not a resize of the HUD
+
+---
+
 ## RULES (always apply)
 - Never modify or remove existing OLL/PLL cases in AlgorithmDatabase.swift
 - Window must remain non-activating at all times except global hotkeys (CGEventTap)
