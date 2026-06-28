@@ -3,11 +3,17 @@ import AppKit
 
 public struct ContentView: View {
     @Environment(\.cubeStateManager) private var manager
+    @EnvironmentObject private var solveTimer: SolveTimer
     @AppStorage("sizeMode") private var sizeMode: SizeMode = .medium
     @AppStorage("anchorPosition") private var anchorPosition: Anchor = .topRight
+    @AppStorage("followActiveScreen") private var followActiveScreen: Bool = false
+    @AppStorage("preferredScreen") private var preferredScreen: String = ""
     @State private var showSettings = false
+    @State private var selectedTab: String = "OLL"
+    @State private var detailCase: CubeCase? = nil
+    @State private var launchAtLoginEnabled: Bool = LaunchAtLogin.isEnabled
+    @State private var mode: String = "Cases" // "Cases" | "Timer"
 
-    // Sync @AppStorage size mode into the manager so window resizes and state stays consistent
     private var sizeBinding: Binding<SizeMode> {
         Binding(
             get: { sizeMode },
@@ -18,7 +24,6 @@ public struct ContentView: View {
         )
     }
 
-    // Sync anchor with persistence and notify manager/window
     private var anchorBinding: Binding<Anchor> {
         Binding(
             get: { anchorPosition },
@@ -29,13 +34,29 @@ public struct ContentView: View {
         )
     }
 
+    private var filteredCases: [CubeCase] {
+        if selectedTab == "OLL" {
+            return AlgorithmDatabase.ollCases
+        } else {
+            return AlgorithmDatabase.pllCases
+        }
+    }
+
+    private var currentWindowSize: NSSize {
+        manager.sizeMode.windowSize
+    }
+
+    private var drawerWidth: CGFloat {
+        260
+    }
+
     public var body: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack(alignment: .topLeading) {
             VStack(spacing: 0) {
-                header
-                mainContent
+                browserHeader
+                browserMain
             }
-            .frame(width: manager.sizeMode.windowSize.width, height: manager.sizeMode.windowSize.height)
+            .frame(width: currentWindowSize.width, height: currentWindowSize.height)
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
@@ -44,126 +65,190 @@ public struct ContentView: View {
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 8)
 
-            settingsButton
+            settingsDrawer
+                .offset(x: showSettings ? (currentWindowSize.width - drawerWidth) : currentWindowSize.width)
+                .animation(.easeInOut(duration: 0.2), value: showSettings)
         }
         .padding(8)
-        .onReceive(NotificationCenter.default.publisher(for: .cubeStateDidChange)) { _ in
-            // Triggers SwiftUI refresh when manager mutates from outside
+        .onReceive(NotificationCenter.default.publisher(for: .cubeStateDidChange)) { _ in }
+        .onTapGesture(count: 2) {
+            // Double-click anywhere on the overlay -> spring hide
+            NotificationCenter.default.post(name: .requestAnimatedHide, object: nil)
         }
     }
 
-    private var header: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(manager.currentCase.name)
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(.primary)
-                Text("\(manager.currentCase.caseType) \(manager.currentCase.caseNumber)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-            Button(action: manager.randomCase) {
-                Image(systemName: "shuffle")
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
-            .help("Random case")
-        }
-        .padding(.horizontal, 14)
-        .padding(.top, 12)
-        .padding(.bottom, 8)
-    }
-
-    private var mainContent: some View {
-        VStack(spacing: 12) {
-            if manager.visualMode != .textOnly {
-                CubeCanvasView(currentCase: manager.currentCase, visualMode: manager.visualMode)
-                    .frame(height: manager.sizeMode == .compact ? 140 : 180)
-                    .padding(.horizontal, 10)
-            }
-
-            if manager.visualMode != .setup {
-                algorithmSection
-            }
-
-            controls
-        }
-        .padding(.bottom, 12)
-    }
-
-    private var algorithmSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Primary Algorithm")
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 14)
-
-            Text(manager.currentCase.primaryAlgorithm)
-                .font(.system(.body, design: .monospaced))
-                .padding(10)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 8))
-                .padding(.horizontal, 14)
-
-            if !manager.currentCase.alternativeAlgorithms.isEmpty {
-                Text("Alternatives")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 14)
-                    .padding(.top, 4)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    ForEach(Array(manager.currentCase.alternativeAlgorithms.prefix(2)), id: \.self) { alt in
-                        Text(alt)
-                            .font(.system(.caption, design: .monospaced))
-                            .padding(.vertical, 4)
-                            .padding(.horizontal, 10)
-                            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 6))
-                    }
+    private var browserHeader: some View {
+        HStack(spacing: 8) {
+            if detailCase != nil {
+                Button(action: { detailCase = nil }) {
+                    Image(systemName: "chevron.left")
                 }
-                .padding(.horizontal, 14)
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .accessibilityLabel("Back to list")
+            } else {
+                Picker("", selection: $mode) {
+                    Text("Cases").tag("Cases")
+                    Text("Timer").tag("Timer")
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 120)
+                .accessibilityLabel("Mode")
             }
-        }
-    }
-
-    private var controls: some View {
-        HStack(spacing: 12) {
-            Button(action: manager.previousCase) {
-                Image(systemName: "arrow.left")
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
-
-            Button(action: manager.nextCase) {
-                Image(systemName: "arrow.right")
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
 
             Spacer()
+
+            if let d = detailCase {
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text(d.name)
+                        .font(.headline.weight(.semibold))
+                    Text("\(d.caseType) \(d.caseNumber)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            } else if mode == "Cases" {
+                Text("Browse")
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("Timer")
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            if detailCase == nil && mode == "Cases" {
+                Button(action: manager.randomCase) {
+                    Image(systemName: "shuffle")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .help("Random case")
+                .accessibilityLabel("Random case")
+            } else if detailCase != nil {
+                Button(action: {
+                    if let d = detailCase {
+                        manager.selectCase(d)
+                        detailCase = nil
+                    }
+                }) {
+                    Text("Use this")
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+                .accessibilityLabel("Use this case")
+            }
 
             Button(action: { showSettings.toggle() }) {
                 Image(systemName: "gearshape")
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
-            .popover(isPresented: $showSettings) {
-                settingsPanel
-                    .frame(width: 260)
-                    .padding()
+            .accessibilityLabel(showSettings ? "Close settings" : "Open settings")
+        }
+        .padding(.horizontal, 12)
+        .padding(.top, 10)
+        .padding(.bottom, 6)
+    }
+
+    private var browserMain: some View {
+        Group {
+            if let detail = detailCase {
+                caseDetailView(for: detail)
+            } else if mode == "Timer" {
+                TimerView()
+            } else {
+                caseListView
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.top, 4)
+        .padding(.bottom, 8)
     }
 
-    private var settingsButton: some View {
-        EmptyView() // popover attached to controls gear
+    private var caseListView: some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 2) {
+                ForEach(filteredCases) { c in
+                    Button(action: {
+                        detailCase = c
+                    }) {
+                        HStack {
+                            Text("\(c.caseNumber). \(c.name)")
+                                .font(.system(size: manager.sizeMode == .compact ? 12 : 13))
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            if c.id == manager.currentCase.id {
+                                Image(systemName: "checkmark")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            c.id == manager.currentCase.id
+                                ? Color.white.opacity(0.08)
+                                : Color.clear
+                        )
+                        .cornerRadius(6)
+                        .accessibilityLabel("\(c.caseType) \(c.caseNumber) \(c.name)\(c.id == manager.currentCase.id ? ", current" : "")")
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 8)
+        }
     }
 
-    private var settingsPanel: some View {
-        VStack(alignment: .leading, spacing: 16) {
+    private func caseDetailView(for c: CubeCase) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            CubeStateView(currentCase: c, visualMode: manager.visualMode, sizeMode: manager.sizeMode)
+                .frame(height: manager.sizeMode == .compact ? 110 : 150)
+                .padding(.horizontal, 10)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Primary")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 12)
+
+                Text(c.primaryAlgorithm)
+                    .font(.system(.body, design: .monospaced))
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 6))
+                    .padding(.horizontal, 10)
+                    .accessibilityLabel("Primary algorithm: \(c.primaryAlgorithm)")
+            }
+
+            if !c.alternativeAlgorithms.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Alternatives")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 12)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        ForEach(Array(c.alternativeAlgorithms.enumerated()), id: \.offset) { idx, alt in
+                            Text(alt)
+                                .font(.system(.caption, design: .monospaced))
+                                .padding(.vertical, 3)
+                                .padding(.horizontal, 8)
+                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
+                                .accessibilityLabel("Alternative \(idx + 1): \(alt)")
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                }
+            }
+
+            Spacer(minLength: 4)
+        }
+    }
+
+    private var settingsDrawer: some View {
+        VStack(alignment: .leading, spacing: 14) {
             Text("Settings")
                 .font(.headline)
 
@@ -174,24 +259,74 @@ public struct ContentView: View {
             }
             .pickerStyle(.segmented)
 
-            Picker("Visual Mode", selection: Binding(
+            Picker("Visual", selection: Binding(
                 get: { manager.visualMode },
                 set: { manager.setVisualMode($0) }
             )) {
                 ForEach(VisualMode.allCases, id: \.self) { mode in
-                    Text(mode.rawValue.replacingOccurrences(of: "preExecution", with: "Pre-Exec")).tag(mode)
+                    Text(mode.rawValue.replacingOccurrences(of: "preExecution", with: "Pre")).tag(mode)
                 }
             }
 
             Picker("Anchor", selection: anchorBinding) {
                 ForEach(Anchor.allCases, id: \.self) { anchor in
-                    Text(anchor.rawValue.replacingOccurrences(of: "topLeft", with: "Top Left").replacingOccurrences(of: "topRight", with: "Top Right").replacingOccurrences(of: "bottomLeft", with: "Bottom Left").replacingOccurrences(of: "bottomRight", with: "Bottom Right")).tag(anchor)
+                    Text(shortAnchorLabel(anchor)).tag(anchor)
                 }
             }
 
-            Text("Changes apply live to the floating window.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Toggle("Follow active screen", isOn: Binding(
+                get: { followActiveScreen },
+                set: { newValue in
+                    followActiveScreen = newValue
+                    manager.setFollowActiveScreen(newValue)
+                }
+            ))
+
+            Toggle("Launch at login", isOn: Binding(
+                get: { launchAtLoginEnabled },
+                set: { newValue in
+                    launchAtLoginEnabled = newValue
+                    _ = LaunchAtLogin.setEnabled(newValue)
+                }
+            ))
+
+            Picker("Monitor", selection: Binding(
+                get: { preferredScreen },
+                set: { newValue in
+                    preferredScreen = newValue
+                    manager.setPreferredScreenName(newValue)
+                }
+            )) {
+                Text("Auto").tag("")
+                ForEach(NSScreen.screens, id: \.localizedName) { screen in
+                    Text(screen.localizedName).tag(screen.localizedName)
+                }
+            }
+
+            Button("Close") {
+                showSettings = false
+            }
+            .font(.caption)
+        }
+        .padding(12)
+        .frame(width: drawerWidth, height: currentWindowSize.height)
+        .background(.regularMaterial)
+        .overlay(
+            Rectangle()
+                .frame(width: 1)
+                .foregroundColor(Color.white.opacity(0.1)),
+            alignment: .leading
+        )
+    }
+
+    private func shortAnchorLabel(_ anchor: Anchor) -> String {
+        switch anchor {
+        case .topLeft: return "Top Left"
+        case .topRight: return "Top Right"
+        case .bottomLeft: return "Bottom Left"
+        case .bottomRight: return "Bottom Right"
+        case .notch: return "Notch"
+        case .bottomCenter: return "Bottom Center"
         }
     }
 }

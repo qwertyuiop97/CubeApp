@@ -6,22 +6,58 @@
 
 ---
 
-## CURRENT: Phase 5A — Positions & Spring Animation
+## Phase 5A — Positions & Spring Animation
 
-**Status: IN PROGRESS**
+**Status: DONE** (2026-06-27)
 
-1. Add `notch` and `bottomCenter` to the `Anchor` enum in `Sources/Core/Services/CubeStateManager.swift`
-2. Add positioning math for both in `FloatingOverlayWindow.positionAtAnchor()`:
-   - `notch` = top-center, below menu bar, respecting `screen.safeAreaInsets.top`
-   - `bottomCenter` = bottom-center with 12pt margin
-3. Replace `setFrame(animate: true)` with a spring animation using `NSAnimationContext.runAnimationGroup` — window glides out from the anchor edge on show, not just appears
-4. Add double-click gesture on the overlay: double-click anywhere calls `hideWindow()` with the same spring animation (slides back into corner and disappears)
-5. Update the anchor picker in the settings tray to show all 6 positions
-6. Add monitor picker to settings tray: list `NSScreen.screens` by name, let user pick one, store in `@AppStorage("preferredScreen")`, use it in `positionAtAnchor`
+- [x] Added `notch` and `bottomCenter` to `Anchor` enum
+- [x] Positioning math for notch (top-center, notch-safe) and bottomCenter
+- [x] Spring animations via `NSAnimationContext` + cubic-bezier (ease-in-out with overshoot) for glide on show/hide
+- [x] Double-click anywhere on overlay triggers spring hide (slides to anchor edge)
+- [x] Anchor picker shows all 6 positions (Top Left/Right, Bottom Left/Right, Notch, Bottom Center)
+- [x] Monitor picker: lists `NSScreen.screens`, persists `@AppStorage("preferredScreen")`, used for positioning
 
 ---
 
-## UP NEXT (do not start until Phase 5A is done and building clean)
+## Phase 6A — Scramble Generator
+
+**Status: DONE** (2026-06-27)
+
+- [x] Created `Sources/Features/Timer/ScrambleGenerator.swift`
+- [x] `generate3x3()` produces exactly 20-move WCA-style scrambles (U D F B L R + ' 2, no consecutive same face)
+- [x] `make build` clean
+- [x] No changes to AlgorithmDatabase.swift
+
+---
+
+## Phase 6B — Built-in Timer
+
+**Status: DONE** (2026-06-27)
+
+- [x] SolveTimer.swift (ObservableObject): idle/running/stopped, scramble, formatted elapsed, start/stop/reset/toggle, live 60fps updates
+- [x] TimerView.swift: scramble display, large monospace time, New/Start-Stop/Reset buttons, "Spacebar starts/stops" hint
+- [x] Mode switch in main overlay header: Cases ↔ Timer (replaces old segmented when not in detail)
+- [x] Global CGEventTap spacebar: only consumes when window visible + timer tab active + idle/running; never steals in other apps
+- [x] Wired via @EnvironmentObject into ContentView + TimerView
+- [x] make build clean
+
+---
+
+## CURRENT: Phase 6C — Time History
+
+**Status: IN PROGRESS**
+
+1. Create `Sources/Features/Timer/TimeStore.swift` — @ObservableObject or class that persists solves (time + scramble + date) using UserDefaults or file.
+2. On timer stop, automatically save the solve to history.
+3. Compute and expose: ao5, ao12, ao100 (mean of 3 for ao5, etc.; handle DNFs later if needed — for now just valid times).
+4. Add simple session view in Timer tab: recent solves list (time + scramble snippet), current ao5/ao12.
+5. Session management basics: "New Session" button clears current session history (or keeps global list with session id later).
+6. `make build` after every change.
+7. No changes to AlgorithmDatabase.swift
+
+---
+
+## UP NEXT (do not start until Phase 6C is done and building clean)
 
 - **Phase 6A** — Scramble generator (`Sources/Features/Timer/ScrambleGenerator.swift`, WCA-valid 20-move 3x3 scrambles)
 - **Phase 6B** — Built-in timer (`SolveTimer.swift`, `TimerView.swift`, spacebar via CGEventTap, Timer tab in UI)
@@ -47,6 +83,22 @@
 - Standard scramble generator specs (WCA scramblers are open source)
 
 **Output:** Add a `RESOURCES.md` file to the project listing what was found and whether each is worth integrating, linking to, or referencing for data.
+
+---
+
+## iOS APP RESEARCH PHASE (separate from coding — use Claude Code or Grok DeepSearch)
+
+**Goal:** Research the market for a "Learn to Solve a Rubik's Cube" iOS app with a dual-purpose angle (beginners learn, then stay for algorithm reference).
+
+**Search for:**
+- Existing "learn to solve Rubik's cube" iOS apps — ratings, reviews, revenue estimates, what users hate about them
+- How structured daily-learning apps (Duolingo-style) perform on the App Store in niche topics
+- Search volume for "how to solve a rubik's cube" (Google Trends, App Store search)
+- Whether free + ads or freemium works better for this category
+- iOS App Store cubing app landscape — any gaps or underserved angles
+- Reddit (r/Cubers, r/Rubiks) posts asking for app recommendations — what are people asking for that doesn't exist
+
+**Output:** Append findings to MARKET.md under a new "iOS App Concept" section.
 
 ---
 

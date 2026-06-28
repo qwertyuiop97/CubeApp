@@ -13,6 +13,11 @@ let package = Package(
         .executableTarget(
             name: "CubeNotch",
             path: "Sources"
+        ),
+        .testTarget(
+            name: "CubeNotchTests",
+            dependencies: ["CubeNotch"],
+            path: "Tests/CubeNotchTests"
         )
     ]
 )

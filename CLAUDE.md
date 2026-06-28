@@ -37,7 +37,15 @@
   - Use partial lists or TODO placeholders
 - When adding features (search, favorites, learning progress), query from `AlgorithmDatabase`, do not duplicate data.
 
+## Aesthetic Direction
+- Target: premium, modern, slick — not just "dark mode with blur"
+- User is on macOS 27 beta. Use Liquid Glass materials if available via SwiftUI APIs; fall back to `.ultraThinMaterial` for older versions
+- Add a blur intensity slider in settings (user controls how transparent/blurry the overlay background is)
+- Add background tint options (neutral/dark/light/accent) in settings
+- Use SF Symbols throughout — no custom icons unless necessary
+- Every visual decision should feel like it belongs natively on macOS
+
 ## Other Critical Reminders
-- Prefer modern SwiftUI materials: `.regularMaterial`, `.thinMaterial`, `.ultraThinMaterial`.
+- Prefer modern SwiftUI materials: `.regularMaterial`, `.thinMaterial`, `.ultraThinMaterial` — upgrade to Liquid Glass when available.
 - Keep the window lightweight — no heavy computation on main thread.
 - Respect reduced motion and accessibility.

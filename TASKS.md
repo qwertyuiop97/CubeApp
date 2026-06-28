@@ -34,10 +34,10 @@
 - [x] Accessibility (VoiceOver labels, keyboard nav on core controls)
 
 ## Phase 5 — Animation & Positioning
-- [ ] Spring slide-in/slide-out: window glides out from anchor corner on show, retracts on double-click (NSAnimationContext spring, not linear)
-- [ ] Expand snap positions to 6: Top-Left, Top-Right, Bottom-Left, Bottom-Right, Notch (top-center, notch-safe), Bottom-Center
-- [ ] Monitor selector: let user pick which connected display the overlay lives on (NSScreen list in settings)
-- [ ] Focus-safe overlay: always non-activating — clicking overlay or settings tray never steals keyboard focus
+- [x] Spring slide-in/slide-out: window glides out from anchor corner on show, retracts on double-click (NSAnimationContext spring, not linear)
+- [x] Expand snap positions to 6: Top-Left, Top-Right, Bottom-Left, Bottom-Right, Notch (top-center, notch-safe), Bottom-Center
+- [x] Monitor selector: let user pick which connected display the overlay lives on (NSScreen list in settings)
+- [x] Focus-safe overlay: always non-activating — clicking overlay or settings tray never steals keyboard focus
 
 ## Phase 6 — Built-in Timer & Training
 - [ ] Scramble generator: WCA-valid 3x3 random-move scrambles (displayed before each solve)

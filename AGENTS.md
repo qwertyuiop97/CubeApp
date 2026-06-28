@@ -16,7 +16,9 @@
 
 ## Companion Instruction Files
 - `CLAUDE.md`: SwiftUI + AppKit integration, transparent borderless floating `NSWindow`/`NSPanel` rules, dynamic compact/medium/large size modes, notch handling.
+- `NEXT.md`: current task for agents — always read this first, then update it when a phase completes.
 - `TASKS.md`: roadmap with algorithm database marked complete; use to track next steps.
+- `PROBLEMS.md`: live issue tracker — log blockers and build errors here as you hit them; update status accurately.
 - `SCRATCHPAD.md`: window anchoring math and positioning experiments (do not delete ideas here).
 
 ## Directory Layout (enforced)
@@ -54,9 +56,18 @@ Place every new file in the matching subfolder. Do not create top-level source f
 
 ## Quick Ramp-Up Checklist for New Session
 1. `git status`
-2. Read `CLAUDE.md` (window rules)
-3. Read `TASKS.md` (current priorities)
-4. Confirm `AlgorithmDatabase.swift` is untouched and complete (57+21 cases)
-5. Only then start implementation
+2. Read `NEXT.md` (current task — start here)
+3. Read `CLAUDE.md` (window rules)
+4. Read `PROBLEMS.md` (check for any open blockers before starting)
+5. Confirm `AlgorithmDatabase.swift` is untouched and complete (57+21 cases)
+6. Only then start implementation
+
+## Problems Tracker Protocol
+- Open `PROBLEMS.md` at the start of every session. If any items are `in-progress` from a previous session, reset them to `pending` (they weren't resolved).
+- When you hit a blocker: add an entry to `PROBLEMS.md` immediately, status `pending`.
+- When you start fixing it: update status to `in-progress`.
+- When it's fixed: check the box and move the entry to "Solved Problems".
+- If you finish your session with an unsolved problem: make sure status is back to `pending`, not `in-progress`.
+- Claude Code reviews this file and can provide plans for hard problems — keep notes detailed.
 
 Last updated: 2026-06-27

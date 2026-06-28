@@ -18,10 +18,13 @@ public enum Anchor: String, CaseIterable, Codable {
     case topRight
     case bottomLeft
     case bottomRight
+    case notch
+    case bottomCenter
 }
 
 extension Notification.Name {
     static let cubeStateDidChange = Notification.Name("cubeStateDidChange")
+    static let requestAnimatedHide = Notification.Name("requestAnimatedHide")
 }
 
 @Observable
@@ -34,6 +37,12 @@ public final class CubeStateManager {
         didSet { NotificationCenter.default.post(name: .cubeStateDidChange, object: nil) }
     }
     public var anchorPosition: Anchor = .topRight {
+        didSet { NotificationCenter.default.post(name: .cubeStateDidChange, object: nil) }
+    }
+    public var followActiveScreen: Bool = false {
+        didSet { NotificationCenter.default.post(name: .cubeStateDidChange, object: nil) }
+    }
+    public var preferredScreenName: String = "" {
         didSet { NotificationCenter.default.post(name: .cubeStateDidChange, object: nil) }
     }
 
@@ -77,6 +86,22 @@ public final class CubeStateManager {
 
     public func setAnchor(_ anchor: Anchor) {
         anchorPosition = anchor
+    }
+
+    public func setFollowActiveScreen(_ value: Bool) {
+        followActiveScreen = value
+    }
+
+    public func setPreferredScreenName(_ name: String) {
+        preferredScreenName = name
+    }
+
+    public func selectCase(_ c: CubeCase) {
+        if let idx = allCases.firstIndex(where: { $0.id == c.id }) {
+            currentIndex = idx
+        }
+        currentCase = c
+        NotificationCenter.default.post(name: .cubeStateDidChange, object: nil)
     }
 
     private func parseMoves(_ algorithm: String) -> [String] {
