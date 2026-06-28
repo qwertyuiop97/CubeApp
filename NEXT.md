@@ -148,7 +148,7 @@ Library Mode is a full native Mac window (standard chrome, activating, resizable
 
 ## Phase 9B — Library: Beginner Method Section
 
-**Status: NOT STARTED** (do not begin until Phase 9A is done)
+**Status: DONE** (2026-06-27)
 
 Add a "Learn" tab to the Library for the Layer-by-Layer (LBL) beginner method. This is separate tutorial content — NOT in AlgorithmDatabase.swift.
 

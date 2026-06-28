@@ -183,6 +183,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return false
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        if let tap = eventTap {
+            CGEvent.tapEnable(tap: tap, enable: false)
+        }
+    }
+
     private func setupSpacebarEventTap() {
         let mask = CGEventMask(1 << CGEventType.keyDown.rawValue)
         eventTap = CGEvent.tapCreate(

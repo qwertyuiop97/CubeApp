@@ -2,7 +2,7 @@ import SwiftUI
 import AppKit
 
 struct LibraryView: View {
-    @State private var category: String = "F2L" // F2L | OLL | PLL
+    @State private var category: String = "F2L" // F2L | OLL | PLL | Learn
     @State private var searchText: String = ""
     @State private var selectedID: String?
     @State private var showFavoritesOnly: Bool = false
@@ -54,6 +54,7 @@ struct LibraryView: View {
                     Text("F2L").tag("F2L")
                     Text("OLL").tag("OLL")
                     Text("PLL").tag("PLL")
+                    Text("Learn").tag("Learn")
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal, 8)
@@ -62,49 +63,73 @@ struct LibraryView: View {
                     selectedID = nil
                 }
 
-                Toggle("Favorites only", isOn: $showFavoritesOnly)
-                    .font(.caption)
-                    .padding(.horizontal, 8)
+                if category != "Learn" {
+                    Toggle("Favorites only", isOn: $showFavoritesOnly)
+                        .font(.caption)
+                        .padding(.horizontal, 8)
 
-                TextField("Search...", text: $searchText)
-                    .textFieldStyle(.roundedBorder)
-                    .padding(.horizontal, 8)
+                    TextField("Search...", text: $searchText)
+                        .textFieldStyle(.roundedBorder)
+                        .padding(.horizontal, 8)
 
-                List(filteredCases, id: \.id, selection: $selectedID) { c in
-                    HStack {
-                        if favoriteCaseIDs.contains(c.id) {
-                            Image(systemName: "star.fill")
-                                .foregroundStyle(.yellow)
-                                .font(.caption)
+                    List(filteredCases, id: \.id, selection: $selectedID) { c in
+                        HStack {
+                            if favoriteCaseIDs.contains(c.id) {
+                                Image(systemName: "star.fill")
+                                    .foregroundStyle(.yellow)
+                                    .font(.caption)
+                            }
+                            Text("\(c.caseNumber). \(c.name)")
+                                .font(.system(size: 13))
+                            Spacer()
+                            if myAlgorithms[c.id] != nil {
+                                Image(systemName: "checkmark.circle")
+                                    .foregroundStyle(.blue)
+                            }
                         }
-                        Text("\(c.caseNumber). \(c.name)")
-                            .font(.system(size: 13))
-                        Spacer()
-                        if myAlgorithms[c.id] != nil {
-                            Image(systemName: "checkmark.circle")
-                                .foregroundStyle(.blue)
-                        }
-                    }
-                    .tag(c.id)
-                    .contextMenu {
-                        Button(favoriteCaseIDs.contains(c.id) ? "Unfavorite" : "Favorite") {
-                            toggleFavorite(c.id)
-                        }
-                        if myAlgorithms[c.id] != nil {
-                            Button("Clear my alg") {
-                                myAlgorithms.removeValue(forKey: c.id)
-                                saveMyAlgs()
+                        .tag(c.id)
+                        .contextMenu {
+                            Button(favoriteCaseIDs.contains(c.id) ? "Unfavorite" : "Favorite") {
+                                toggleFavorite(c.id)
+                            }
+                            if myAlgorithms[c.id] != nil {
+                                Button("Clear my alg") {
+                                    myAlgorithms.removeValue(forKey: c.id)
+                                    saveMyAlgs()
+                                }
                             }
                         }
                     }
+                    .listStyle(.sidebar)
+                } else {
+                    Text("Layer-by-Layer (Beginner)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 8)
                 }
-                .listStyle(.sidebar)
             }
             .frame(minWidth: 240)
 
             // Detail pane
             VStack(alignment: .leading, spacing: 12) {
-                if let c = selectedCase {
+                if category == "Learn" {
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            ForEach(BeginnerMethodDatabase.steps) { step in
+                                BeginnerStepView(step: step) { target in
+                                    category = target
+                                    searchText = ""
+                                }
+                            }
+                            Button("Ready for more? Learn CFOP →") {
+                                category = "F2L"
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .padding(.top, 8)
+                        }
+                        .padding()
+                    }
+                } else if let c = selectedCase {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("\(c.caseType) \(c.caseNumber) — \(c.name)")
