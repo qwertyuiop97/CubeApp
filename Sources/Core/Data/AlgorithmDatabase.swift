@@ -3,19 +3,23 @@ import Foundation
 public struct CubeCase: Identifiable, Codable, Equatable {
     public var id: String { "\(caseType)-\(caseNumber)" }
     public let caseNumber: Int
-    public let caseType: String // "OLL" or "PLL"
+    public let caseType: String // "OLL", "PLL", or "F2L"
     public let name: String
     public let primaryAlgorithm: String
     public let alternativeAlgorithms: [String]
     public let diagramImagePlaceholder: String
+    public let auf: String?           // e.g. "U", "U'", "U2", or nil
+    public let recognitionTip: String?
 
-    public init(caseNumber: Int, caseType: String, name: String, primaryAlgorithm: String, alternativeAlgorithms: [String], diagramImagePlaceholder: String) {
+    public init(caseNumber: Int, caseType: String, name: String, primaryAlgorithm: String, alternativeAlgorithms: [String], diagramImagePlaceholder: String, auf: String? = nil, recognitionTip: String? = nil) {
         self.caseNumber = caseNumber
         self.caseType = caseType
         self.name = name
         self.primaryAlgorithm = primaryAlgorithm
         self.alternativeAlgorithms = alternativeAlgorithms
         self.diagramImagePlaceholder = diagramImagePlaceholder
+        self.auf = auf
+        self.recognitionTip = recognitionTip
     }
 }
 
@@ -662,7 +666,9 @@ public struct AlgorithmDatabase {
                 "y' x' R' D R' U2 R D' R' U2 R2 x",
                 "y2 x R' U R' D2 R U' R' D2 R2 x'"
             ],
-            diagramImagePlaceholder: "pll_aa"
+            diagramImagePlaceholder: "pll_aa",
+            auf: "U / U'",
+            recognitionTip: "Headlights on left + bar on right"
         ),
         CubeCase(
             caseNumber: 2,
@@ -673,7 +679,9 @@ public struct AlgorithmDatabase {
                 "y' x' R2 D2 R U R' D2 R U' R x",
                 "y2 x R D' R U2 R' D R U2 R2 x'"
             ],
-            diagramImagePlaceholder: "pll_ab"
+            diagramImagePlaceholder: "pll_ab",
+            auf: "U / U'",
+            recognitionTip: "Headlights on right + bar on left"
         ),
         CubeCase(
             caseNumber: 3,
@@ -684,7 +692,9 @@ public struct AlgorithmDatabase {
                 "y' R' U2 R' d' R' F' R2 U' R' U R' F R U' F",
                 "y2 x' R U' R' D R U R' D' R U R' D R U' R' D' x"
             ],
-            diagramImagePlaceholder: "pll_f"
+            diagramImagePlaceholder: "pll_f",
+            auf: "U",
+            recognitionTip: "Two bars opposite + headlights"
         ),
         CubeCase(
             caseNumber: 4,

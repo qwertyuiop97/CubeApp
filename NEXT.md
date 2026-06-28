@@ -310,7 +310,7 @@ This phase does NOT add features. It systematically finds and fixes real bugs, c
 
 ## Phase 12A — Algorithm Trainer Mode
 
-**Status: NOT STARTED** (do not begin until Phase 11B is done)
+**Status: DONE** (2026-06-27)
 
 A "Train" mode in the HUD. Shows a random OLL/PLL case diagram, user recalls the algorithm from memory, taps to reveal. Tracks accuracy per case.
 

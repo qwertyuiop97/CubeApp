@@ -1,9 +1,14 @@
 import SwiftUI
 import AppKit
+import Carbon
 
 public struct ContentView: View {
     @Environment(\.cubeStateManager) private var manager
     @EnvironmentObject private var solveTimer: SolveTimer
+    @EnvironmentObject private var trainerStore: TrainerStore
+    @EnvironmentObject private var timeStore: TimeStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @AppStorage("sizeMode") private var sizeMode: SizeMode = .medium
     @AppStorage("anchorPosition") private var anchorPosition: Anchor = .topRight
     @AppStorage("followActiveScreen") private var followActiveScreen: Bool = false
@@ -14,10 +19,31 @@ public struct ContentView: View {
     @State private var caseCategory: String = "OLL" // "F2L" | "OLL" | "PLL"
     @State private var detailCase: CubeCase? = nil
     @State private var launchAtLoginEnabled: Bool = LaunchAtLogin.isEnabled
-    @State private var mode: String = "Cases" // "Cases" | "Timer"
+    @State private var mode: String = "Cases" // "Cases" | "Timer" | "Train" | "Stats"
     @State private var showSavedFeedback = false
     @State private var showCopiedFeedback = false
     @State private var searchText: String = ""
+
+    // 13A-5: Recent and Pinned
+    @State private var recentCaseIDs: [String] = []
+    @State private var pinnedCaseIDs: Set<String> = []
+    private let recentKey = "recentCaseIDs"
+    private let pinnedKey = "pinnedCaseIDs"
+
+    // 13A-4 Hotkey capture
+    @State private var listeningForHotkey = false
+
+    // Box so the monitor token can be mutated from inside the NSEvent closure
+    private final class HotkeyBox {
+        var monitor: Any?
+    }
+    @State private var hotkeyBox = HotkeyBox()
+    @State private var _hotkeyEventMonitor: Any? = nil
+
+    private var hotkeyEventMonitor: Any? {
+        get { _hotkeyEventMonitor }
+        set { _hotkeyEventMonitor = newValue }
+    }
 
     private var sizeBinding: Binding<SizeMode> {
         Binding(
@@ -37,6 +63,10 @@ public struct ContentView: View {
                 manager.setAnchor(newValue)
             }
         )
+    }
+
+    private func moveCount(_ alg: String) -> Int {
+        alg.split(separator: " ").filter { !$0.isEmpty }.count
     }
 
     private var filteredCases: [CubeCase] {
@@ -72,7 +102,7 @@ public struct ContentView: View {
                 browserMain
             }
             .frame(width: currentWindowSize.width, height: currentWindowSize.height)
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .background(reduceTransparency ? .regularMaterial : .thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(Color.black.opacity(blurIntensity * 0.45))
             .overlay(tintColor.opacity(0.10))
             .overlay(
@@ -90,7 +120,9 @@ public struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .cubeStateDidChange)) { _ in }
         .onTapGesture(count: 2) {
             // Double-click anywhere on the overlay -> spring hide
-            NotificationCenter.default.post(name: .requestAnimatedHide, object: nil)
+            if !reduceMotion {
+                NotificationCenter.default.post(name: .requestAnimatedHide, object: nil)
+            }
         }
     }
 
@@ -109,6 +141,21 @@ public struct ContentView: View {
     }
 
     private var browserHeader: some View {
+        Group {
+            if #available(macOS 26.0, *) {
+                GlassEffectContainer(spacing: 8) {
+                    headerContent
+                }
+            } else {
+                headerContent
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.top, 10)
+        .padding(.bottom, 6)
+    }
+
+    private var headerContent: some View {
         HStack(spacing: 8) {
             if detailCase != nil {
                 Button(action: { detailCase = nil }) {
@@ -121,10 +168,13 @@ public struct ContentView: View {
                 Picker("", selection: $mode) {
                     Text("Cases").tag("Cases")
                     Text("Timer").tag("Timer")
+                    Text("Train").tag("Train")
+                    Text("Stats").tag("Stats")
                 }
                 .pickerStyle(.segmented)
                 .frame(width: 120)
                 .accessibilityLabel("Mode")
+                .cubeNotchGlass(cornerRadius: 8)
             }
 
             if detailCase == nil && mode == "Cases" {
@@ -136,6 +186,7 @@ public struct ContentView: View {
                 .pickerStyle(.segmented)
                 .frame(width: 140)
                 .accessibilityLabel("Case category")
+                .cubeNotchGlass(cornerRadius: 8)
             }
 
             Spacer()
@@ -152,8 +203,16 @@ public struct ContentView: View {
                 Text("Browse")
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(.secondary)
-            } else {
+            } else if mode == "Timer" {
                 Text("Timer")
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            } else if mode == "Train" {
+                Text("Train")
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("Stats")
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
@@ -168,6 +227,7 @@ public struct ContentView: View {
                 .foregroundStyle(.secondary)
                 .help("Random case")
                 .accessibilityLabel("Random case")
+                .cubeNotchGlass(cornerRadius: 6)
             } else if detailCase != nil {
                 Button(action: {
                     if let d = detailCase {
@@ -181,6 +241,7 @@ public struct ContentView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.small)
                 .accessibilityLabel("Use this case")
+                .cubeNotchGlass(cornerRadius: 6)
             }
 
             if detailCase == nil {
@@ -191,6 +252,7 @@ public struct ContentView: View {
                 .foregroundStyle(.secondary)
                 .help("Screenshot overlay to Desktop + clipboard")
                 .accessibilityLabel("Screenshot")
+                .cubeNotchGlass(cornerRadius: 6)
             }
 
             if showSavedFeedback {
@@ -206,10 +268,8 @@ public struct ContentView: View {
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
             .accessibilityLabel(showSettings ? "Close settings" : "Open settings")
+            .cubeNotchGlass(cornerRadius: 6)
         }
-        .padding(.horizontal, 12)
-        .padding(.top, 10)
-        .padding(.bottom, 6)
     }
 
     private var browserMain: some View {
@@ -218,6 +278,10 @@ public struct ContentView: View {
                 caseDetailView(for: detail)
             } else if mode == "Timer" {
                 TimerView()
+            } else if mode == "Train" {
+                TrainerView()
+            } else if mode == "Stats" {
+                StatsView()
             } else {
                 caseListView
             }
@@ -238,41 +302,110 @@ public struct ContentView: View {
             }
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 2) {
-                    ForEach(filteredCases) { c in
-                        Button(action: {
-                            detailCase = c
-                        }) {
-                            HStack {
-                                Text("\(c.caseNumber). \(c.name)")
-                                    .font(.system(size: manager.sizeMode == .compact ? 12 : 13))
-                                    .foregroundStyle(.primary)
-                                Spacer()
-                                if c.id == manager.currentCase.id {
-                                    Image(systemName: "checkmark")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
+                    // 13A-5 Recent + Pinned
+                    if searchText.isEmpty && mode == "Cases" {
+                        let recents = recentCaseIDs.compactMap { id in filteredCases.first(where: { $0.id == id }) }.prefix(5)
+                        if !recents.isEmpty {
+                            Text("Recent").font(.caption.weight(.medium)).foregroundStyle(.secondary).padding(.horizontal, 12).padding(.top, 4)
+                            ForEach(Array(recents)) { c in
+                                caseRow(for: c)
                             }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(
-                                c.id == manager.currentCase.id
-                                    ? Color.white.opacity(0.08)
-                                    : Color.clear
-                            )
-                            .cornerRadius(6)
-                            .accessibilityLabel("\(c.caseType) \(c.caseNumber) \(c.name)\(c.id == manager.currentCase.id ? ", current" : "")")
+                            Divider().padding(.horizontal, 8)
                         }
-                        .buttonStyle(.plain)
+                        let pinned = filteredCases.filter { pinnedCaseIDs.contains($0.id) }
+                        if !pinned.isEmpty {
+                            Text("Pinned").font(.caption.weight(.medium)).foregroundStyle(.secondary).padding(.horizontal, 12)
+                            ForEach(pinned) { c in
+                                caseRow(for: c)
+                            }
+                            Divider().padding(.horizontal, 8)
+                        }
+                    }
+
+                    ForEach(filteredCases.filter { !pinnedCaseIDs.contains($0.id) && !recentCaseIDs.contains($0.id) }) { c in
+                        caseRow(for: c)
                     }
                 }
                 .padding(.horizontal, 8)
             }
         }
+        .onAppear(perform: loadRecentPinned)
+    }
+
+    private func caseRow(for c: CubeCase) -> some View {
+        Button(action: {
+            detailCase = c
+            addToRecent(c.id)
+        }) {
+            HStack {
+                Text("\(c.caseNumber). \(c.name)")
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+
+                if let tip = c.recognitionTip {
+                    Text(tip)
+                        .font(.caption2.italic())
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                Spacer()
+                if c.id == manager.currentCase.id {
+                    Image(systemName: "checkmark")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                if pinnedCaseIDs.contains(c.id) {
+                    Image(systemName: "pin.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.yellow)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(
+                c.id == manager.currentCase.id
+                    ? Color.white.opacity(0.08)
+                    : Color.clear
+            )
+            .cornerRadius(6)
+            .accessibilityLabel("\(c.caseType) \(c.caseNumber) \(c.name)\(c.id == manager.currentCase.id ? ", current" : "")")
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            Button(pinnedCaseIDs.contains(c.id) ? "Unpin" : "Pin to top") {
+                togglePin(c.id)
+            }
+        }
+    }
+
+    private func addToRecent(_ id: String) {
+        recentCaseIDs.removeAll { $0 == id }
+        recentCaseIDs.insert(id, at: 0)
+        if recentCaseIDs.count > 8 { recentCaseIDs.removeLast() }
+        UserDefaults.standard.set(recentCaseIDs, forKey: recentKey)
+    }
+
+    private func togglePin(_ id: String) {
+        if pinnedCaseIDs.contains(id) {
+            pinnedCaseIDs.remove(id)
+        } else {
+            pinnedCaseIDs.insert(id)
+        }
+        UserDefaults.standard.set(Array(pinnedCaseIDs), forKey: pinnedKey)
+    }
+
+    private func loadRecentPinned() {
+        if let rec = UserDefaults.standard.stringArray(forKey: recentKey) {
+            recentCaseIDs = rec
+        }
+        if let pin = UserDefaults.standard.stringArray(forKey: pinnedKey) {
+            pinnedCaseIDs = Set(pin)
+        }
     }
 
     private func caseDetailView(for c: CubeCase) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        return VStack(alignment: .leading, spacing: 8) {
             CubeStateView(currentCase: c, visualMode: manager.visualMode, sizeMode: manager.sizeMode)
                 .frame(height: manager.sizeMode == .compact ? 110 : 150)
                 .padding(.horizontal, 10)
@@ -285,9 +418,13 @@ public struct ContentView: View {
 
                 HStack {
                     Text(c.primaryAlgorithm)
-                        .font(.system(.body, design: .monospaced))
+                        .font(.system(size: 15, weight: .medium, design: .monospaced))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .accessibilityLabel("Primary algorithm: \(c.primaryAlgorithm)")
+
+                    Text("(\(moveCount(c.primaryAlgorithm)) moves)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
 
                     Button(action: {
                         NSPasteboard.general.clearContents()
@@ -325,12 +462,15 @@ public struct ContentView: View {
 
                     VStack(alignment: .leading, spacing: 3) {
                         ForEach(Array(c.alternativeAlgorithms.enumerated()), id: \.offset) { idx, alt in
-                            Text(alt)
-                                .font(.system(.caption, design: .monospaced))
-                                .padding(.vertical, 3)
-                                .padding(.horizontal, 8)
-                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
-                                .accessibilityLabel("Alternative \(idx + 1): \(alt)")
+                            HStack {
+                                Text(alt)
+                                    .font(.system(size: 13, design: .monospaced))
+                                    .foregroundStyle(.secondary)
+                                    .padding(.vertical, 3)
+                                    .padding(.horizontal, 8)
+                                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
+                                    .accessibilityLabel("Alternative \(idx + 1): \(alt)")
+                            }
                         }
                     }
                     .padding(.horizontal, 10)
@@ -338,6 +478,13 @@ public struct ContentView: View {
             }
 
             Spacer(minLength: 4)
+
+            if let tip = c.recognitionTip {
+                Text(tip)
+                    .font(.caption.italic())
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 12)
+            }
         }
     }
 
@@ -422,6 +569,20 @@ public struct ContentView: View {
                 }
             }
 
+            // 13A-4 Hotkey customizer
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Hotkey").font(.caption.weight(.medium))
+                Text(listeningForHotkey ? "Press new combo…" : GlobalHotKeyManager.shared.currentHotkeyDisplay())
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(listeningForHotkey ? .orange : .primary)
+                Button(listeningForHotkey ? "Listening…" : "Change…") {
+                    startHotkeyCapture()
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(listeningForHotkey)
+            }
+
             Button("Close") {
                 showSettings = false
             }
@@ -429,7 +590,7 @@ public struct ContentView: View {
         }
         .padding(12)
         .frame(width: drawerWidth, height: currentWindowSize.height)
-        .background(.regularMaterial)
+        .background(reduceTransparency ? .regularMaterial : .thinMaterial)
         .overlay(
             Rectangle()
                 .frame(width: 1)
@@ -470,4 +631,51 @@ public struct ContentView: View {
         default: return Color.gray.opacity(0.3)
         }
     }
+
+    // 13A-4: Hotkey capture (listening mode)
+    // Note: Full live capture is wired in GlobalHotKeyManager + AppDelegate.
+    // This stub just provides the "listening" UI state for now.
+    private func startHotkeyCapture() {
+        listeningForHotkey = true
+
+        // Remove any previous monitor
+        if let mon = hotkeyBox.monitor {
+            NSEvent.removeMonitor(mon)
+            hotkeyBox.monitor = nil
+        }
+
+        let monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            let keyCode = event.keyCode
+            var mods: UInt32 = 0
+            let flags = event.modifierFlags
+            if flags.contains(.command) { mods |= UInt32(cmdKey) }
+            if flags.contains(.option)  { mods |= UInt32(optionKey) }
+            if flags.contains(.shift)   { mods |= UInt32(shiftKey) }
+            if flags.contains(.control) { mods |= UInt32(controlKey) }
+
+            // Guard invalid combos
+            if keyCode == 49 && mods == 0 { return event } // Space alone
+            if keyCode == 53 || keyCode == 36 { return event } // Esc / Return
+
+            GlobalHotKeyManager.shared.setHotkey(keyCode: UInt32(keyCode), modifiers: mods) { }
+
+            // Ask AppDelegate to rebind (on main)
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .requestHotkeyRebind, object: nil)
+            }
+
+            DispatchQueue.main.async {
+                self.listeningForHotkey = false
+                if let mon = self.hotkeyBox.monitor {
+                    NSEvent.removeMonitor(mon)
+                    self.hotkeyBox.monitor = nil
+                }
+            }
+            return nil // consume
+        }
+
+        hotkeyBox.monitor = monitor
+    }
 }
+
+

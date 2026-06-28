@@ -3,6 +3,8 @@ import SwiftUI
 public struct TimerView: View {
     @EnvironmentObject private var timer: SolveTimer
     @EnvironmentObject private var store: TimeStore
+    @State private var showNewPB = false
+    @State private var newPBText = ""
 
     public var body: some View {
         VStack(spacing: 8) {
@@ -16,13 +18,16 @@ public struct TimerView: View {
                 .lineLimit(3)
                 .padding(8)
                 .frame(maxWidth: .infinity)
-                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 8))
+                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .padding(.horizontal, 6)
 
             Text(timer.formattedTime)
-                .font(.system(size: 38, weight: .semibold, design: .monospaced))
+                .font(.system(size: 72, weight: .light))
                 .monospacedDigit()
+                .contentTransition(.numericText())
+                .animation(.easeInOut(duration: 0.08), value: timer.formattedTime)
                 .padding(.vertical, 8)
+                .foregroundColor(timer.isRunning ? .primary : (timer.state == .stopped ? .orange : .green))
 
             HStack(spacing: 10) {
                 Button("New") {
@@ -32,26 +37,59 @@ public struct TimerView: View {
                 .buttonStyle(.bordered)
                 .controlSize(.small)
 
-                if timer.isRunning {
-                    Button("Stop") {
-                        timer.stop()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
-                } else {
-                    Button(timer.state == .stopped ? "Reset" : "Start") {
-                        timer.toggle()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
+            if timer.isRunning {
+                Button("Stop") {
+                    timer.stop()
                 }
-
-                Button("New Session") {
-                    store.clearSession()
-                }
-                .buttonStyle(.bordered)
+                .buttonStyle(.borderedProminent)
                 .controlSize(.small)
+                .cubeNotchGlass(cornerRadius: 6)
+            } else {
+                Button(timer.state == .stopped ? "Reset" : "Start") {
+                    timer.toggle()
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+                .cubeNotchGlass(cornerRadius: 6)
             }
+
+            // 15A-2 +2 / DNF also get glass
+            if timer.state == .stopped {
+                HStack(spacing: 8) {
+                    Button("+2") {
+                        timer.applyPenalty(.plusTwo)
+                        store.updateLastSolve(addPenalty: .plusTwo)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .cubeNotchGlass(cornerRadius: 6)
+
+                    Button("DNF") {
+                        timer.applyPenalty(.dnf)
+                        store.updateLastSolve(addPenalty: .dnf)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .cubeNotchGlass(cornerRadius: 6)
+                }
+            }
+
+            Button("New Session") {
+                store.clearSession()
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+
+            // 14A-1 Export
+            Button("Export CSV") {
+                if let url = store.saveCSVToDesktop() {
+                    let pb = NSPasteboard.general
+                    pb.clearContents()
+                    pb.setString(url.path, forType: .string)
+                }
+            }
+            .font(.caption2)
+            .buttonStyle(.plain)
 
             Toggle("Cross Practice", isOn: $timer.isCrossPractice)
                 .font(.caption)
@@ -68,7 +106,7 @@ public struct TimerView: View {
                     .foregroundStyle(.secondary)
             }
 
-            // Stats
+            // Stats + PBs (16A-1)
             HStack(spacing: 12) {
                 stat("ao5", store.ao5)
                 stat("ao12", store.ao12)
@@ -77,26 +115,28 @@ public struct TimerView: View {
                     Text("Best: \(formatTime(best))").font(.caption)
                 }
             }
-            .font(.caption)
+            .font(.system(size: 20))
+            .monospacedDigit()
 
-            // Penalty buttons (only after stop, before new scramble)
-            if timer.state == .stopped {
-                HStack(spacing: 8) {
-                    Button("+2") {
-                        timer.applyPenalty(.plusTwo)
-                        store.updateLastSolve(addPenalty: .plusTwo)
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    Button("DNF") {
-                        timer.applyPenalty(.dnf)
-                        store.updateLastSolve(addPenalty: .dnf)
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                }
-                .font(.caption)
+            if let pb = store.pbSingle {
+                Text("PB: \(formatTime(pb))")
+                    .font(.caption.bold())
+                    .foregroundStyle(.yellow)
             }
+        }
+        .font(.caption)
+
+        if showNewPB {
+            Text(newPBText)
+                .font(.caption.bold())
+                .foregroundStyle(.yellow)
+                .transition(.opacity)
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation { showNewPB = false }
+                    }
+                }
+        }
 
             // Recent solves
             if !store.solves.isEmpty {
@@ -135,6 +175,19 @@ public struct TimerView: View {
         }
         .onAppear { timer.isTimerTabActive = true }
         .onDisappear { timer.isTimerTabActive = false }
+
+        // 16A-1: New PB banner
+        if showNewPB {
+            Text(newPBText)
+                .font(.caption.bold())
+                .foregroundStyle(.yellow)
+                .transition(.opacity)
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation { showNewPB = false }
+                    }
+                }
+        }
     }
 
     private func stat(_ label: String, _ value: TimeInterval?) -> some View {

@@ -135,6 +135,17 @@ struct LibraryView: View {
                             Text("\(c.caseType) \(c.caseNumber) — \(c.name)")
                                 .font(.title2.bold())
 
+                            if c.caseType == "PLL", let auf = c.auf, !auf.isEmpty {
+                                Text("AUF: \(auf)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            if let tip = c.recognitionTip {
+                                Text(tip)
+                                    .font(.caption.italic())
+                                    .foregroundStyle(.secondary)
+                            }
+
                             // Larger diagram
                             CubeStateView(currentCase: c, visualMode: .preExecution, sizeMode: .large)
                                 .frame(width: 320, height: 260)
@@ -155,7 +166,7 @@ struct LibraryView: View {
                                 Text(c.primaryAlgorithm)
                                     .font(.system(.body, design: .monospaced))
                                     .textSelection(.enabled)
-                                Text("\(moveCount(c.primaryAlgorithm)) moves")
+                                Text("(\(moveCount(c.primaryAlgorithm)) moves)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -189,7 +200,7 @@ struct LibraryView: View {
                                         Text(alt)
                                             .font(.system(.body, design: .monospaced))
                                             .textSelection(.enabled)
-                                        Text("(\(moveCount(alt)))")
+                                        Text("(\(moveCount(alt)) moves)")
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
                                         Spacer()

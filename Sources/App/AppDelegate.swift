@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let stateManager = CubeStateManager()
     private var solveTimer: SolveTimer!
     private var timeStore: TimeStore!
+    private var trainerStore: TrainerStore!
     private var statusItem: NSStatusItem?
     private var eventTap: CFMachPort?
     private var libraryWindowController: LibraryWindowController?
@@ -42,10 +43,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.timeStore.addSolve(time: time, scramble: scramble, penalty: penalty)
         }
 
+        trainerStore = TrainerStore()
+
         let rootView = ContentView()
             .environment(\.cubeStateManager, stateManager)
             .environmentObject(solveTimer)
             .environmentObject(timeStore)
+            .environmentObject(trainerStore)
 
         let hostingController = NSHostingController(rootView: rootView)
         window.contentView = hostingController.view
@@ -73,9 +77,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.animatedHideWindow()
         }
 
-        // Global hotkey: Option+Space toggles visibility
-        GlobalHotKeyManager.shared.registerDefault { [weak self] in
+        // Global hotkey: Option+Space (or saved) toggles visibility
+        GlobalHotKeyManager.shared.rebindIfSaved { [weak self] in
             self?.window?.toggleVisibility()
+        }
+
+        // Listen for hotkey change requests (13A-4)
+        NotificationCenter.default.addObserver(
+            forName: .requestHotkeyRebind,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.rebindHotkey()
+        }
+
+        // 13A-4: Apply any saved custom hotkey at launch
+        if UserDefaults.standard.integer(forKey: "customHotKeyCode") > 0 {
+            // rebindIfSaved already did it above
         }
 
         // Menu bar icon for quick toggle
@@ -234,6 +252,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         return Unmanaged.passUnretained(event)
+    }
+
+    // 13A-4: called when user changes hotkey in settings
+    private func rebindHotkey() {
+        GlobalHotKeyManager.shared.rebindIfSaved { [weak self] in
+            self?.window?.toggleVisibility()
+        }
     }
 }
 
