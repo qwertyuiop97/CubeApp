@@ -45,7 +45,8 @@ public enum ScreenshotService {
         let fmt = DateFormatter()
         fmt.dateFormat = "yyyyMMdd_HHmmss"
         let name = "CubeNotch_\(fmt.string(from: Date())).png"
-        let url = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first!.appendingPathComponent(name)
+        guard let desktop = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first else { return nil }
+        let url = desktop.appendingPathComponent(name)
         try? png.write(to: url)
         return url
     }
