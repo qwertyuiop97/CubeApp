@@ -2,7 +2,7 @@ import AppKit
 import Carbon
 
 /// Minimal global hotkey support for show/hide toggle.
-/// Registers Option+Space by default (non-conflicting for most users).
+/// Registers Ctrl+Shift+Space by default (avoids Alfred/Raycast conflicts).
 /// Uses Carbon EventHotKey API (still supported on macOS).
 public final class GlobalHotKeyManager {
     private var hotKeyRef: EventHotKeyRef?
@@ -18,9 +18,9 @@ public final class GlobalHotKeyManager {
     private init() {}
 
     public func registerDefault(handler: @escaping () -> Void) {
-        // Option + Space = keyCode 49 (space), modifier optionKey
+        // Ctrl+Shift + Space = keyCode 49 (space), modifier controlKey | shiftKey
         let keyCode: UInt32 = 49
-        let modifiers: UInt32 = UInt32(optionKey)
+        let modifiers: UInt32 = UInt32(controlKey | shiftKey)
         register(keyCode: keyCode, modifiers: modifiers, handler: handler)
     }
 
@@ -126,7 +126,7 @@ public final class GlobalHotKeyManager {
 
     public var savedModifiers: UInt32 {
         let v = UserDefaults.standard.integer(forKey: UDKey.customHotKeyMods)
-        return v > 0 ? UInt32(v) : UInt32(optionKey)
+        return v > 0 ? UInt32(v) : UInt32(controlKey | shiftKey)
     }
 
     public func rebindIfSaved(handler: @escaping () -> Void) {

@@ -78,7 +78,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.animatedHideWindow()
         }
 
-        // Global hotkey: Option+Space (or saved) toggles visibility
+        // Global hotkey: Ctrl+Shift+Space (or saved) toggles visibility
         GlobalHotKeyManager.shared.rebindIfSaved { [weak self] in
             self?.window?.toggleVisibility()
         }
@@ -108,7 +108,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = statusItem?.button {
             button.image = NSImage(systemSymbolName: "cube", accessibilityDescription: "CubeNotch")
-            button.toolTip = "CubeNotch – Click to toggle overlay (Option+Space)"
+            button.toolTip = "CubeNotch – Click to toggle overlay (Ctrl+Shift+Space)"
             button.target = self
             button.action = #selector(toggleWindowFromMenu)
         }
