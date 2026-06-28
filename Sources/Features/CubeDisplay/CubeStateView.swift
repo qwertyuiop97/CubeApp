@@ -30,47 +30,64 @@ public struct CubeStateView: View {
         let w = size.width
         let h = size.height
 
-        // Layout: U face centered, with thin "side" hints below for F/R/B/L top edges.
-        let uFaceSize = min(w, h) * 0.72
-        let s = uFaceSize / 3
-        let ox = (w - uFaceSize) / 2
-        let oy = (h - uFaceSize) / 2 - 8
-
         let state = computeStickerState()
 
-        let uColors = state.uFace
+        // Cross layout: U centered with side strips on four edges
+        // Total cross spans 5s x 5s
+        let s = min(w, h) / 5.0
+        let total = 5 * s
+        let startX = (w - total) / 2
+        let startY = (h - total) / 2
+
+        let uOx = startX + s
+        let uOy = startY + s
+
+        // Draw U face (3x3)
         for row in 0..<3 {
             for col in 0..<3 {
-                let x = ox + CGFloat(col) * s
-                let y = oy + CGFloat(row) * s
+                let x = uOx + CGFloat(col) * s
+                let y = uOy + CGFloat(row) * s
                 let rect = CGRect(x: x + 1, y: y + 1, width: s - 2, height: s - 2)
-                let color = uColors[row * 3 + col]
+                let color = state.uFace[row * 3 + col]
                 context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(color))
                 context.stroke(Path(roundedRect: rect, cornerRadius: 3), with: .color(.black.opacity(0.6)), lineWidth: 1)
             }
         }
 
-        // U label
-        context.draw(Text("U").font(.caption2.bold()), at: CGPoint(x: ox + uFaceSize / 2, y: oy - 14))
+        // B strip (above U) — 3 wide x 1 tall
+        let bY = uOy - s
+        for i in 0..<3 {
+            let x = uOx + CGFloat(i) * s
+            let rect = CGRect(x: x + 1, y: bY + 1, width: s - 2, height: s - 2)
+            context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(state.backTop[i]))
+            context.stroke(Path(roundedRect: rect, cornerRadius: 3), with: .color(.black.opacity(0.6)), lineWidth: 1)
+        }
 
-        // Draw side hints (top row of F, R, B, L) below the U face for last-layer context
-        let sideH = s * 0.6
-        let sideY = oy + uFaceSize + 6
-        let sides: [(label: String, colors: [Color])] = [
-            ("F", state.frontTop),
-            ("R", state.rightTop),
-            ("B", state.backTop),
-            ("L", state.leftTop)
-        ]
-        let sideW = (uFaceSize - 6) / 4
-        for (i, side) in sides.enumerated() {
-            let sx = ox + CGFloat(i) * sideW
-            for c in 0..<3 {
-                let rect = CGRect(x: sx + CGFloat(c) * (sideW / 3) + 1, y: sideY, width: sideW / 3 - 2, height: sideH)
-                context.fill(Path(roundedRect: rect, cornerRadius: 2), with: .color(side.colors[c]))
-                context.stroke(Path(roundedRect: rect, cornerRadius: 2), with: .color(.black.opacity(0.5)), lineWidth: 0.75)
-            }
-            context.draw(Text(side.label).font(.system(size: 9).bold()), at: CGPoint(x: sx + sideW / 2, y: sideY + sideH + 4))
+        // F strip (below U)
+        let fY = uOy + 3 * s
+        for i in 0..<3 {
+            let x = uOx + CGFloat(i) * s
+            let rect = CGRect(x: x + 1, y: fY + 1, width: s - 2, height: s - 2)
+            context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(state.frontTop[i]))
+            context.stroke(Path(roundedRect: rect, cornerRadius: 3), with: .color(.black.opacity(0.6)), lineWidth: 1)
+        }
+
+        // L strip (left of U) — arranged vertically (3 tall x 1 wide), index 0 at top
+        let lX = uOx - s
+        for i in 0..<3 {
+            let y = uOy + CGFloat(i) * s
+            let rect = CGRect(x: lX + 1, y: y + 1, width: s - 2, height: s - 2)
+            context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(state.leftTop[i]))
+            context.stroke(Path(roundedRect: rect, cornerRadius: 3), with: .color(.black.opacity(0.6)), lineWidth: 1)
+        }
+
+        // R strip (right of U)
+        let rX = uOx + 3 * s
+        for i in 0..<3 {
+            let y = uOy + CGFloat(i) * s
+            let rect = CGRect(x: rX + 1, y: y + 1, width: s - 2, height: s - 2)
+            context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(state.rightTop[i]))
+            context.stroke(Path(roundedRect: rect, cornerRadius: 3), with: .color(.black.opacity(0.6)), lineWidth: 1)
         }
 
         // Mode label hint
@@ -80,19 +97,28 @@ public struct CubeStateView: View {
     }
 
     /// Compute a last-layer sticker configuration for the current case + mode.
-    /// Uses the primary algorithm to derive "setup" vs "recognition" states without duplicating DB data.
+    /// Prefers StickerDatabase real patterns; falls back to heuristic.
     private func computeStickerState() -> LastLayerState {
+        if let pat = StickerDatabase.pattern(for: currentCase.id) {
+            let yellow: Color = .yellow
+            let dark: Color = Color(white: 0.25, opacity: 1)
+            let uCols: [Color] = pat.uFace.map { $0 ? yellow : dark }
+            return LastLayerState(
+                uFace: uCols,
+                frontTop: pat.frontTop,
+                rightTop: pat.rightTop,
+                backTop: pat.backTop,
+                leftTop: pat.leftTop
+            )
+        }
+        // fallback heuristic
         let base = LastLayerState.solvedYellowTop()
-
         switch visualMode {
         case .textOnly:
-            return base // will be hidden by caller
+            return base
         case .preExecution:
-            // Recognition state: the pattern the algorithm is meant to solve.
-            // For demo fidelity we apply a "signature" distortion derived from the algorithm string.
             return deriveRecognitionState(from: base, using: currentCase.primaryAlgorithm, caseNumber: currentCase.caseNumber, caseType: currentCase.caseType)
         case .setup:
-            // Setup state: simulate applying the inverse of the primary algorithm to solved.
             let inv = invertAlgorithm(currentCase.primaryAlgorithm)
             return applyAlgorithm(inv, to: base)
         }
