@@ -81,8 +81,36 @@
 - [ ] Links from LBL steps to relevant F2L/OLL/PLL cases in Library
 - [ ] "Ready for CFOP?" call-to-action at end of LBL section
 
+## Phase 11 — Error Audit & Code Quality
+- [ ] Zero build warnings: fix all deprecated APIs, force unwraps, threading issues
+- [ ] CGEventTap disabled on app quit (applicationWillTerminate)
+- [ ] TimeStore promoted to AppDelegate stored property (not local variable)
+- [ ] SolveTimer update timer pinned to RunLoop.main explicitly
+- [ ] UserDefaultsKeys.swift: centralize all key strings, remove scattered literals
+- [ ] ScrambleGenerator: replace retry loop with deterministic face selection
+- [ ] Fix: isTimerTabActive = false when overlay window hides
+- [ ] Unit tests: F2LDatabase (41 cases), ScrambleGenerator (100 runs), SolveTimer state machine, TimeStore ao5/ao12 math
+
+## Phase 12 — Algorithm Trainer Mode
+- [ ] TrainerView.swift: random case diagram, "Reveal" button, "Got it / Missed" scoring
+- [ ] TrainerStore.swift: per-case accuracy tracking, weighted random toward weak cases
+- [ ] "Train" tab in main mode picker alongside Cases/Timer
+- [ ] OLL/PLL/Both filter, accuracy % display per case
+
+## Phase 13 — Content & UX Enhancements
+- [ ] Move count (STM) displayed per algorithm in HUD and Library
+- [ ] AUF indicator for PLL cases
+- [ ] Recognition tips per case (optional field, populate for PLL and common OLL)
+- [ ] Hotkey customizer in Settings (record any key+modifier, guard against Space/Escape/Return)
+- [ ] Recent cases section at top of case list (last 5 viewed)
+- [ ] Pin cases: right-click → "Pin to top", persisted in UserDefaults
+
+## Phase 14 — Export & Sessions
+- [ ] CSV export: date/time/scramble/penalty per solve, saves to Desktop
+- [ ] Named sessions: optional name on "New Session", session history view in TimerView
+- [ ] CSTimer-compatible JSON export (stretch)
+
 ## Stretch / Future
-- [ ] Export times in CSTimer-compatible JSON format for manual import
 - [ ] iCloud sync
 - [ ] Auto-hide when full-screen apps are active
 - [ ] Community algorithm contributions

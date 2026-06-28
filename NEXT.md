@@ -177,6 +177,207 @@ The standard beginner Layer-by-Layer method — 7 steps:
 
 ---
 
+## Phase 11A — Error Audit & Code Quality
+
+**Status: NOT STARTED** (run this after Phase 9B OR interleave between earlier phases — it can run anytime)
+
+This phase does NOT add features. It systematically finds and fixes real bugs, crashes, warnings, and code quality issues. Run `swift build 2>&1` and capture ALL output. Fix every warning. Then do the targeted audits below.
+
+### 11A-1: Build Warnings — Zero Tolerance
+- [ ] Run `swift build 2>&1 | grep -E "warning:|error:"` and capture the full list
+- [ ] Fix EVERY warning — deprecated APIs, unused variables, force casts, implicit conversions, everything
+- [ ] Common warnings to expect and fix:
+  - `CGWindowListCreateImage` deprecated in macOS 14.2+ → replace with `SCScreenshotManager` (needs `ScreenCaptureKit` import + async/await wrapper) OR wrap in `#available` check with clear comment
+  - `ObservableObject` + `@Published` on non-main thread → verify all `@Published` mutations happen on `DispatchQueue.main`
+  - Implicit optional unwraps (`!`) on values that can reasonably be nil
+- [ ] After fixes: `swift build 2>&1 | grep -E "warning:|error:"` must return empty
+- [ ] Log any warning you can't fix cleanly in PROBLEMS.md with an explanation
+
+### 11A-2: Specific Known Bugs to Find and Fix
+
+**Bug 1: CGEventTap not disabled on quit**
+- File: `Sources/App/AppDelegate.swift`
+- Problem: `applicationWillTerminate` is not implemented. The event tap registered with `CGEvent.tapCreate` is never disabled when the app quits. On some macOS versions this leaves a stale tap that can affect system input briefly.
+- Fix: Add `func applicationWillTerminate(_ notification: Notification) { if let tap = eventTap { CGEvent.tapEnable(tap: tap, enable: false) } }`
+
+**Bug 2: TimeStore captured as local variable, not property**
+- File: `Sources/App/AppDelegate.swift`, `applicationDidFinishLaunching`
+- Problem: `let timeStore = TimeStore()` is a local variable. The closure `solveTimer.onSolveFinished = { time, scramble in timeStore.addSolve(...) }` captures it strongly. But if AppKit releases the hosting controller or the local stack frame is unexpected, this could be fragile.
+- Fix: Promote `timeStore` to a stored property on AppDelegate: `private var timeStore: TimeStore!` — initialize in `applicationDidFinishLaunching` before the closure
+
+**Bug 3: SolveTimer update timer RunLoop safety**
+- File: `Sources/Features/Timer/SolveTimer.swift`
+- Problem: `Timer.scheduledTimer(withTimeInterval:repeats:)` schedules on the current RunLoop. If `startUpdateTimer()` is ever called from a non-main thread, the timer won't fire. Currently it's called from `start()` which is called from `toggle()` which is dispatched to `DispatchQueue.main` in AppDelegate — this is correct. But it's fragile if the call chain changes.
+- Fix: In `startUpdateTimer()`, replace `Timer.scheduledTimer(...)` with an explicit main-thread version:
+  ```swift
+  let t = Timer(timeInterval: 1.0/60.0, repeats: true) { [weak self] _ in ... }
+  RunLoop.main.add(t, forMode: .common)
+  updateTimer = t
+  ```
+
+**Bug 4: UserDefaults key string literals scattered everywhere**
+- Files: `AppDelegate.swift`, `MainOverlayViews.swift`, `CubeStateManager.swift`
+- Problem: UserDefaults keys like `"sizeMode"`, `"anchorPosition"`, `"followActiveScreen"`, `"preferredScreen"`, `"blurIntensity"`, `"backgroundTint"`, `"favoriteCaseIDs"` are string literals. A single typo causes a silent read-nothing bug.
+- Fix: Create `Sources/Core/Services/UserDefaultsKeys.swift` with:
+  ```swift
+  enum UDKey {
+      static let sizeMode = "sizeMode"
+      static let anchorPosition = "anchorPosition"
+      static let followActiveScreen = "followActiveScreen"
+      static let preferredScreen = "preferredScreen"
+      static let blurIntensity = "blurIntensity"
+      static let backgroundTint = "backgroundTint"
+      static let favoriteCaseIDs = "favoriteCaseIDs"
+      static let solveHistory = "solveHistory"
+  }
+  ```
+  Then replace all string literals with `UDKey.*` references project-wide.
+
+**Bug 5: ScrambleGenerator potential infinite loop**
+- File: `Sources/Features/Timer/ScrambleGenerator.swift`
+- Problem: The "no consecutive same face" check retries randomly. In theory (astronomically unlikely but possible) it could loop many iterations.
+- Fix: Use a deterministic approach — build a filtered list of allowed faces and pick from that, never looping.
+  ```swift
+  var lastFace: String? = nil
+  for _ in 0..<20 {
+      let allowed = faces.filter { $0 != lastFace }
+      let face = allowed.randomElement()!
+      lastFace = face
+      // ... pick suffix
+  }
+  ```
+
+**Bug 6: Missing `isTimerTabActive = false` on app hide**
+- File: `Sources/Features/Timer/TimerView.swift`
+- Problem: `onDisappear` sets `isTimerTabActive = false` which is correct. But if the overlay window is hidden via Option+Space or the menu bar while Timer tab is active, `onDisappear` might not fire for the SwiftUI view (since the window is hidden, not the view removed). The spacebar tap would then still fire even though the window is hidden.
+- Fix: In AppDelegate's `animatedHideWindow()` and `animatedToggleWindow()`, explicitly call `solveTimer.isTimerTabActive = false` when hiding.
+
+### 11A-3: Unit Test Expansion
+- [ ] `Tests/CubeNotchTests/AlgorithmDatabaseTests.swift` — verify it still passes: `swift test 2>&1`
+- [ ] Add `Tests/CubeNotchTests/F2LDatabaseTests.swift`:
+  - All 41 cases present
+  - All have `caseType == "F2L"`
+  - All have `primaryAlgorithm` non-empty
+  - All have `alternativeAlgorithms.count >= 2`
+  - Case numbers are 1–41 with no duplicates
+- [ ] Add `Tests/CubeNotchTests/ScrambleGeneratorTests.swift`:
+  - `generate3x3()` returns exactly 20 moves
+  - No two consecutive moves use the same face letter
+  - All move faces are valid (U D F B L R)
+  - Run 100 times and verify all pass
+- [ ] Add `Tests/CubeNotchTests/SolveTimerTests.swift`:
+  - Starts in `.idle` state
+  - `start()` → state == `.running`
+  - `stop()` → state == `.stopped`, `finalTime != nil`
+  - `reset()` → state == `.idle`, `finalTime == nil`
+  - `toggle()` from idle → running; from running → stopped; from stopped → running (not idle first)
+- [ ] Add `Tests/CubeNotchTests/TimeStoreTests.swift`:
+  - ao5 returns nil when fewer than 5 solves
+  - ao5 math: average of last 5 excluding best and worst (standard WCA definition)
+  - ao12 math same
+  - bestTime returns the minimum solve time
+  - `clearSession()` empties all solves
+- [ ] All tests must pass: `swift test 2>&1` exits 0 with no failures
+
+### 11A-4: Code Review Checklist
+- [ ] Search for all `!` (force unwrap) uses: `grep -n "!" Sources/**/*.swift | grep -v "//"` — every one must be justified or replaced with `guard let` / `if let`
+- [ ] Search for `DispatchQueue` usage: `grep -rn "DispatchQueue" Sources/` — verify all UI updates dispatch to `.main`
+- [ ] Search for `@AppStorage` and `UserDefaults.standard` — confirm no key string is used in more than one place differently (after the UDKey refactor)
+- [ ] Verify `AlgorithmDatabase.swift` and `F2LDatabase.swift` are not modified: `git diff HEAD Sources/Core/Data/AlgorithmDatabase.swift` must return empty
+- [ ] Check for retain cycles in all closures: any closure capturing `self` that's stored must use `[weak self]`
+- [ ] Log any issue you find but can't fix immediately in PROBLEMS.md
+
+---
+
+## Phase 12A — Algorithm Trainer Mode
+
+**Status: NOT STARTED** (do not begin until Phase 11A is done)
+
+A "Train" mode in the HUD. Shows a random OLL/PLL case diagram, user recalls the algorithm from memory, taps to reveal. Tracks accuracy per case.
+
+### New Files
+- `Sources/Features/Trainer/TrainerView.swift`
+- `Sources/Core/Services/TrainerStore.swift` — tracks per-case attempts/correct counts, persisted
+
+### Features
+- [ ] Add "Train" to the main mode picker in ContentView header (Cases / Timer / Train)
+- [ ] TrainerView shows:
+  - A random OLL or PLL case diagram (CubeStateView in `.preExecution` mode)
+  - Case name hidden initially
+  - "Reveal" button — taps to show the algorithm and case name
+  - After reveal: "Got it ✓" and "Missed ✗" buttons
+- [ ] TrainerStore tracks `attemptCount` and `correctCount` per case ID in UserDefaults
+- [ ] Cases you miss appear more frequently (weight by miss rate in random selection)
+- [ ] Show accuracy % for the current case in the reveal state
+- [ ] "Show only: OLL / PLL / Both" filter at top of train view
+- [ ] `make build` clean
+
+---
+
+## Phase 13A — Content & UX Enhancements
+
+**Status: NOT STARTED** (do not begin until Phase 12A is done)
+
+Quality-of-life additions that make the app more polished and useful for real use.
+
+### 13A-1: Move Count Display
+- [ ] Add a move count (STM — slice turn metric) to every algorithm display
+- [ ] Helper: `func moveCount(_ alg: String) -> Int { alg.split(separator: " ").filter { !$0.isEmpty }.count }`
+- [ ] In HUD case detail: show "X moves" next to each algorithm in small text
+- [ ] In Library detail: show move count next to each algorithm
+
+### 13A-2: AUF Indicator for PLL Cases
+- [ ] Add `auf: String?` property to `CubeCase` (optional — only PLL cases use it)
+- [ ] In Library PLL detail view, show the AUF orientation: "AUF: U / U2 / U' / none"
+- [ ] This helps the user recognize which pre-rotation to apply before executing the PLL
+
+### 13A-3: Recognition Tips
+- [ ] Add `recognitionTip: String?` to `CubeCase` (optional)
+- [ ] Populate for at least the 21 PLL cases and common OLL cases (look for recognition patterns: "two headlights", "two adjacent same colors", etc.)
+- [ ] In HUD case detail: show tip in italics below the algorithm if present
+- [ ] In Library: show in a "Recognition" section
+
+### 13A-4: Hotkey Customizer
+- [ ] In Settings, add a "Hotkey" row showing the current hotkey (default: "⌥ Space")
+- [ ] Tap to record: put the row into "listening" mode, capture the next key combination
+- [ ] Save to UserDefaults as a raw key+modifier combo
+- [ ] Update `GlobalHotKeyManager` to use the stored hotkey instead of hardcoded Option+Space
+- [ ] Guard: cannot set hotkey to Space alone (conflicts with timer), Escape, or Return
+
+### 13A-5: Pinned / Recent Cases
+- [ ] In HUD case list: show a "Recent" section at the top (last 5 cases viewed)
+- [ ] Pinning: long-press (or secondary click) on a case in the list → "Pin to top" option
+- [ ] Pinned cases appear above the rest of the list with a pin indicator
+- [ ] Recent and pinned state persisted in UserDefaults
+
+---
+
+## Phase 14A — Export & Sessions
+
+**Status: NOT STARTED** (do not begin until Phase 13A is done)
+
+Data portability and multi-session tracking.
+
+### 14A-1: CSV Export
+- [ ] Add "Export Times" button in TimerView (below stats, small link-style button)
+- [ ] Generates a CSV: `date,time,scramble,penalty,session`
+- [ ] Saves to Desktop with timestamp filename: `CubeNotch_times_2026-06-27.csv`
+- [ ] Also copies path to clipboard
+- [ ] Brief feedback: "Exported X solves to Desktop"
+
+### 14A-2: Named Sessions
+- [ ] TimeStore: add session name support. Each session has a name (default: date) and list of solves
+- [ ] In TimerView: "New Session" prompts for optional session name (text field in a small popover)
+- [ ] Session history in TimerView: dropdown or list of past sessions with best/ao5/ao12
+- [ ] Tap a past session to view its solves (read-only)
+
+### 14A-3: CSTimer Export (Stretch)
+- [ ] Export times in CSTimer-compatible JSON format
+- [ ] CSTimer format: array of `[penalty, time_ms, comment, timestamp]` tuples
+- [ ] Save as `.txt` file that can be imported into csTimer.net
+
+---
+
 ## RESEARCH PHASE (separate from coding — use Claude Code or Grok DeepSearch, not Kilo Code)
 
 **Goal:** Search the web for resources, libraries, communities, and data sources useful for a speedcubing HUD app. Compile findings and decide what to integrate.
