@@ -6,6 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: FloatingOverlayWindow!
     private let stateManager = CubeStateManager()
     private var solveTimer: SolveTimer!
+    private var timeStore: TimeStore!
     private var statusItem: NSStatusItem?
     private var eventTap: CFMachPort?
     private var libraryWindowController: LibraryWindowController?
@@ -36,9 +37,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Host SwiftUI content
         solveTimer = SolveTimer()
 
-        let timeStore = TimeStore()
-        solveTimer.onSolveFinished = { time, scramble, penalty in
-            timeStore.addSolve(time: time, scramble: scramble, penalty: penalty)
+        timeStore = TimeStore()
+        solveTimer.onSolveFinished = { [weak self] time, scramble, penalty in
+            self?.timeStore.addSolve(time: time, scramble: scramble, penalty: penalty)
         }
 
         let rootView = ContentView()
@@ -158,6 +159,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func animatedHideWindow() {
+        solveTimer?.isTimerTabActive = false
         guard let window = window else { return }
         let anchor = stateManager.anchorPosition
         let size = stateManager.sizeMode.windowSize
@@ -168,6 +170,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func animatedToggleWindow() {
         guard let w = window else { return }
         if w.isVisible {
+            solveTimer?.isTimerTabActive = false
             let anchor = stateManager.anchorPosition
             let size = stateManager.sizeMode.windowSize
             let scr = stateManager.followActiveScreen ? getActiveScreen() : nil

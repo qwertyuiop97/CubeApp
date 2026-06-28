@@ -4,6 +4,7 @@
 > Run `make build` after every phase. Fix all errors before moving to the next phase.
 > Update this file when a phase is complete: mark it done and set the next phase as current.
 > Log any blockers in PROBLEMS.md immediately. Do not leave them undocumented.
+> **STOP at Phase 11A. Do not attempt it. Tell the user "Ready for Phase 11A — hand off to Claude Code." Then wait.**
 
 ---
 

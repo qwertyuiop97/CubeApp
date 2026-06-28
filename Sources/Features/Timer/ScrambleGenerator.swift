@@ -12,10 +12,8 @@ public enum ScrambleGenerator {
         var lastFace: String? = nil
 
         for _ in 0..<20 {
-            var face = faces.randomElement()!
-            while face == lastFace {
-                face = faces.randomElement()!
-            }
+            let allowed = faces.filter { $0 != lastFace }
+            let face = allowed.randomElement()!
             let suffix = suffixes.randomElement()!
             moves.append("\(face)\(suffix)")
             lastFace = face

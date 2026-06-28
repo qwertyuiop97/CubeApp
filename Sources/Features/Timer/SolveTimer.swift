@@ -122,10 +122,12 @@ public final class SolveTimer: ObservableObject {
 
     private func startUpdateTimer() {
         stopUpdateTimer()
-        updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { [weak self] _ in
+        let t = Timer(timeInterval: 1.0 / 60.0, repeats: true) { [weak self] _ in
             guard let self = self, self.state == .running else { return }
             self.displayElapsed = self.elapsed
         }
+        RunLoop.main.add(t, forMode: .common)
+        updateTimer = t
     }
 
     private func stopUpdateTimer() {
