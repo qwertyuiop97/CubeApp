@@ -17,10 +17,20 @@ public final class SolveTimer: ObservableObject {
     @Published public var crossSolveCount: Int = 0
     @Published public var lastSolvePenalty: Penalty = .none
 
+    // 17A-2 Inspection
+    @Published public var isInspecting: Bool = false
+    @Published public var inspectionRemaining: TimeInterval = 15.0
+
     public private(set) var startTime: Date?
     public private(set) var finalTime: TimeInterval?
 
     private var updateTimer: Timer?
+    private var inspectionTimer: Timer?
+    private var pendingPenalty: Penalty = .none
+
+    private var wcaInspectionEnabled: Bool {
+        UserDefaults.standard.object(forKey: "wcaInspection") as? Bool ?? true
+    }
 
     public init() {
         newScramble()
@@ -109,15 +119,77 @@ public final class SolveTimer: ObservableObject {
     }
 
     public func toggle() {
-        if state == .running {
-            stop()
-        } else if state == .stopped {
-            // Single spacebar from stopped: immediately start a fresh solve
+        if isInspecting {
+            // space during inspection starts solve; apply any auto penalty
+            let pen = pendingInspectionPenalty()
+            lastSolvePenalty = pen
+            stopInspection()
+            // start fresh solve (inspection done)
             reset()
             start()
+        } else if state == .running {
+            stop()
+            // after stop, if WCA inspection on, begin countdown
+            if wcaInspectionEnabled {
+                DispatchQueue.main.async { self.startInspection() }
+            }
+        } else if state == .stopped {
+            if wcaInspectionEnabled {
+                startInspection()
+            } else {
+                reset()
+                start()
+            }
         } else {
             start()
         }
+    }
+
+    private func startInspection() {
+        isInspecting = true
+        inspectionRemaining = 15.0
+        pendingPenalty = .none
+        state = .idle
+        startInspectionTimer()
+    }
+
+    private func startInspectionTimer() {
+        stopInspectionTimer()
+        let t = Timer(timeInterval: 1.0/10.0, repeats: true) { [weak self] _ in
+            guard let self = self, self.isInspecting else { return }
+            self.inspectionRemaining -= 0.1
+            if self.inspectionRemaining <= -2.0 {
+                self.pendingPenalty = .dnf
+                self.stopInspection()
+                // auto DNF without starting solve
+                self.state = .stopped
+                self.finalTime = -1
+                self.lastSolvePenalty = .dnf
+                if let t = self.finalTime {
+                    self.onSolveFinished?(t, self.scramble, .dnf)
+                }
+            } else if self.inspectionRemaining <= 0 {
+                self.pendingPenalty = .plusTwo
+            }
+        }
+        RunLoop.main.add(t, forMode: .common)
+        inspectionTimer = t
+    }
+
+    private func stopInspectionTimer() {
+        inspectionTimer?.invalidate()
+        inspectionTimer = nil
+    }
+
+    public func stopInspection() {
+        stopInspectionTimer()
+        isInspecting = false
+    }
+
+    private func pendingInspectionPenalty() -> Penalty {
+        if inspectionRemaining <= -2 { return .dnf }
+        if inspectionRemaining <= 0 { return .plusTwo }
+        return .none
     }
 
     private func startUpdateTimer() {

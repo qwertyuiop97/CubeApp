@@ -25,13 +25,23 @@ public struct TimerView: View {
                 .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .padding(.horizontal, 6)
 
-            Text(timer.formattedTime)
-                .font(.system(size: 72, weight: .light))
-                .monospacedDigit()
-                .contentTransition(.numericText())
-                .animation(reduceMotion ? nil : .easeInOut(duration: 0.08), value: timer.formattedTime)
-                .padding(.vertical, 8)
-                .foregroundColor(timer.isRunning ? .primary : (timer.state == .stopped ? .orange : .green))
+            if timer.isInspecting {
+                let rem = max(0.0, timer.inspectionRemaining)
+                let col: Color = rem < 5 ? .orange : .primary
+                Text(String(format: "%.1f", rem))
+                    .font(.system(size: 72, weight: .light))
+                    .monospacedDigit()
+                    .padding(.vertical, 8)
+                    .foregroundColor(col)
+            } else {
+                Text(timer.formattedTime)
+                    .font(.system(size: 72, weight: .light))
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+                    .animation(reduceMotion ? nil : .easeInOut(duration: 0.08), value: timer.formattedTime)
+                    .padding(.vertical, 8)
+                    .foregroundColor(timer.isRunning ? .primary : (timer.state == .stopped ? .orange : .green))
+            }
 
             Group {
                 if #available(macOS 26.0, *) {

@@ -541,6 +541,11 @@ public struct ContentView: View {
                 }
             ))
 
+            Toggle("WCA Inspection", isOn: Binding(
+                get: { UserDefaults.standard.object(forKey: "wcaInspection") as? Bool ?? true },
+                set: { UserDefaults.standard.set($0, forKey: "wcaInspection") }
+            ))
+
             Picker("Monitor", selection: Binding(
                 get: { preferredScreen },
                 set: { newValue in

@@ -47,12 +47,14 @@ final class SolveTimerTests: XCTestCase {
     }
 
     func testToggleFromStoppedStartsFreshRunning() {
+        // With WCA Inspection OFF, stopped → toggle must start running immediately
+        UserDefaults.standard.set(false, forKey: "wcaInspection")
         let timer = SolveTimer()
         timer.toggle() // -> running
         timer.toggle() // -> stopped
-        timer.toggle() // from stopped should go directly to running (reset + start inside)
+        timer.toggle() // from stopped should go directly to running
         XCTAssertEqual(timer.state, .running)
-        // finalTime should be cleared because a new solve started
         XCTAssertNil(timer.finalTime)
+        UserDefaults.standard.removeObject(forKey: "wcaInspection")
     }
 }

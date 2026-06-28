@@ -22,6 +22,19 @@ final class ScrambleGeneratorTests: XCTestCase {
         }
     }
 
+    func testNoConsecutiveSameAxis() {
+        let axes: [String: String] = ["U":"Y","D":"Y","F":"Z","B":"Z","L":"X","R":"X"]
+        for _ in 0..<100 {
+            let s = ScrambleGenerator.generate3x3()
+            let moves = s.split(separator: " ")
+            for i in 1..<moves.count {
+                let p = String(moves[i-1].prefix(1))
+                let c = String(moves[i].prefix(1))
+                XCTAssertNotEqual(axes[p], axes[c], "Same-axis consecutive in: \(s)")
+            }
+        }
+    }
+
     func testAllMovesUseValidFaces() {
         let valid = Set(["U", "D", "F", "B", "L", "R"])
         for _ in 0..<100 {

@@ -474,7 +474,7 @@ A dedicated Stats tab in the HUD showing real progress data that makes users wan
 
 ## Phase 17 — WCA-Accurate Scrambles
 
-**Status: NOT STARTED** (do not begin until Phase 16 is done)
+**Status: DONE** (2026-06-27)
 
 The current scrambler prevents same-face repeats but not opposite-face repeats (U then D is legal in WCA scramblers but creates cancellations). Upgrade to proper WCA scramble logic.
 

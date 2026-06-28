@@ -240,16 +240,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let spaceKeyCode: CGKeyCode = 49 // kVK_Space
 
         if keyCode == spaceKeyCode {
-            // Only consume if window visible + timer tab active + (idle or running)
+            // Only consume if window visible + timer tab active (now supports stopped/inspection too)
             guard let w = window, w.isVisible, let t = solveTimer, t.isTimerTabActive else {
                 return Unmanaged.passUnretained(event)
             }
-            if t.state == .idle || t.state == .running {
-                // Dispatch toggle on main to keep UI safe
-                DispatchQueue.main.async { t.toggle() }
-                // Swallow the space event so it doesn't type elsewhere
-                return nil
-            }
+            DispatchQueue.main.async { t.toggle() }
+            return nil
         }
         return Unmanaged.passUnretained(event)
     }

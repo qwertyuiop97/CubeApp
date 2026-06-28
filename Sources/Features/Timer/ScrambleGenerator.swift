@@ -2,17 +2,26 @@ import Foundation
 
 /// WCA-valid style random-move 3x3 scramble generator.
 /// Produces exactly 20 moves using faces U D F B L R with suffixes '', "'", "2".
-/// Guarantees no two consecutive moves on the same face.
+/// No two consecutive moves on same face or opposite face (axis rule).
 public enum ScrambleGenerator {
     private static let faces = ["U", "D", "F", "B", "L", "R"]
     private static let suffixes = ["", "'", "2"]
+    private static let opposite: [String: String] = [
+        "U": "D", "D": "U",
+        "F": "B", "B": "F",
+        "L": "R", "R": "L"
+    ]
 
     public static func generate3x3() -> String {
         var moves: [String] = []
         var lastFace: String? = nil
 
         for _ in 0..<20 {
-            let allowed = faces.filter { $0 != lastFace }
+            var allowed = faces
+            if let last = lastFace {
+                let opp = opposite[last] ?? last
+                allowed = faces.filter { $0 != last && $0 != opp }
+            }
             let face = allowed.randomElement()!
             let suffix = suffixes.randomElement()!
             moves.append("\(face)\(suffix)")
