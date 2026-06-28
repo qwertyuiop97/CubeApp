@@ -299,3 +299,289 @@ However, this is a **niche within a niche within a niche**: Mac users, who are s
 | Realistic Y1 revenue | $2,000–$15,000 depending on marketing success |
 | Realistic revenue ceiling | $10,000–$30,000 over 2 years as a side project |
 | Commercial potential | Real but modest — niche side project, not a business |
+
+---
+
+## iOS App Concept
+
+> Research completed: June 27, 2026
+
+### Concept Summary
+
+A structured daily-lesson iOS app that teaches beginners to solve a Rubik's cube in bite-sized, progressive sessions (Duolingo-style), then retains those users as they advance by doubling as a full OLL/PLL/CFOP algorithm reference. Companion to the macOS CubeNotch HUD overlay.
+
+---
+
+### 1. Demand Signal: Is Anyone Searching for This?
+
+The "how to solve a Rubik's cube" search vertical is large and highly seasonal.
+
+**YouTube as a demand proxy:**
+- J Perm's single beginner tutorial video has accumulated over **19 million views**. His channel overall has **1.72 million subscribers** (as of 2024), built almost entirely on beginner-to-intermediate instructional content. This is direct evidence of massive demand for structured, step-by-step cubing education.
+- A second well-known beginner tutorial on YouTube by Daniel Brown has accumulated **33 million views** — one of the oldest cube tutorial videos on the platform, still attracting traffic.
+- Ruwix.com, a tutorial/solver site, reported a **tenfold spike** in traffic during a single Google Doodle featuring the Rubik's Cube on its 40th anniversary, confirming latent search volume is enormous.
+
+**Seasonal and geographic patterns:**
+- Google Trends data shows the search term "how to solve a Rubik's cube" peaks every year at Christmas (gift purchases drive new learners), with a consistent baseline the rest of the year.
+- Top geographic interest: Philippines, Austria, Denmark, New Zealand, Australia, Switzerland, United States — English-speaking and near-English-speaking markets are well-represented.
+- Demographics of cube tutorial seekers skew toward **18–24 year olds (42%)**, a demographic that is both iOS-native and App Store-comfortable.
+- Mobile accounts for **45% of Rubik's Cube solution searches**, higher than desktop (43%) — a direct indicator that an iOS app targets the right platform.
+
+**Physical cube market as a floor:**
+- Spin Master reported approximately **5.75 million Rubik's Cubes sold in 2022 alone**. Each new cube sold is a potential new learner. The physical market was valued at ~$500M in 2024, growing to an estimated $800M by 2033 (CAGR ~5.5%).
+- GAN's "SpeedOnline" smart starter cube launched February 2025, shipping **300,000 units in Q1 alone** — the smart/connected cube market is growing at ~22% CAGR. Each smart cube buyer is a potential premium-app user.
+
+**Search volume estimate:**
+Precise keyword volume data requires paid tools (Ahrefs, SEMrush), but the YouTube view counts and site traffic data suggest the query "how to solve a Rubik's cube" and related terms (beginner tutorial, OLL, PLL, CFOP) collectively generate **millions of monthly searches globally**. Ruwix.com's content traffic and SpeedCubeDB's ~147,000 monthly visits both confirm sustained intent-based traffic exists for cubing reference content.
+
+**Bottom line on demand:** Demand for "learn to solve a Rubik's cube" content is verified and large. The question is whether that demand converts to paid app installs — which is answered below.
+
+---
+
+### 2. Existing iOS App Landscape: Who's Already There?
+
+#### What Exists
+
+The current iOS App Store cubing app landscape breaks cleanly into three categories: **solvers** (input your scramble, get a solution), **reference tools** (algorithm databases), and **smart-cube companions** (Bluetooth-connected hardware apps). A true structured daily-learning app does not exist.
+
+**Category 1 — Solvers / One-Shot Tutorial Apps:**
+
+| App | Rating | Ratings Count | Price | Core Weakness |
+|-----|--------|--------------|-------|---------------|
+| Rubik's Cube Solver & Tutorial | 4.6★ | 3,300 | Free (Remove Ads $1.99 IAP) | Step-by-step, but no progression — user reads all 7 stages at once; no daily lesson structure |
+| Cube Solver for Rubik's Puzzle | Not found | N/A | Free | Camera scanning focus; no learning path |
+| Cube Solver 3D | Not found | N/A | Free | Solver-first, not teacher-first |
+| Rubiks Cube Solver AI - SolveQ | Not found | N/A | Freemium (aggressive upsell) | Immediate paywall prompt reported; ads before any solve |
+| Solviks: Cube Solver | Not found | N/A | Free | Video-based; no interactivity |
+| Rubix Cube Solver - App Store | Not found | N/A | Free | Static algorithm dump; "need to know techniques before using" |
+
+**Category 2 — Smart Cube Companions:**
+
+| App | Rating | Notes |
+|-----|--------|-------|
+| Rubik's Connected (Particula Ltd.) | 4.4★ (1,100 ratings) | Free; requires Bluetooth Rubik's Connected hardware. Has a beginner tutorial mode, but videos play at full speed with no scrubbing — reviewers cite this as a core frustration. Companion to $~50 cube, so total friction is high for true beginners. |
+| CubeStation NEW (GAN) | Mixed | Removed algorithm trainer in a recent update; users specifically complained about this loss. Partially in Chinese UI. Called "terribly unoptimized" and "poorly explained." |
+
+**Category 3 — Algorithm Trainers / Reference:**
+
+- **Cubedex** (new, 2024–2025): PWA + iOS, connects to GAN smart cubes via Bluetooth. Drills OLL/PLL/CMLL. Well-received by the speedsolving.com community; developer has been actively adding features. No beginner-learning path — purely for algorithm drilling by people who already know the cases.
+- **Badmephisto's app**: Older reference covering OLL, PLL, beginners method, 2-look. Dated UI; not actively maintained.
+- **Cube Algorithms (adgvcxz)**: Android-primary but iOS available. Full F2L/OLL/PLL/CLL/EG1/EG2 algorithm library. Static reference only — "you need to have a bit of an idea before using this."
+
+#### The Gap the Hypothesis Identifies
+
+No app combines:
+1. A **structured progression** from zero to solve (daily lessons, streaks, unlocking new stages)
+2. A **beginner-friendly tutorial layer** that teaches the *why*, not just the moves
+3. A **full algorithm reference** that the same user grows into over weeks/months
+
+This is not a subtle gap. Every app does one or the other. The closest thing — Rubik's Connected — has structured tutorials but requires a $50 Bluetooth cube, has full-speed videos without scrubbing, and has no algorithm reference layer. The hypothesis is correct: **the "learn then reference" combo does not exist in a polished, standalone iOS app.**
+
+#### User Complaints Across Existing Apps
+
+Patterns across App Store reviews and speedsolving.com/Reddit discussions:
+- **Tutorial videos play too fast** — no slow-motion, no scrubbing (Rubik's Connected reviews cite this repeatedly)
+- **Algorithm reference apps assume prior knowledge** — "need to know the techniques first," which excludes the exact users who need help most
+- **Aggressive ads / premature paywalls** — SolveQ criticized for prompting membership before showing any content
+- **GAN's CubeStation removed the algorithm trainer** users relied on — a gap that Cubedex was explicitly built to fill, demonstrating how underserved this feature was
+- **No persistence / progress tracking** — most apps have no concept of a user returning tomorrow; no streaks, no lesson unlocking, no skill progression
+- **State synchronization issues** — for smart cube apps, physical and digital states often mismatch, causing friction
+- **No "why" explanation** — apps show algorithms but rarely explain the underlying logic, making retention harder for new learners
+
+---
+
+### 3. The Duolingo-for-Niches Model: Does It Work?
+
+#### Evidence That Structured Learning Wins on Mobile
+
+The language learning app market generated **$1.11 billion in revenue with 316 million downloads in 2024**. Duolingo alone hit $748M in revenue in 2024 (40.8% YoY growth) and crossed $1B in 2025. While those scale numbers are irrelevant to a niche cubing app, the underlying product insight transfers:
+
+- **Daily lesson structure + streaks + progress unlocking** creates habit loops that drive retention far beyond static reference tools
+- **Gamification (badges, streaks, daily challenges)** — Duolingo's core loop — has been replicated successfully in niche learning apps outside language
+- **Progressive disclosure** — starting with 2-look OLL before introducing all 57 cases — reduces beginner overwhelm, which is the primary drop-off point for cubing learning apps
+
+A habit-tracking app (HabitKit) reached **$10,000 MRR** in its first 13 months through ASO and community building, starting from nothing. A beginner cubing teaching app has a comparable profile: niche, habitual use, daily engagement, clear value proposition.
+
+#### Niche Structured Learning Apps: Realistic Benchmarks
+
+- A Japanese language learning app (HayaiLearn) launched September 2023 and reached **$900/month by 2024** through SEO content and email marketing — after several failed channels.
+- An indie habit tracker reached $5K MRR by month 13, $15K by month 18–20 — driven by building in public and an MKBHD feature.
+- **Median indie iOS app earns under $50/month after year one**. Around **17% of apps ever reach $1,000/month in revenue**. The top outliers are apps that hit a viral marketing moment or get featured.
+- Apps launched **before 2020 account for 69% of all subscription revenue** — new apps face a steep credibility gap in search rankings. This is the biggest structural challenge for a new entrant.
+
+The data says: niche structured learning apps can work, but success requires a marketing catalyst (viral Reddit post, YouTube placement, press feature) in addition to a good product.
+
+---
+
+### 4. Monetization: What Model Fits?
+
+#### Free + Ads vs. Freemium Subscription: The Numbers
+
+RevenueCat's State of Subscription Apps 2025 provides the clearest benchmark data:
+
+- **Hard paywall apps** convert at a **median of 12.11%** vs. **2.18% for freemium** — a 6x difference in conversion rate, but freemium gets more top-of-funnel downloads.
+- **Longer trials convert significantly better**: trials of 17–32 days convert at a **median of 45.7%**, strongly outperforming 5–9 day trials.
+- **Annual plans dominate education apps** — 80%+ of education app subscribers prefer annual commitments over monthly.
+- High-priced annual plans retain **36% of subscribers after year one** vs. only **6.7% for expensive monthly plans** — annual is structurally better for LTV.
+- Education apps show a **median 14-day ARPU of $0.27**; Business/Productivity $0.29. Health & Fitness leads at $0.44.
+
+#### Comparable App Monetization Models
+
+- The top-rated iOS cubing tutorial app (Rubik's Cube Solver & Tutorial, 4.6★, 3,300 ratings) is **free with a $1.99 "remove ads" IAP** — a consumer-grade, low-friction model. It works for casual users.
+- Rubik's Connected is **free** (hardware-dependent) — the cube is the revenue model.
+- Language learning apps use: freemium with subscription lock (Duolingo Plus at ~$84/year); paid-only (Babbel at ~$84/year); one-time course purchases.
+
+#### Recommended Monetization Model for the iOS Concept
+
+**Freemium with annual subscription, 14-day free trial (no credit card).**
+
+- **Free tier (permanent):**
+  - Beginner's method — all 7 stages, with animated 3D moves that can be slowed/scrubbed (this is the primary complaint about existing apps — fix it)
+  - Basic OLL/PLL reference (case lookup)
+  - Daily challenge streak tracking
+  - No ads (removes the friction that hurts the two highest-rated free apps)
+
+- **Pro tier (~$14.99/year or $2.49/month):**
+  - Full algorithm library: OLL/PLL, F2L, 2-look shortcuts, CFOP advanced
+  - Structured daily lesson plan with unlock progression
+  - Algorithm drill trainer (timed recognition, multiple choice → free recall)
+  - Cross-device sync with macOS CubeNotch (key differentiator for the ecosystem play)
+  - Offline access
+
+- **Pricing rationale:** $14.99/year is below Duolingo's $84/year, positioning as accessible. Annual preferred over monthly for retention. Trial converts better than no trial for education-category apps. The RevenueCat data shows that $14.99/year plans retain 36% of subscribers year-over-year vs. 6.7% for $4.99/month plans despite similar gross revenue per user.
+
+**What to avoid:** Aggressive paywall before demonstrating value (SolveQ's mistake). Ads that appear before the first solve. Locking the beginner tutorial behind a paywall — it's the hook, not the product.
+
+---
+
+### 5. Gaps Identified from r/Cubers and the Speedsolving Community
+
+Based on forum research, App Store review patterns, and developer discussions:
+
+**Gap 1 — No app teaches *why* algorithms work**
+Every cubing app shows moves. Almost none explains the underlying logic (why a particular case requires a specific setup, what the algorithm is doing to cube state). A "learn mode" that shows the pattern, the algorithm, and a conceptual explanation would be genuinely novel.
+
+**Gap 2 — No structured beginner-to-intermediate progression**
+The current journey: watch a YouTube tutorial → try to apply it → get confused → search for another video → repeat. There is no app that holds your hand from "I just bought a cube" to "I know 2-look OLL" in a structured, daily-lesson format with progress that persists and builds.
+
+**Gap 3 — Algorithm trainer + beginner learning in one app**
+Cubedex drills algorithms for people who already know them. Rubik's Cube Solver & Tutorial teaches beginners but has no drill layer. No single iOS app bridges the gap. The user who finishes learning the beginner method and wants to level up to CFOP has nowhere in-app to go — they have to leave the app entirely.
+
+**Gap 4 — No cross-platform ecosystem**
+No iOS cubing app is designed as a companion to a macOS tool. A user who practices at their desk with CubeNotch's HUD overlay and then references algorithms on their iPhone during a commute is a coherent, underserved use case. Sync of recently-viewed cases, practice progress, and custom algorithm sets across devices is a differentiator no competitor can easily replicate.
+
+**Gap 5 — CubeStation removed its algorithm trainer**
+GAN's CubeStation app removed the algorithm trainer in a recent update, and users are actively frustrated. Cubedex was explicitly created to fill this gap. There is proven, recent demand from the smart cube user base for algorithm training — an app that serves this without requiring GAN hardware has a ready audience.
+
+**Gap 6 — Slow-motion / scrubbing on tutorial videos**
+Every app with video tutorials plays them at full speed with no scrubbing. This is called out explicitly in Rubik's Connected reviews. It is a solvable, obvious UX fix that none of the existing apps have made.
+
+---
+
+### 6. Revenue Potential: Realistic Year-One Estimate
+
+#### Assumptions (conservative to moderate)
+
+| Variable | Conservative | Moderate | Optimistic |
+|----------|-------------|----------|------------|
+| Year-1 downloads | 5,000 | 15,000 | 40,000 |
+| Free trial start rate | 25% | 30% | 35% |
+| Trial-to-paid conversion | 18% (opt-in, no card) | 22% | 28% |
+| Annual price (net of Apple 30%) | $10.49 | $10.49 | $10.49 |
+| Year-1 paid subscribers | ~225 | ~990 | ~3,920 |
+| Year-1 net revenue | **~$2,360** | **~$10,380** | **~$41,100** |
+| Year-2 renewal (36% retention) | ~$850 | ~$3,740 | ~$14,800 |
+
+**Download assumptions explained:**
+- 5,000 downloads (conservative): organic App Store search only, no marketing catalyst
+- 15,000 downloads (moderate): viral r/Cubers post + one mid-size YouTube mention (50K–200K sub channel)
+- 40,000 downloads (optimistic): J Perm integration or App Store editorial feature + strong ASO
+
+**The ceiling is real**: The moderate scenario (~$10K Y1 net) requires a marketing catalyst — a well-received r/Cubers post is the most accessible. The optimistic scenario is possible but depends on earned media (a J Perm mention, App Store feature, or TikTok viral moment) that cannot be guaranteed.
+
+**Key multiplier — ecosystem sync with CubeNotch:**
+The iOS + macOS combination creates a reason to promote both apps to the same audience. A cross-app promotion (CubeNotch users get an iOS trial unlock code) can drive downloads beyond organic search. This is a unique lever that standalone iOS cubing apps cannot replicate.
+
+#### Comparable real-world indie app benchmarks
+
+- HabitKit (habit tracker, similar demographic): $10K MRR in month 13, required MKBHD feature + sustained social presence
+- HayaiLearn (niche language learning): ~$900/month by year 1 after trying multiple failed channels
+- Median niche indie app: under $50/month after year 1
+- Top quartile niche indie app (with marketing): $1,000–$5,000/month by month 18
+
+**Honest projection:** A well-executed iOS cubing learning app should target **$5,000–$15,000 in year-one net revenue** with moderate marketing effort. Reaching $30,000+ in year one would require a significant earned-media moment. This is viable side-project revenue, not a primary income source in year one.
+
+---
+
+### 7. Is "Learn + Reference in One App" a Unique Angle?
+
+**Short answer: Yes, and it is currently unoccupied.**
+
+The competitive landscape analysis shows:
+
+- Apps that teach (Rubik's Cube Solver & Tutorial, Rubik's Connected) have no algorithm reference or drill layer
+- Apps that reference (Cube Algorithms, Badmephisto) assume existing knowledge and have no learning path
+- Apps that drill (Cubedex) are for advanced users with no beginner entry point
+- Smart cube apps (CubeStation, CubeStation NEW) require hardware and are primarily focused on timing/competition, not learning
+
+No iOS app occupies the full arc from "beginner day one" to "advanced CFOP practitioner" in a single, progressive experience. This is the structural gap the hypothesis correctly identifies.
+
+**The risk:** This combination is architecturally more complex to build well. The beginner-teaching experience and the advanced-reference experience have different UX needs. Building both without making either feel like an afterthought requires disciplined scoping — ship the beginner layer first, gate the reference layer behind subscription, add drills in v1.1+.
+
+**The opportunity:** A user who downloads the app as a beginner and completes the full learn path has a natural retention hook — they already know the app, trust it, and need the algorithm reference to continue advancing. This is a built-in conversion funnel that reference-only apps cannot replicate.
+
+---
+
+### 8. Honest Opportunity Assessment
+
+#### Strengths of the iOS Concept
+
+1. **Demand is proven and large.** 33M+ views on a single beginner tutorial video; 19M+ on J Perm's tutorial; millions of cubes sold annually. The top-of-funnel audience is real.
+
+2. **The combination of learn + reference is genuinely unoccupied.** No current app does both well. The gap is structural, not marginal.
+
+3. **iOS is the right platform.** 45% of Rubik's cube solution searches happen on mobile. The target demographic (18–24) is iOS-native.
+
+4. **Ecosystem advantage with CubeNotch.** No competitor has a macOS companion. Cross-platform sync is a defensible differentiator.
+
+5. **A specific, fixable user complaint (slow-motion video) is unresolved across all existing apps.** Fixing this alone, visibly and demonstrably in marketing, differentiates the product immediately.
+
+#### Key Risks
+
+1. **Discovery is hard for new iOS apps.** Apps launched in 2025+ account for only 3% of subscription revenue vs. 69% for pre-2020 apps. The App Store's search algorithm favors established ratings history. The first 3–6 months depend almost entirely on earned media and community seeding.
+
+2. **The moderate/optimistic scenarios require a marketing catalyst.** Organic-only growth will likely produce the conservative ($2,000–$3,000 Y1) scenario. A r/Cubers post is achievable; a J Perm mention requires either payment ($3,000–$8,000 estimated) or building a relationship.
+
+3. **The audience is age-skewed young and price-sensitive.** The 18–24 demographic that dominates cube tutorial searches is also the demographic most likely to use free alternatives indefinitely. Freemium is the right model for this reason, but conversion rates may be at the low end of benchmarks.
+
+4. **The learn-then-reference combo is harder to build well than either alone.** Scoping discipline is required. A mediocre beginner tutorial that ships alongside an unfinished algorithm reference will not stand out against even the existing mediocre options.
+
+5. **Smart cube apps have hardware moat.** If GAN or the Rubik's brand rebuilds CubeStation with a proper algorithm trainer, the smart cube owner segment shifts to hardware-native apps. The strategy response is to serve users without smart cubes — which is the majority of beginners.
+
+---
+
+### 9. Recommended Differentiators to Build
+
+**Differentiator 1 — Slow-motion, scrubbing tutorial videos with in-app 3D move replay**
+Every existing app shows videos at full speed with no scrubbing. This is the single most-cited beginner frustration. A tutorial where every move can be played at 0.5x speed, paused frame-by-frame, and replayed on a 3D interactive cube model would be the best-in-class beginner experience on iOS. This is achievable with SceneKit/RealityKit + standard video controls.
+
+**Differentiator 2 — Structured daily lessons with skill-gated unlock progression**
+The Duolingo structure: Day 1 teaches the white cross. Day 2 teaches the first layer. Day 7 unlocks 2-look OLL. Progress saves. Streak tracking. Mastery unlocks the full algorithm reference. This creates the habit loop and retention engine that no existing cubing app has. The structure also creates natural paywall placement: "You've mastered the beginner method. To continue to CFOP, unlock Pro."
+
+**Differentiator 3 — Cross-platform sync with CubeNotch (macOS)**
+When a user practices OLL case 37 on their Mac with CubeNotch's HUD, the iOS app shows that case in "recently reviewed" and suggests a drill session. When a user completes a lesson on iOS, their CubeNotch overlay updates to show the newly learned algorithm set. No competitor can offer this. This is the ecosystem play that makes both apps more valuable together than either is alone.
+
+---
+
+### 10. Realism Check
+
+| Question | Honest Answer |
+|----------|--------------|
+| Is the market real? | Yes — proven by YouTube view counts, physical cube sales, and existing app ratings |
+| Is the gap real? | Yes — no iOS app combines structured progression with algorithm reference |
+| Is $14.99/year the right price? | Probably yes — below language learning apps, above free tools, aligns with education niche LTV data |
+| Can you hit $10K Y1 revenue? | Yes, but only with a marketing catalyst — a well-received r/Cubers launch post is the minimum viable catalyst |
+| Is this a standalone business? | Not in year one. Side project income — $5K–$15K Y1 is realistic with effort |
+| What's the fastest path to revenue? | Build the beginner tutorial layer + paywall at CFOP unlock. Ship fast. Post on r/Cubers. Iterate. |
+| Biggest single risk? | Discovery. A good product with no marketing catalyst earns under $3K Y1 |
+| What makes this defensible? | The CubeNotch ecosystem sync. Without it, a better-funded competitor could replicate the learn + reference combo. With it, the cross-platform experience is hard to copy. |
