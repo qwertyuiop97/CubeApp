@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var solveTimer: SolveTimer!
     private var statusItem: NSStatusItem?
     private var eventTap: CFMachPort?
+    private var libraryWindowController: LibraryWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Headless / accessory mode: no Dock icon, no menu bar app windows
@@ -94,6 +95,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let menu = NSMenu()
         menu.addItem(NSMenuItem(title: "Toggle Overlay", action: #selector(toggleWindowFromMenu), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Open Library", action: #selector(openLibrary), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         let quit = NSMenuItem(title: "Quit CubeNotch", action: #selector(quitApp), keyEquivalent: "q")
         quit.target = self
@@ -107,6 +109,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func quitApp() {
         NSApp.terminate(nil)
+    }
+
+    @objc private func openLibrary() {
+        if libraryWindowController == nil {
+            libraryWindowController = LibraryWindowController()
+        }
+        libraryWindowController?.showWindow(nil)
+        libraryWindowController?.window?.makeKeyAndOrderFront(nil)
     }
 
     private func positionWindowUsingCurrentState(size: NSSize) {

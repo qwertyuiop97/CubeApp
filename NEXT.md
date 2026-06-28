@@ -100,7 +100,7 @@ These are required items from CLAUDE.md that were never implemented, plus real U
 
 ## Phase 9A — Library Mode Window
 
-**Status: NOT STARTED** (do not begin until Phase 8A is done and building clean)
+**Status: DONE** (2026-06-27)
 
 Library Mode is a full native Mac window (standard chrome, activating, resizable) that coexists with the HUD. HUD never closes when Library opens. Both read from the same AlgorithmDatabase + F2LDatabase — never duplicate data.
 
