@@ -13,6 +13,8 @@ public final class SolveTimer: ObservableObject {
     @Published public var scramble: String = ""
     @Published public var isTimerTabActive: Bool = false
     @Published public var displayElapsed: TimeInterval = 0
+    @Published public var isCrossPractice: Bool = false
+    @Published public var crossSolveCount: Int = 0
 
     public private(set) var startTime: Date?
     public private(set) var finalTime: TimeInterval?
@@ -46,7 +48,11 @@ public final class SolveTimer: ObservableObject {
     public var isRunning: Bool { state == .running }
 
     public func newScramble() {
-        scramble = ScrambleGenerator.generate3x3()
+        if isCrossPractice {
+            scramble = ScrambleGenerator.generateCrossPractice()
+        } else {
+            scramble = ScrambleGenerator.generate3x3()
+        }
     }
 
     public func start() {
@@ -67,6 +73,9 @@ public final class SolveTimer: ObservableObject {
         stopUpdateTimer()
         if let t = finalTime {
             onSolveFinished?(t, scramble)
+            if isCrossPractice {
+                incrementCrossCount()
+            }
         }
     }
 
@@ -76,6 +85,12 @@ public final class SolveTimer: ObservableObject {
         startTime = nil
         finalTime = nil
         displayElapsed = 0
+    }
+
+    public func incrementCrossCount() {
+        if isCrossPractice {
+            crossSolveCount += 1
+        }
     }
 
     public func toggle() {

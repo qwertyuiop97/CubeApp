@@ -23,4 +23,9 @@ public enum ScrambleGenerator {
 
         return moves.joined(separator: " ")
     }
+
+    /// Cross practice: same rules, but caller treats it as "solve only the cross".
+    public static func generateCrossPractice() -> String {
+        generate3x3()
+    }
 }

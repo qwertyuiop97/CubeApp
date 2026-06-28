@@ -43,21 +43,61 @@
 
 ---
 
-## CURRENT: Phase 6C — Time History
+## Phase 6C — Time History
 
-**Status: IN PROGRESS**
+**Status: DONE** (2026-06-27)
 
-1. Create `Sources/Features/Timer/TimeStore.swift` — @ObservableObject or class that persists solves (time + scramble + date) using UserDefaults or file.
-2. On timer stop, automatically save the solve to history.
-3. Compute and expose: ao5, ao12, ao100 (mean of 3 for ao5, etc.; handle DNFs later if needed — for now just valid times).
-4. Add simple session view in Timer tab: recent solves list (time + scramble snippet), current ao5/ao12.
-5. Session management basics: "New Session" button clears current session history (or keeps global list with session id later).
-6. `make build` after every change.
-7. No changes to AlgorithmDatabase.swift
+- [x] TimeStore.swift (ObservableObject): persists solves via UserDefaults, exposes ao5/ao12/ao100 + best, clearSession()
+- [x] Auto-save on timer stop via SolveTimer.onSolveFinished
+- [x] Timer tab shows: ao5/ao12/ao100 stats, recent 10 solves (time + scramble prefix), New Session button
+- [x] make build clean
 
 ---
 
-## UP NEXT (do not start until Phase 6C is done and building clean)
+## Phase 6D — Cross Practice Mode
+
+**Status: DONE** (2026-06-27)
+
+- [x] Cross practice toggle in TimerView
+- [x] generateCrossPractice() helper (same generator)
+- [x] crossSolveCount incremented on stop when cross mode active
+- [x] "Cross solves this session" label
+- [x] make build clean
+
+---
+
+## Phase 7A — Screenshot
+
+**Status: DONE** (2026-06-27)
+
+- [x] ScreenshotService.swift using CGWindowListCreateImage on the overlay window
+- [x] Saves PNG to Desktop with timestamp
+- [x] Copies to clipboard
+- [x] Camera button in header (visible in list/timer modes)
+- [x] Brief "Saved" feedback label
+- [x] make build clean (deprecation warning noted, functional)
+
+---
+
+## Phase 7B — F2L Data
+
+**Status: DONE** (2026-06-27)
+
+- [x] Created separate `Sources/Core/Data/F2LDatabase.swift` (protected AlgorithmDatabase.swift untouched)
+- [x] 41 F2L cases with primary + ≥2 alternatives each (caseType "F2L")
+- [x] Added F2L | OLL | PLL segmented picker in browser (visible in Cases mode)
+- [x] `make build` clean (full project)
+- [x] No modifications to AlgorithmDatabase.swift
+
+---
+
+## UP NEXT
+
+All planned phases from NEXT.md (5A through 7B) are complete.
+
+Future work (as listed in NEXT.md):
+- Research / Market phases (RESOURCES.md, MARKET.md, iOS concept)
+- Long-term Library Mode, more subsets, favorites, iCloud, etc.
 
 - **Phase 6A** — Scramble generator (`Sources/Features/Timer/ScrambleGenerator.swift`, WCA-valid 20-move 3x3 scrambles)
 - **Phase 6B** — Built-in timer (`SolveTimer.swift`, `TimerView.swift`, spacebar via CGEventTap, Timer tab in UI)

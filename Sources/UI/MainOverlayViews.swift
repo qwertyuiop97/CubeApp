@@ -9,10 +9,11 @@ public struct ContentView: View {
     @AppStorage("followActiveScreen") private var followActiveScreen: Bool = false
     @AppStorage("preferredScreen") private var preferredScreen: String = ""
     @State private var showSettings = false
-    @State private var selectedTab: String = "OLL"
+    @State private var caseCategory: String = "OLL" // "F2L" | "OLL" | "PLL"
     @State private var detailCase: CubeCase? = nil
     @State private var launchAtLoginEnabled: Bool = LaunchAtLogin.isEnabled
     @State private var mode: String = "Cases" // "Cases" | "Timer"
+    @State private var showSavedFeedback = false
 
     private var sizeBinding: Binding<SizeMode> {
         Binding(
@@ -35,10 +36,11 @@ public struct ContentView: View {
     }
 
     private var filteredCases: [CubeCase] {
-        if selectedTab == "OLL" {
-            return AlgorithmDatabase.ollCases
-        } else {
-            return AlgorithmDatabase.pllCases
+        switch caseCategory {
+        case "F2L": return F2LDatabase.f2lCases
+        case "OLL": return AlgorithmDatabase.ollCases
+        case "PLL": return AlgorithmDatabase.pllCases
+        default: return AlgorithmDatabase.ollCases
         }
     }
 
@@ -77,6 +79,20 @@ public struct ContentView: View {
         }
     }
 
+    private func takeScreenshot() {
+        guard let img = ScreenshotService.captureOverlay() else { return }
+        ScreenshotService.copyToClipboard(img)
+        if let url = ScreenshotService.saveToDesktop(img) {
+            // brief feedback
+            withAnimation { showSavedFeedback = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                withAnimation { showSavedFeedback = false }
+            }
+            // Optional: log or print path in console for now
+            print("Screenshot saved:", url.path)
+        }
+    }
+
     private var browserHeader: some View {
         HStack(spacing: 8) {
             if detailCase != nil {
@@ -94,6 +110,17 @@ public struct ContentView: View {
                 .pickerStyle(.segmented)
                 .frame(width: 120)
                 .accessibilityLabel("Mode")
+            }
+
+            if detailCase == nil && mode == "Cases" {
+                Picker("", selection: $caseCategory) {
+                    Text("F2L").tag("F2L")
+                    Text("OLL").tag("OLL")
+                    Text("PLL").tag("PLL")
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 140)
+                .accessibilityLabel("Case category")
             }
 
             Spacer()
@@ -139,6 +166,23 @@ public struct ContentView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.small)
                 .accessibilityLabel("Use this case")
+            }
+
+            if detailCase == nil {
+                Button(action: takeScreenshot) {
+                    Image(systemName: "camera")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .help("Screenshot overlay to Desktop + clipboard")
+                .accessibilityLabel("Screenshot")
+            }
+
+            if showSavedFeedback {
+                Text("Saved")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .transition(.opacity)
             }
 
             Button(action: { showSettings.toggle() }) {

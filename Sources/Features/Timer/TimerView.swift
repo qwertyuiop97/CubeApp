@@ -53,6 +53,21 @@ public struct TimerView: View {
                 .controlSize(.small)
             }
 
+            Toggle("Cross Practice", isOn: $timer.isCrossPractice)
+                .font(.caption)
+                .onChange(of: timer.isCrossPractice) { _, newValue in
+                    if !timer.isRunning {
+                        timer.newScramble()
+                        timer.reset()
+                    }
+                }
+
+            if timer.isCrossPractice {
+                Text("Cross solves this session: \(timer.crossSolveCount)")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+
             // Stats
             HStack(spacing: 12) {
                 stat("ao5", store.ao5)
