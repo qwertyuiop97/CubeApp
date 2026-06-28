@@ -27,6 +27,10 @@ public final class FloatingOverlayWindow: NSPanel {
         positionAtAnchor(.topRight, size: initialSize)
     }
 
+    func updateLevel(for anchor: Anchor) {
+        self.level = anchor == .notch ? .statusBar : .floating
+    }
+
     private func frameForAnchor(_ anchor: Anchor, size: NSSize, on screen: NSScreen) -> NSRect {
         let visible = screen.visibleFrame
         let notchExtra = screen.safeAreaInsets.top
@@ -64,6 +68,7 @@ public final class FloatingOverlayWindow: NSPanel {
         guard let screen = screen ?? NSScreen.main else { return }
         let frame = frameForAnchor(anchor, size: size, on: screen)
         self.setFrame(frame, display: true, animate: false)
+        updateLevel(for: anchor)
     }
 
     public func resizeTo(_ size: NSSize, anchor: Anchor) {
@@ -77,6 +82,7 @@ public final class FloatingOverlayWindow: NSPanel {
         let start = sliverFrame(for: anchor, final: final, on: scr)
         self.setFrame(start, display: false, animate: false)
         self.orderFront(nil)
+        updateLevel(for: anchor)
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.32
             ctx.timingFunction = CAMediaTimingFunction(controlPoints: 0.68, -0.55, 0.265, 1.55)
