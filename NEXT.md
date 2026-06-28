@@ -373,7 +373,7 @@ Quality-of-life additions that make the app more polished and useful for real us
 
 ## Phase 14A — Export & Sessions
 
-**Status: NOT STARTED** (do not begin until Phase 13A is done)
+**Status: DONE** (2026-06-27)
 
 Data portability and multi-session tracking.
 

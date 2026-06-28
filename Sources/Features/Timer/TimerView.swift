@@ -5,6 +5,9 @@ public struct TimerView: View {
     @EnvironmentObject private var store: TimeStore
     @State private var showNewPB = false
     @State private var newPBText = ""
+    @State private var exportFeedback = ""
+    @State private var showingNewSession = false
+    @State private var newSessionName = ""
 
     public var body: some View {
         VStack(spacing: 8) {
@@ -37,23 +40,23 @@ public struct TimerView: View {
                 .buttonStyle(.bordered)
                 .controlSize(.small)
 
-            if timer.isRunning {
-                Button("Stop") {
-                    timer.stop()
+                if timer.isRunning {
+                    Button("Stop") {
+                        timer.stop()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                    .cubeNotchGlass(cornerRadius: 6)
+                } else {
+                    Button(timer.state == .stopped ? "Reset" : "Start") {
+                        timer.toggle()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                    .cubeNotchGlass(cornerRadius: 6)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
-                .cubeNotchGlass(cornerRadius: 6)
-            } else {
-                Button(timer.state == .stopped ? "Reset" : "Start") {
-                    timer.toggle()
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
-                .cubeNotchGlass(cornerRadius: 6)
             }
 
-            // 15A-2 +2 / DNF also get glass
             if timer.state == .stopped {
                 HStack(spacing: 8) {
                     Button("+2") {
@@ -74,22 +77,57 @@ public struct TimerView: View {
                 }
             }
 
-            Button("New Session") {
-                store.clearSession()
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
+            HStack(spacing: 8) {
+                Button("New Session") {
+                    newSessionName = ""
+                    showingNewSession = true
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .popover(isPresented: $showingNewSession) {
+                    VStack(spacing: 8) {
+                        Text("Session name (optional)")
+                            .font(.caption)
+                        TextField("e.g. Practice", text: $newSessionName)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 160)
+                        Button("Create") {
+                            let name = newSessionName.trimmingCharacters(in: .whitespacesAndNewlines)
+                            let defaultName: String = {
+                                let df = DateFormatter()
+                                df.dateFormat = "yyyy-MM-dd"
+                                return df.string(from: Date())
+                            }()
+                            store.startNewNamedSession(name: name.isEmpty ? defaultName : name)
+                            showingNewSession = false
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+                    }
+                    .padding(12)
+                }
 
-            // 14A-1 Export
-            Button("Export CSV") {
-                if let url = store.saveCSVToDesktop() {
-                    let pb = NSPasteboard.general
-                    pb.clearContents()
-                    pb.setString(url.path, forType: .string)
+                Button("Export Times") {
+                    if let url = store.saveCSVToDesktop() {
+                        let pb = NSPasteboard.general
+                        pb.clearContents()
+                        pb.setString(url.path, forType: .string)
+                        let count = store.solves.count
+                        exportFeedback = "Exported \(count) solves"
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            exportFeedback = ""
+                        }
+                    }
+                }
+                .font(.caption2)
+                .buttonStyle(.plain)
+
+                if !exportFeedback.isEmpty {
+                    Text(exportFeedback)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
                 }
             }
-            .font(.caption2)
-            .buttonStyle(.plain)
 
             Toggle("Cross Practice", isOn: $timer.isCrossPractice)
                 .font(.caption)
@@ -106,7 +144,6 @@ public struct TimerView: View {
                     .foregroundStyle(.secondary)
             }
 
-            // Stats + PBs (16A-1)
             HStack(spacing: 12) {
                 stat("ao5", store.ao5)
                 stat("ao12", store.ao12)
@@ -123,22 +160,11 @@ public struct TimerView: View {
                     .font(.caption.bold())
                     .foregroundStyle(.yellow)
             }
-        }
-        .font(.caption)
 
-        if showNewPB {
-            Text(newPBText)
-                .font(.caption.bold())
-                .foregroundStyle(.yellow)
-                .transition(.opacity)
-                .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        withAnimation { showNewPB = false }
-                    }
-                }
-        }
+            Text("Session: \(store.currentSessionName)")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
 
-            // Recent solves
             if !store.solves.isEmpty {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 2) {
@@ -173,21 +199,9 @@ public struct TimerView: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
+        .font(.caption)
         .onAppear { timer.isTimerTabActive = true }
         .onDisappear { timer.isTimerTabActive = false }
-
-        // 16A-1: New PB banner
-        if showNewPB {
-            Text(newPBText)
-                .font(.caption.bold())
-                .foregroundStyle(.yellow)
-                .transition(.opacity)
-                .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        withAnimation { showNewPB = false }
-                    }
-                }
-        }
     }
 
     private func stat(_ label: String, _ value: TimeInterval?) -> some View {

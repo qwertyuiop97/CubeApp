@@ -39,9 +39,18 @@ public struct SolveRecord: Identifiable, Codable, Equatable {
 public final class TimeStore: ObservableObject {
     @Published public private(set) var solves: [SolveRecord] = []
 
-    private let storageKey = "cubeNotchTimeSolves"
+    @Published public private(set) var currentSessionName: String = "Default"
+    @Published public private(set) var knownSessions: [String] = []
+
+    private let sessionsListKey = "cubeNotchSessions"
+    private let currentSessionKey = "cubeNotchCurrentSession"
+    private func storageKey(for name: String) -> String { "cubeNotchSession_\(name)" }
 
     public init() {
+        loadSessionsList()
+        if let saved = UserDefaults.standard.string(forKey: currentSessionKey) {
+            currentSessionName = saved
+        }
         load()
         loadPBs()
     }
@@ -55,18 +64,47 @@ public final class TimeStore: ObservableObject {
 
     public func clearSession() {
         solves.removeAll()
-        UserDefaults.standard.removeObject(forKey: storageKey)
-        // PBs are intentionally never cleared
+        UserDefaults.standard.removeObject(forKey: storageKey(for: currentSessionName))
+        save()
     }
 
-    // 14A-2 Named sessions (basic)
-    public var currentSessionName: String = "Default"
-
-    public func setSessionName(_ name: String) {
-        currentSessionName = name.isEmpty ? "Default" : name
+    public func startNewNamedSession(name: String) {
+        if !solves.isEmpty {
+            if let data = try? JSONEncoder().encode(solves) {
+                UserDefaults.standard.set(data, forKey: storageKey(for: currentSessionName))
+            }
+        }
+        let newName = name.isEmpty ? defaultSessionName() : name
+        if !knownSessions.contains(newName) {
+            knownSessions.append(newName)
+            UserDefaults.standard.set(knownSessions, forKey: sessionsListKey)
+        }
+        currentSessionName = newName
+        UserDefaults.standard.set(newName, forKey: currentSessionKey)
+        if let data = UserDefaults.standard.data(forKey: storageKey(for: newName)),
+           let decoded = try? JSONDecoder().decode([SolveRecord].self, from: data) {
+            solves = decoded
+        } else {
+            solves = []
+        }
+        save()
     }
 
-    // 14A-1 CSV Export
+    private func defaultSessionName() -> String {
+        let df = DateFormatter()
+        df.dateFormat = "yyyy-MM-dd"
+        return df.string(from: Date())
+    }
+
+    private func loadSessionsList() {
+        if let list = UserDefaults.standard.array(forKey: sessionsListKey) as? [String] {
+            knownSessions = list
+        } else {
+            knownSessions = ["Default"]
+        }
+    }
+
+    // 14A-1 CSV Export (columns: date,time,scramble,penalty,session)
     public func exportCSV() -> String {
         var lines = ["date,time,scramble,penalty,session"]
         let df = ISO8601DateFormatter()
@@ -84,10 +122,44 @@ public final class TimeStore: ObservableObject {
         let csv = exportCSV()
         let fm = FileManager.default
         let desktop = fm.urls(for: .desktopDirectory, in: .userDomainMask).first!
-        let ts = Int(Date().timeIntervalSince1970)
-        let url = desktop.appendingPathComponent("CubeNotch_times_\(ts).csv")
+        let df = DateFormatter()
+        df.dateFormat = "yyyy-MM-dd_HHmmss"
+        let url = desktop.appendingPathComponent("CubeNotch_times_\(df.string(from: Date())).csv")
         do {
             try csv.write(to: url, atomically: true, encoding: .utf8)
+            return url
+        } catch {
+            return nil
+        }
+    }
+
+    // 14A-3 CSTimer JSON: [[penalty_int, time_ms, comment, timestamp_ms], ...]
+    public func exportCSTimerJSON() -> String {
+        var items: [[Any]] = []
+        for rec in solves {
+            let pen: Int = rec.penalty == .plusTwo ? 1 : (rec.penalty == .dnf ? 2 : 0)
+            let effective = rec.penalty == .dnf ? 0.0 : rec.time + (rec.penalty == .plusTwo ? 2.0 : 0.0)
+            let timeMs = Int(effective * 1000)
+            let comment = ""
+            let ts = Int(rec.date.timeIntervalSince1970 * 1000)
+            items.append([pen, timeMs, comment, ts])
+        }
+        if let data = try? JSONSerialization.data(withJSONObject: items, options: [.prettyPrinted]),
+           let str = String(data: data, encoding: .utf8) {
+            return str
+        }
+        return "[]"
+    }
+
+    public func saveCSTimerToDesktop() -> URL? {
+        let json = exportCSTimerJSON()
+        let fm = FileManager.default
+        let desktop = fm.urls(for: .desktopDirectory, in: .userDomainMask).first!
+        let df = DateFormatter()
+        df.dateFormat = "yyyy-MM-dd_HHmmss"
+        let url = desktop.appendingPathComponent("CubeNotch_cstimer_\(df.string(from: Date())).txt")
+        do {
+            try json.write(to: url, atomically: true, encoding: .utf8)
             return url
         } catch {
             return nil
@@ -181,12 +253,12 @@ public final class TimeStore: ObservableObject {
 
     private func save() {
         if let data = try? JSONEncoder().encode(solves) {
-            UserDefaults.standard.set(data, forKey: storageKey)
+            UserDefaults.standard.set(data, forKey: storageKey(for: currentSessionName))
         }
     }
 
     private func load() {
-        guard let data = UserDefaults.standard.data(forKey: storageKey),
+        guard let data = UserDefaults.standard.data(forKey: storageKey(for: currentSessionName)),
               let decoded = try? JSONDecoder().decode([SolveRecord].self, from: data) else {
             solves = []
             return
