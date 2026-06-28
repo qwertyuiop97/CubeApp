@@ -19,7 +19,7 @@ public struct TrainerStats: Codable, Equatable {
 public final class TrainerStore: ObservableObject {
     @Published public private(set) var stats: [String: TrainerStats] = [:] // key = case id like "OLL-1"
 
-    private let storageKey = "cubeNotchTrainerStats"
+    private let storageKey = UDKey.cubeNotchTrainerStats
 
     public init() {
         load()

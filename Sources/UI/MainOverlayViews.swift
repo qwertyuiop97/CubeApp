@@ -9,12 +9,12 @@ public struct ContentView: View {
     @EnvironmentObject private var timeStore: TimeStore
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-    @AppStorage("sizeMode") private var sizeMode: SizeMode = .medium
-    @AppStorage("anchorPosition") private var anchorPosition: Anchor = .topRight
-    @AppStorage("followActiveScreen") private var followActiveScreen: Bool = false
-    @AppStorage("preferredScreen") private var preferredScreen: String = ""
-    @AppStorage("blurIntensity") private var blurIntensity: Double = 0.5
-    @AppStorage("backgroundTint") private var backgroundTint: String = "neutral"
+    @AppStorage(UDKey.sizeMode) private var sizeMode: SizeMode = .medium
+    @AppStorage(UDKey.anchorPosition) private var anchorPosition: Anchor = .topRight
+    @AppStorage(UDKey.followActiveScreen) private var followActiveScreen: Bool = false
+    @AppStorage(UDKey.preferredScreen) private var preferredScreen: String = ""
+    @AppStorage(UDKey.blurIntensity) private var blurIntensity: Double = 0.5
+    @AppStorage(UDKey.backgroundTint) private var backgroundTint: String = "neutral"
     @State private var showSettings = false
     @State private var caseCategory: String = "OLL" // "F2L" | "OLL" | "PLL"
     @State private var detailCase: CubeCase? = nil
@@ -27,8 +27,8 @@ public struct ContentView: View {
     // 13A-5: Recent and Pinned
     @State private var recentCaseIDs: [String] = []
     @State private var pinnedCaseIDs: Set<String> = []
-    private let recentKey = "recentCaseIDs"
-    private let pinnedKey = "pinnedCaseIDs"
+    private let recentKey = UDKey.recentCaseIDs
+    private let pinnedKey = UDKey.pinnedCaseIDs
 
     // 13A-4 Hotkey capture
     @State private var listeningForHotkey = false
@@ -388,7 +388,7 @@ public struct ContentView: View {
         recentCaseIDs.removeAll { $0 == id }
         recentCaseIDs.insert(id, at: 0)
         if recentCaseIDs.count > 8 { recentCaseIDs.removeLast() }
-        UserDefaults.standard.set(recentCaseIDs, forKey: recentKey)
+        UserDefaults.standard.set(recentCaseIDs, forKey: UDKey.recentCaseIDs)
     }
 
     private func togglePin(_ id: String) {
@@ -397,7 +397,7 @@ public struct ContentView: View {
         } else {
             pinnedCaseIDs.insert(id)
         }
-        UserDefaults.standard.set(Array(pinnedCaseIDs), forKey: pinnedKey)
+        UserDefaults.standard.set(Array(pinnedCaseIDs), forKey: UDKey.pinnedCaseIDs)
     }
 
     private func loadRecentPinned() {
@@ -542,8 +542,8 @@ public struct ContentView: View {
             ))
 
             Toggle("WCA Inspection", isOn: Binding(
-                get: { UserDefaults.standard.object(forKey: "wcaInspection") as? Bool ?? true },
-                set: { UserDefaults.standard.set($0, forKey: "wcaInspection") }
+                get: { UserDefaults.standard.object(forKey: UDKey.wcaInspection) as? Bool ?? true },
+                set: { UserDefaults.standard.set($0, forKey: UDKey.wcaInspection) }
             ))
 
             Picker("Monitor", selection: Binding(

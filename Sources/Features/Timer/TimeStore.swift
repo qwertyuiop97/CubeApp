@@ -42,8 +42,8 @@ public final class TimeStore: ObservableObject {
     @Published public private(set) var currentSessionName: String = "Default"
     @Published public private(set) var knownSessions: [String] = []
 
-    private let sessionsListKey = "cubeNotchSessions"
-    private let currentSessionKey = "cubeNotchCurrentSession"
+    private let sessionsListKey = UDKey.cubeNotchSessions
+    private let currentSessionKey = UDKey.cubeNotchCurrentSession
     private func storageKey(for name: String) -> String { "cubeNotchSession_\(name)" }
 
     public init() {
@@ -53,8 +53,8 @@ public final class TimeStore: ObservableObject {
         }
         load()
         loadPBs()
-        lifetimeSolveCount = UserDefaults.standard.integer(forKey: lifetimeKey)
-        if let dates = UserDefaults.standard.array(forKey: streakDatesKey) as? [String] {
+        lifetimeSolveCount = UserDefaults.standard.integer(forKey: UDKey.cubeNotchLifetimeSolves)
+        if let dates = UserDefaults.standard.array(forKey: UDKey.cubeNotchSolveDates) as? [String] {
             solveDateKeys = Set(dates)
         }
     }
@@ -191,8 +191,8 @@ public final class TimeStore: ObservableObject {
     @Published public private(set) var lifetimeSolveCount: Int = 0
     @Published public private(set) var newPBMessage: String? = nil
 
-    private let lifetimeKey = "cubeNotchLifetimeSolves"
-    private let streakDatesKey = "cubeNotchSolveDates"
+    private let lifetimeKey = UDKey.cubeNotchLifetimeSolves
+    private let streakDatesKey = UDKey.cubeNotchSolveDates
     private var solveDateKeys: Set<String> = []
 
     private func updatePersonalBests() {
@@ -203,7 +203,7 @@ public final class TimeStore: ObservableObject {
         savePBs()
     }
 
-    private let pbKey = "cubeNotchPersonalBests"
+    private let pbKey = UDKey.cubeNotchPersonalBests
 
     private func savePBs() {
         let dict: [String: TimeInterval] = [

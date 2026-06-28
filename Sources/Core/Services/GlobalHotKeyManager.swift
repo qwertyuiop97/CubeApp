@@ -87,8 +87,8 @@ public final class GlobalHotKeyManager {
         if keyCode == 53 || keyCode == 36 { return }
         register(keyCode: keyCode, modifiers: modifiers, handler: handler)
         // persist raw values
-        UserDefaults.standard.set(Int(keyCode), forKey: "customHotKeyCode")
-        UserDefaults.standard.set(Int(modifiers), forKey: "customHotKeyMods")
+        UserDefaults.standard.set(Int(keyCode), forKey: UDKey.customHotKeyCode)
+        UserDefaults.standard.set(Int(modifiers), forKey: UDKey.customHotKeyMods)
     }
 
     private func keyCodeToString(_ code: UInt32) -> String {
@@ -120,18 +120,18 @@ public final class GlobalHotKeyManager {
 
     // 13A-4 persisted values
     public var savedKeyCode: UInt32 {
-        let v = UserDefaults.standard.integer(forKey: "customHotKeyCode")
+        let v = UserDefaults.standard.integer(forKey: UDKey.customHotKeyCode)
         return v > 0 ? UInt32(v) : 49
     }
 
     public var savedModifiers: UInt32 {
-        let v = UserDefaults.standard.integer(forKey: "customHotKeyMods")
+        let v = UserDefaults.standard.integer(forKey: UDKey.customHotKeyMods)
         return v > 0 ? UInt32(v) : UInt32(optionKey)
     }
 
     public func rebindIfSaved(handler: @escaping () -> Void) {
-        let code = UserDefaults.standard.integer(forKey: "customHotKeyCode")
-        let mods = UserDefaults.standard.integer(forKey: "customHotKeyMods")
+        let code = UserDefaults.standard.integer(forKey: UDKey.customHotKeyCode)
+        let mods = UserDefaults.standard.integer(forKey: UDKey.customHotKeyMods)
         if code > 0 {
             register(keyCode: UInt32(code), modifiers: UInt32(mods), handler: handler)
         } else {

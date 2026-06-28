@@ -17,20 +17,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
 
         // Load persisted size mode and anchor from @AppStorage / UserDefaults before creating window
-        if let savedSizeRaw = UserDefaults.standard.string(forKey: "sizeMode"),
+        if let savedSizeRaw = UserDefaults.standard.string(forKey: UDKey.sizeMode),
            let savedSize = SizeMode(rawValue: savedSizeRaw) {
-            stateManager.setSizeMode(savedSize)
-        }
-        if let savedAnchorRaw = UserDefaults.standard.string(forKey: "anchorPosition"),
-           let savedAnchor = Anchor(rawValue: savedAnchorRaw) {
-            stateManager.setAnchor(savedAnchor)
-        }
-        if let savedFollow = UserDefaults.standard.object(forKey: "followActiveScreen") as? Bool {
-            stateManager.followActiveScreen = savedFollow
-        }
-        if let savedPref = UserDefaults.standard.string(forKey: "preferredScreen") {
-            stateManager.setPreferredScreenName(savedPref)
-        }
+             stateManager.setSizeMode(savedSize)
+         }
+         if let savedAnchorRaw = UserDefaults.standard.string(forKey: UDKey.anchorPosition),
+            let savedAnchor = Anchor(rawValue: savedAnchorRaw) {
+             stateManager.setAnchor(savedAnchor)
+         }
+         if let savedFollow = UserDefaults.standard.object(forKey: UDKey.followActiveScreen) as? Bool {
+             stateManager.followActiveScreen = savedFollow
+         }
+         if let savedPref = UserDefaults.standard.string(forKey: UDKey.preferredScreen) {
+             stateManager.setPreferredScreenName(savedPref)
+         }
 
         // Create the borderless floating transparent NSPanel (non-activating)
         window = FloatingOverlayWindow()
@@ -92,7 +92,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         // 13A-4: Apply any saved custom hotkey at launch
-        if UserDefaults.standard.integer(forKey: "customHotKeyCode") > 0 {
+        if UserDefaults.standard.integer(forKey: UDKey.customHotKeyCode) > 0 {
             // rebindIfSaved already did it above
         }
 
@@ -211,7 +211,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupSpacebarEventTap() {
-        let mask = CGEventMask(1 << CGEventType.keyDown.rawValue)
+        let mask = CGEventMask(1 << CGEventType.keyDown.rawValue) | CGEventMask(1 << CGEventType.keyUp.rawValue)
         eventTap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
             place: .headInsertEventTap,

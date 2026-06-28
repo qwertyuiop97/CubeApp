@@ -10,8 +10,8 @@ struct LibraryView: View {
     @State private var favoriteCaseIDs: Set<String> = []
     @State private var myAlgorithms: [String: String] = [:]
 
-    private let favKey = "favoriteCaseIDs"
-    private let myAlgKey = "myAlgorithms"
+    private let favKey = UDKey.favoriteCaseIDs
+    private let myAlgKey = UDKey.myAlgorithms
 
     private var allCases: [CubeCase] {
         F2LDatabase.f2lCases + AlgorithmDatabase.ollCases + AlgorithmDatabase.pllCases
@@ -268,7 +268,7 @@ struct LibraryView: View {
     }
 
     private func loadPersisted() {
-        if let favs = UserDefaults.standard.stringArray(forKey: favKey) {
+        if let favs = UserDefaults.standard.stringArray(forKey: UDKey.favoriteCaseIDs) {
             favoriteCaseIDs = Set(favs)
         }
         if let data = UserDefaults.standard.data(forKey: myAlgKey),

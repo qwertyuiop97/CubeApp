@@ -29,7 +29,7 @@ public final class SolveTimer: ObservableObject {
     private var pendingPenalty: Penalty = .none
 
     private var wcaInspectionEnabled: Bool {
-        UserDefaults.standard.object(forKey: "wcaInspection") as? Bool ?? true
+        UserDefaults.standard.object(forKey: UDKey.wcaInspection) as? Bool ?? true
     }
 
     public init() {
