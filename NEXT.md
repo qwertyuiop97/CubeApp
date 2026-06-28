@@ -444,7 +444,7 @@ Apply the confirmed macOS 26 Liquid Glass APIs and typography rules from DESIGN.
 
 ## Phase 16 — Stats Dashboard & Progress Tracking
 
-**Status: NOT STARTED** (do not begin until Phase 15 is done)
+**Status: DONE** (2026-06-27)
 
 A dedicated Stats tab in the HUD showing real progress data that makes users want to open the app daily.
 

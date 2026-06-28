@@ -53,6 +53,10 @@ public final class TimeStore: ObservableObject {
         }
         load()
         loadPBs()
+        lifetimeSolveCount = UserDefaults.standard.integer(forKey: lifetimeKey)
+        if let dates = UserDefaults.standard.array(forKey: streakDatesKey) as? [String] {
+            solveDateKeys = Set(dates)
+        }
     }
 
     public func addSolve(time: TimeInterval, scramble: String, penalty: Penalty = .none) {
@@ -60,6 +64,9 @@ public final class TimeStore: ObservableObject {
         solves.insert(record, at: 0)
         save()
         updatePersonalBests()
+        incrementLifetime()
+        recordSolveDate(record.date)
+        checkAndSetNewPB()
     }
 
     public func clearSession() {
@@ -181,7 +188,14 @@ public final class TimeStore: ObservableObject {
     @Published public private(set) var pbAo12: TimeInterval?
     @Published public private(set) var pbAo100: TimeInterval?
 
-    public func updatePersonalBests() {
+    @Published public private(set) var lifetimeSolveCount: Int = 0
+    @Published public private(set) var newPBMessage: String? = nil
+
+    private let lifetimeKey = "cubeNotchLifetimeSolves"
+    private let streakDatesKey = "cubeNotchSolveDates"
+    private var solveDateKeys: Set<String> = []
+
+    private func updatePersonalBests() {
         if let b = bestTime { pbSingle = min(pbSingle ?? .greatestFiniteMagnitude, b) }
         if let a5 = ao5 { pbAo5 = min(pbAo5 ?? .greatestFiniteMagnitude, a5) }
         if let a12 = ao12 { pbAo12 = min(pbAo12 ?? .greatestFiniteMagnitude, a12) }
@@ -264,5 +278,50 @@ public final class TimeStore: ObservableObject {
             return
         }
         solves = decoded
+    }
+
+    // 16A-1/16A-2 helpers
+    private func incrementLifetime() {
+        lifetimeSolveCount += 1
+        UserDefaults.standard.set(lifetimeSolveCount, forKey: lifetimeKey)
+    }
+
+    private func recordSolveDate(_ date: Date) {
+        let df = DateFormatter()
+        df.dateFormat = "yyyy-MM-dd"
+        let key = df.string(from: date)
+        solveDateKeys.insert(key)
+        UserDefaults.standard.set(Array(solveDateKeys), forKey: streakDatesKey)
+    }
+
+    private func checkAndSetNewPB() {
+        // called after addSolve; if any pb changed to a new low, set message briefly
+        if let b = bestTime, let cur = pbSingle, b <= cur {
+            newPBMessage = "🎉 New PB!"
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.newPBMessage = nil }
+        }
+    }
+
+    public var dailyStreak: Int {
+        let df = DateFormatter()
+        df.dateFormat = "yyyy-MM-dd"
+        let today = df.string(from: Date())
+        var streak = 0
+        var d = Date()
+        while true {
+            let k = df.string(from: d)
+            if solveDateKeys.contains(k) { streak += 1 } else { break }
+            d = Calendar.current.date(byAdding: .day, value: -1, to: d) ?? d
+            if streak > 365 { break }
+        }
+        return streak
+    }
+
+    public var meanOfSession: TimeInterval? {
+        guard !solves.isEmpty else { return nil }
+        let valid = solves.filter { $0.penalty != .dnf }
+        guard !valid.isEmpty else { return nil }
+        let sum = valid.reduce(0) { $0 + $1.time }
+        return sum / Double(valid.count)
     }
 }
