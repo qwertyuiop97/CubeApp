@@ -52,12 +52,41 @@
 - [ ] Add all 41 F2L cases to AlgorithmDatabase.swift (primary + ≥2 alternatives each, same rules as OLL/PLL)
 - [ ] F2L tab added to case browser (alongside OLL / PLL)
 
+## Phase 8 — HUD Polish & Missing Requirements
+- [ ] Remove dead CubeCanvasView placeholder (MainOverlayViews.swift lines ~378–426)
+- [ ] Blur intensity slider in settings drawer (controls overlay background opacity)
+- [ ] Background tint picker (neutral/dark/light/blue/purple/green color swatches)
+- [ ] Liquid Glass material conditional on macOS 26+ (research API first; fallback to .ultraThinMaterial)
+- [ ] Copy algorithm button in case detail view (clipboard icon + brief "Copied" feedback)
+- [ ] Search/filter bar in case browser (filter by name, case number, algorithm text)
+- [ ] Best time display in timer stats (alongside ao5/ao12/ao100)
+- [ ] DNF / +2 penalty buttons after a solve stops (before next scramble)
+- [ ] Single-spacebar flow fix: stopped → one press → start new solve immediately
+
+## Phase 9 — Library Mode Window
+- [ ] LibraryWindowController.swift: standard NSWindow (titled, resizable, activating) — NOT the HUD panel
+- [ ] LibraryView.swift: full sidebar + detail pane layout, F2L/OLL/PLL tabs
+- [ ] Menu bar "Open Library" option in AppDelegate
+- [ ] Larger CubeStateView diagrams in Library detail pane
+- [ ] All alternatives shown (no truncation), move count per algorithm
+- [ ] Favorites system: star toggle per case, persisted to UserDefaults
+- [ ] Personal algorithm selection: user picks their preferred alg per case
+- [ ] Search: real-time filter across all cases, all tabs
+- [ ] Keyboard navigation (arrow keys + Enter in sidebar)
+
+## Phase 10 — Beginner Method in Library
+- [ ] BeginnerMethodDatabase.swift: 7 Layer-by-Layer steps (White Cross → Permute Edges)
+- [ ] "Learn" tab in Library alongside F2L/OLL/PLL
+- [ ] Step cards with description, key trigger(s), copy button
+- [ ] Links from LBL steps to relevant F2L/OLL/PLL cases in Library
+- [ ] "Ready for CFOP?" call-to-action at end of LBL section
+
 ## Stretch / Future
 - [ ] Export times in CSTimer-compatible JSON format for manual import
-- [ ] Favorites + learning progress persistence
 - [ ] iCloud sync
 - [ ] Auto-hide when full-screen apps are active
 - [ ] Community algorithm contributions
+- [ ] Advanced subsets: ZBLL, COLL, CMLL, OLLCP (Library only)
 
 ---
 
