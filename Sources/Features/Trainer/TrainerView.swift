@@ -74,11 +74,11 @@ public struct TrainerView: View {
         VStack(spacing: 6) {
             CubeStateView(currentCase: c, visualMode: .preExecution, sizeMode: .large)
                 .frame(width: 200, height: 160)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .background(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .fill(Color.white.opacity(0.04))
                 )
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             accuracyBadge(for: c)
         }
@@ -133,8 +133,10 @@ public struct TrainerView: View {
                     .textSelection(.enabled)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 6)
-                    .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
 
             if let result = lastResult {
