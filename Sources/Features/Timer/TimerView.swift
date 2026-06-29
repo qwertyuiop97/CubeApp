@@ -11,9 +11,7 @@ public struct TimerView: View {
     public var body: some View {
         VStack(spacing: 0) {
             scrambleHeader
-            Spacer(minLength: 0)
             timerHero
-            Spacer(minLength: 0)
             statsStrip
             Divider().opacity(0.1)
             solveHistory
@@ -27,14 +25,14 @@ public struct TimerView: View {
 
     private var scrambleHeader: some View {
         Text(timer.scramble)
-            .font(.system(size: 12, weight: .regular, design: .monospaced))
+            .font(.system(size: 13, weight: .medium, design: .monospaced))
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.center)
             .lineLimit(2)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 4)
+            .padding(.top, 8)
+            .padding(.bottom, 2)
     }
 
     // MARK: — Timer Hero
@@ -90,7 +88,7 @@ public struct TimerView: View {
             }
         }
         .font(.system(size: 11))
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.tertiary)
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.15), value: timer.isArmed)
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.15), value: timer.state.rawValue)
     }
@@ -175,8 +173,9 @@ public struct TimerView: View {
     private func statCell(_ label: String, _ value: TimeInterval?) -> some View {
         VStack(spacing: 2) {
             Text(label)
-                .font(.system(size: 9, weight: .semibold, design: .rounded))
+                .font(.system(size: 9, weight: .medium, design: .rounded))
                 .foregroundStyle(.tertiary)
+                .textCase(.uppercase)
                 .tracking(0.5)
             Text(value.map { formatTime($0) } ?? "—")
                 .font(.system(size: 14, weight: .medium))
@@ -264,7 +263,7 @@ public struct TimerView: View {
             Spacer()
 
             HStack(spacing: 12) {
-                Button("Session") {
+                Button("New Session") {
                     newSessionName = ""
                     showingNewSession = true
                 }
