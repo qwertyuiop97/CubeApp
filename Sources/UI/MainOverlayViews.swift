@@ -398,7 +398,7 @@ public struct ContentView: View {
                     sizeMode: .compact,
                     uFaceOnly: c.caseType != "PLL"
                 )
-                .frame(width: 44, height: 44)
+                .frame(width: c.caseType == "PLL" ? 52 : 44, height: c.caseType == "PLL" ? 52 : 44)
                 .background(Color(white: 0.12), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
 

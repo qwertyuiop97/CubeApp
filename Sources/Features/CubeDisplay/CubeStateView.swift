@@ -68,7 +68,7 @@ public struct CubeStateView: View {
             for col in 0..<3 {
                 let x = uOx + CGFloat(col) * s
                 let y = uOy + CGFloat(row) * s
-                let rect = CGRect(x: x + 1, y: y + 1, width: s - 2, height: s - 2)
+                let rect = CGRect(x: x + 1, y: y + 1, width: s - 1, height: s - 1)
                 let color = state.uFace[row * 3 + col]
                 context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(color))
                 context.stroke(Path(roundedRect: rect, cornerRadius: 3), with: .color(.black.opacity(0.6)), lineWidth: 1)
@@ -79,7 +79,7 @@ public struct CubeStateView: View {
         let bY = uOy - s
         for i in 0..<3 {
             let x = uOx + CGFloat(i) * s
-            let rect = CGRect(x: x + 1, y: bY + 1, width: s - 2, height: s - 2)
+            let rect = CGRect(x: x + 1, y: bY + 1, width: s - 1, height: s - 1)
             context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(state.backTop[i]))
             context.stroke(Path(roundedRect: rect, cornerRadius: 3), with: .color(.black.opacity(0.6)), lineWidth: 1)
         }
@@ -88,7 +88,7 @@ public struct CubeStateView: View {
         let fY = uOy + 3 * s
         for i in 0..<3 {
             let x = uOx + CGFloat(i) * s
-            let rect = CGRect(x: x + 1, y: fY + 1, width: s - 2, height: s - 2)
+            let rect = CGRect(x: x + 1, y: fY + 1, width: s - 1, height: s - 1)
             context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(state.frontTop[i]))
             context.stroke(Path(roundedRect: rect, cornerRadius: 3), with: .color(.black.opacity(0.6)), lineWidth: 1)
         }
@@ -97,7 +97,7 @@ public struct CubeStateView: View {
         let lX = uOx - s
         for i in 0..<3 {
             let y = uOy + CGFloat(i) * s
-            let rect = CGRect(x: lX + 1, y: y + 1, width: s - 2, height: s - 2)
+            let rect = CGRect(x: lX + 1, y: y + 1, width: s - 1, height: s - 1)
             context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(state.leftTop[i]))
             context.stroke(Path(roundedRect: rect, cornerRadius: 3), with: .color(.black.opacity(0.6)), lineWidth: 1)
         }
@@ -106,7 +106,7 @@ public struct CubeStateView: View {
         let rX = uOx + 3 * s
         for i in 0..<3 {
             let y = uOy + CGFloat(i) * s
-            let rect = CGRect(x: rX + 1, y: y + 1, width: s - 2, height: s - 2)
+            let rect = CGRect(x: rX + 1, y: y + 1, width: s - 1, height: s - 1)
             context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(state.rightTop[i]))
             context.stroke(Path(roundedRect: rect, cornerRadius: 3), with: .color(.black.opacity(0.6)), lineWidth: 1)
         }
