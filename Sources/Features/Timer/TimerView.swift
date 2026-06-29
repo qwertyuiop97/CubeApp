@@ -4,179 +4,284 @@ public struct TimerView: View {
     @EnvironmentObject private var timer: SolveTimer
     @EnvironmentObject private var store: TimeStore
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var showNewPB = false
-    @State private var newPBText = ""
-    @State private var exportFeedback = ""
     @State private var showingNewSession = false
     @State private var newSessionName = ""
+    @State private var exportDone = false
 
     public var body: some View {
-        VStack(spacing: 8) {
-            Text("Scramble")
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
+        VStack(spacing: 0) {
+            scrambleHeader
+            Spacer(minLength: 0)
+            timerHero
+            Spacer(minLength: 0)
+            statsStrip
+            Divider().opacity(0.1)
+            solveHistory
+            bottomBar
+        }
+        .onAppear { timer.isTimerTabActive = true }
+        .onDisappear { timer.isTimerTabActive = false }
+    }
 
-            Text(timer.scramble)
-                .font(.system(size: 14, design: .monospaced))
-                .multilineTextAlignment(.center)
-                .lineLimit(3)
-                .padding(8)
-                .frame(maxWidth: .infinity)
-                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .padding(.horizontal, 6)
+    // MARK: — Scramble
 
+    private var scrambleHeader: some View {
+        Text(timer.scramble)
+            .font(.system(size: 12, weight: .regular, design: .monospaced))
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 4)
+    }
+
+    // MARK: — Timer Hero
+
+    private var timerHero: some View {
+        VStack(spacing: 6) {
             if timer.isInspecting {
                 let rem = max(0.0, timer.inspectionRemaining)
-                let col: Color = rem < 5 ? .orange : .primary
-                Text(String(format: "%.1f", rem))
-                    .font(.system(size: 72, weight: .light))
+                Text(String(format: "%.0f", rem))
+                    .font(.system(size: 72, weight: .ultraLight))
                     .monospacedDigit()
-                    .padding(.vertical, 8)
-                    .foregroundColor(col)
+                    .foregroundStyle(rem < 5 ? Color.orange : .primary)
             } else {
                 Text(timer.formattedTime)
-                    .font(.system(size: 72, weight: .light))
+                    .font(.system(size: 72, weight: .ultraLight))
                     .monospacedDigit()
                     .contentTransition(.numericText())
                     .animation(reduceMotion ? nil : .easeInOut(duration: 0.08), value: timer.formattedTime)
-                    .padding(.vertical, 8)
-                    .foregroundColor(timer.isRunning ? .primary : (timer.state == .stopped ? .primary : .green))
+                    .foregroundStyle(timer.isArmed ? Color.green : .primary)
             }
 
-            if timer.isArmed {
+            stateHint
+
+            if let pb = store.newPBMessage {
+                Text(pb)
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.yellow)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.yellow.opacity(0.12), in: Capsule())
+                    .transition(reduceMotion ? .opacity : .scale.combined(with: .opacity))
+            }
+
+            timerControls
+        }
+        .padding(.vertical, 8)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: store.newPBMessage)
+    }
+
+    private var stateHint: some View {
+        Group {
+            if timer.isInspecting {
+                Text("Inspection")
+            } else if timer.isArmed {
                 Text("Release to start")
-                    .font(.caption.bold())
                     .foregroundStyle(.green)
-            } else if timer.state == .idle {
+            } else if timer.isRunning {
+                Text("Space to stop")
+            } else if timer.state == .stopped {
+                Text("Stopped")
+            } else {
                 Text("Hold Space")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
+        }
+        .font(.system(size: 11))
+        .foregroundStyle(.secondary)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.15), value: timer.isArmed)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.15), value: timer.state.rawValue)
+    }
 
-            Group {
-                if #available(macOS 26.0, *) {
-                    GlassEffectContainer(spacing: 8) {
-                        HStack(spacing: 10) {
-                            Button("New") {
-                                timer.newScramble()
-                                timer.reset()
-                            }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
-                            .cubeNotchGlass(cornerRadius: 6)
+    @ViewBuilder
+    private var timerControls: some View {
+        if #available(macOS 26.0, *) {
+            GlassEffectContainer(spacing: 8) { controlButtons }
+        } else {
+            controlButtons
+        }
+    }
 
-                            if timer.isRunning {
-                                Button("Stop") {
-                                    timer.stop()
-                                }
-                                .buttonStyle(.borderedProminent)
-                                .controlSize(.small)
-                                .cubeNotchGlass(cornerRadius: 6)
-                            } else {
-                                Button(timer.state == .stopped ? "Reset" : "Start") {
-                                    timer.toggle()
-                                }
-                                .buttonStyle(.borderedProminent)
-                                .controlSize(.small)
-                                .cubeNotchGlass(cornerRadius: 6)
-                            }
-                        }
-                    }
-                } else {
-                    HStack(spacing: 10) {
-                        Button("New") {
-                            timer.newScramble()
-                            timer.reset()
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        .cubeNotchGlass(cornerRadius: 6)
-
-                        if timer.isRunning {
-                            Button("Stop") {
-                                timer.stop()
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .controlSize(.small)
-                            .cubeNotchGlass(cornerRadius: 6)
-                        } else {
-                            Button(timer.state == .stopped ? "Reset" : "Start") {
-                                timer.toggle()
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .controlSize(.small)
-                            .cubeNotchGlass(cornerRadius: 6)
-                        }
-                    }
-                }
+    private var controlButtons: some View {
+        HStack(spacing: 8) {
+            Button {
+                timer.newScramble()
+                timer.reset()
+            } label: {
+                Image(systemName: "arrow.clockwise")
+                    .frame(width: 28, height: 28)
             }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .cubeNotchGlass(cornerRadius: 8)
+            .help("New scramble")
+            .disabled(timer.isRunning)
 
             if timer.state == .stopped {
-                Group {
-                    if #available(macOS 26.0, *) {
-                        GlassEffectContainer(spacing: 8) {
-                            HStack(spacing: 8) {
-                                Button("+2") {
-                                    timer.applyPenalty(.plusTwo)
-                                    store.updateLastSolve(addPenalty: .plusTwo)
-                                }
-                                .buttonStyle(.bordered)
-                                .controlSize(.small)
-                                .cubeNotchGlass(cornerRadius: 6)
-
-                                Button("DNF") {
-                                    timer.applyPenalty(.dnf)
-                                    store.updateLastSolve(addPenalty: .dnf)
-                                }
-                                .buttonStyle(.bordered)
-                                .controlSize(.small)
-                                .cubeNotchGlass(cornerRadius: 6)
-                            }
-                        }
-                    } else {
-                        HStack(spacing: 8) {
-                            Button("+2") {
-                                timer.applyPenalty(.plusTwo)
-                                store.updateLastSolve(addPenalty: .plusTwo)
-                            }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
-                            .cubeNotchGlass(cornerRadius: 6)
-
-                            Button("DNF") {
-                                timer.applyPenalty(.dnf)
-                                store.updateLastSolve(addPenalty: .dnf)
-                            }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
-                            .cubeNotchGlass(cornerRadius: 6)
-                        }
-                    }
-                }
-            }
-
-            HStack(spacing: 8) {
-                Button("New Session") {
-                    newSessionName = ""
-                    showingNewSession = true
+                Button("+2") {
+                    timer.applyPenalty(.plusTwo)
+                    store.updateLastSolve(addPenalty: .plusTwo)
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
+                .cubeNotchGlass(cornerRadius: 6)
+
+                Button("DNF") {
+                    timer.applyPenalty(.dnf)
+                    store.updateLastSolve(addPenalty: .dnf)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .cubeNotchGlass(cornerRadius: 6)
+
+                Button {
+                    timer.reset()
+                } label: {
+                    Image(systemName: "xmark.circle")
+                        .frame(width: 28, height: 28)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .cubeNotchGlass(cornerRadius: 8)
+                .help("Reset")
+            }
+        }
+        .padding(.top, 4)
+    }
+
+    // MARK: — Stats Strip
+
+    private var statsStrip: some View {
+        HStack(spacing: 0) {
+            statCell("AO5", store.ao5)
+            stripDivider
+            statCell("AO12", store.ao12)
+            stripDivider
+            statCell("AO100", store.ao100)
+            stripDivider
+            statCell("BEST", store.bestTime)
+        }
+        .padding(.vertical, 10)
+    }
+
+    private var stripDivider: some View {
+        Rectangle()
+            .fill(Color.white.opacity(0.1))
+            .frame(width: 1, height: 24)
+    }
+
+    private func statCell(_ label: String, _ value: TimeInterval?) -> some View {
+        VStack(spacing: 2) {
+            Text(label)
+                .font(.system(size: 9, weight: .semibold, design: .rounded))
+                .foregroundStyle(.tertiary)
+                .tracking(0.5)
+            Text(value.map { formatTime($0) } ?? "—")
+                .font(.system(size: 14, weight: .medium))
+                .monospacedDigit()
+                .foregroundStyle(value == nil ? Color.secondary.opacity(0.4) : .primary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: — Solve History
+
+    private var solveHistory: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                if store.solves.isEmpty {
+                    Text("No solves yet")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.tertiary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 20)
+                } else {
+                    ForEach(Array(store.solves.prefix(12).enumerated()), id: \.offset) { idx, rec in
+                        HStack(spacing: 6) {
+                            Text("\(idx + 1)")
+                                .font(.system(size: 10))
+                                .foregroundStyle(Color.secondary.opacity(0.35))
+                                .frame(width: 14, alignment: .trailing)
+
+                            Group {
+                                if rec.penalty == .dnf {
+                                    Text("DNF")
+                                        .foregroundStyle(.red)
+                                } else {
+                                    HStack(spacing: 2) {
+                                        let t = rec.penalty == .plusTwo ? rec.time + 2 : rec.time
+                                        Text(formatTime(t))
+                                        if rec.penalty == .plusTwo {
+                                            Text("+2")
+                                                .font(.system(size: 9))
+                                                .foregroundStyle(.orange)
+                                        }
+                                    }
+                                }
+                            }
+                            .font(.system(size: 12, weight: .medium, design: .monospaced))
+
+                            Text(rec.scramble.prefix(22) + (rec.scramble.count > 22 ? "…" : ""))
+                                .font(.system(size: 10))
+                                .foregroundStyle(.tertiary)
+                                .lineLimit(1)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 3)
+                        .background(idx % 2 == 1 ? Color.white.opacity(0.025) : Color.clear)
+                    }
+                }
+            }
+        }
+        .frame(maxHeight: 90)
+    }
+
+    // MARK: — Bottom Bar
+
+    private var bottomBar: some View {
+        HStack(spacing: 0) {
+            Toggle("", isOn: $timer.isCrossPractice)
+                .toggleStyle(.checkbox)
+                .onChange(of: timer.isCrossPractice) { _, _ in
+                    if !timer.isRunning { timer.newScramble(); timer.reset() }
+                }
+            Text(timer.isCrossPractice ? "Cross (\(timer.crossSolveCount))" : "Cross")
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+                .padding(.leading, 4)
+
+            Spacer()
+
+            Text(store.currentSessionName)
+                .font(.system(size: 10))
+                .foregroundStyle(Color.secondary.opacity(0.5))
+                .lineLimit(1)
+                .frame(maxWidth: 80)
+
+            Spacer()
+
+            HStack(spacing: 12) {
+                Button("Session") {
+                    newSessionName = ""
+                    showingNewSession = true
+                }
+                .font(.system(size: 11))
+                .buttonStyle(.plain)
+                .foregroundStyle(Color.secondary.opacity(0.6))
                 .popover(isPresented: $showingNewSession) {
                     VStack(spacing: 8) {
-                        Text("Session name (optional)")
-                            .font(.caption)
-                        TextField("e.g. Practice", text: $newSessionName)
+                        Text("New session")
+                            .font(.caption.weight(.medium))
+                        TextField("Name (optional)", text: $newSessionName)
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 160)
                         Button("Create") {
-                            let name = newSessionName.trimmingCharacters(in: .whitespacesAndNewlines)
-                            let defaultName: String = {
-                                let df = DateFormatter()
-                                df.dateFormat = "yyyy-MM-dd"
-                                return df.string(from: Date())
-                            }()
-                            store.startNewNamedSession(name: name.isEmpty ? defaultName : name)
+                            let name = newSessionName.trimmingCharacters(in: .whitespaces)
+                            let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"
+                            store.startNewNamedSession(name: name.isEmpty ? df.string(from: Date()) : name)
                             showingNewSession = false
                         }
                         .buttonStyle(.borderedProminent)
@@ -185,115 +290,25 @@ public struct TimerView: View {
                     .padding(12)
                 }
 
-                Button("Export Times") {
-                    if let url = store.saveCSVToDesktop() {
-                        let pb = NSPasteboard.general
-                        pb.clearContents()
-                        pb.setString(url.path, forType: .string)
-                        let count = store.solves.count
-                        exportFeedback = "Exported \(count) solves"
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            exportFeedback = ""
-                        }
+                Button(exportDone ? "✓" : "Export") {
+                    if store.saveCSVToDesktop() != nil {
+                        exportDone = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { exportDone = false }
                     }
                 }
-                .font(.caption2)
+                .font(.system(size: 11))
                 .buttonStyle(.plain)
-
-                if !exportFeedback.isEmpty {
-                    Text(exportFeedback)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
+                .foregroundStyle(exportDone ? Color.green : Color.secondary.opacity(0.6))
             }
-
-            Toggle("Cross Practice", isOn: $timer.isCrossPractice)
-                .font(.caption)
-                .onChange(of: timer.isCrossPractice) { _, newValue in
-                    if !timer.isRunning {
-                        timer.newScramble()
-                        timer.reset()
-                    }
-                }
-
-            if timer.isCrossPractice {
-                Text("Cross solves this session: \(timer.crossSolveCount)")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-
-            HStack(spacing: 12) {
-                stat("ao5", store.ao5)
-                stat("ao12", store.ao12)
-                stat("ao100", store.ao100)
-                if let best = store.bestTime {
-                    Text("Best: \(formatTime(best))").font(.caption)
-                }
-            }
-            .font(.system(size: 20))
-            .monospacedDigit()
-
-            if let pb = store.pbSingle {
-                Text("PB: \(formatTime(pb))")
-                    .font(.caption.bold())
-                    .foregroundStyle(.yellow)
-            }
-
-            Text("Session: \(store.currentSessionName)")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-
-            if !store.solves.isEmpty {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 2) {
-                        ForEach(store.solves.prefix(10)) { rec in
-                            HStack {
-                                if rec.penalty == .dnf {
-                                    Text("DNF")
-                                        .font(.system(.caption, design: .monospaced))
-                                } else {
-                                    let shown = rec.penalty == .plusTwo ? rec.time + 2.0 : rec.time
-                                    Text(formatTime(shown))
-                                        .font(.system(.caption, design: .monospaced))
-                                }
-                                Text(rec.scramble.prefix(28) + (rec.scramble.count > 28 ? "…" : ""))
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                                Spacer()
-                            }
-                            .padding(.horizontal, 4)
-                        }
-                    }
-                }
-                .frame(maxHeight: 80)
-            } else {
-                Text("No solves yet")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-
-            Text("Spacebar starts / stops")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
         }
-        .font(.caption)
-        .onAppear { timer.isTimerTabActive = true }
-        .onDisappear { timer.isTimerTabActive = false }
-    }
-
-    private func stat(_ label: String, _ value: TimeInterval?) -> some View {
-        let s = value.map { formatTime($0) } ?? "—"
-        return VStack(spacing: 1) {
-            Text(label).font(.caption).foregroundStyle(.secondary)
-            Text(s)
-        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .background(Color.white.opacity(0.03))
     }
 
     private func formatTime(_ t: TimeInterval) -> String {
         let m = Int(t) / 60
         let s = t.truncatingRemainder(dividingBy: 60)
-        if m > 0 { return String(format: "%d:%05.2f", m, s) }
-        return String(format: "%.2f", s)
+        return m > 0 ? String(format: "%d:%05.2f", m, s) : String(format: "%.2f", s)
     }
 }

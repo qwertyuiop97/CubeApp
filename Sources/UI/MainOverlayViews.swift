@@ -410,91 +410,121 @@ public struct ContentView: View {
     }
 
     private func caseDetailView(for c: CubeCase) -> some View {
-        return VStack(alignment: .leading, spacing: 8) {
-            CubeStateView(currentCase: c, visualMode: manager.visualMode, sizeMode: manager.sizeMode)
-                .frame(height: manager.sizeMode == .compact ? 110 : 150)
-                .padding(.horizontal, 10)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 10) {
+                // Diagram
+                CubeStateView(currentCase: c, visualMode: manager.visualMode, sizeMode: manager.sizeMode)
+                    .frame(height: manager.sizeMode == .compact ? 110 : 148)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .padding(.horizontal, 10)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Primary")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 12)
-
-                HStack {
-                    Text(c.primaryAlgorithm)
-                        .font(.system(size: 15, weight: .medium, design: .monospaced))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .accessibilityLabel("Primary algorithm: \(c.primaryAlgorithm)")
-
-                    Text("(\(moveCount(c.primaryAlgorithm)) moves)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    Button(action: {
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(c.primaryAlgorithm, forType: .string)
-                        if reduceMotion {
-                            showCopiedFeedback = true
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { showCopiedFeedback = false }
-                        } else {
+                // Primary algorithm
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text("PRIMARY")
+                            .font(.system(size: 9, weight: .semibold, design: .rounded))
+                            .foregroundStyle(.tertiary)
+                            .tracking(0.5)
+                        Spacer()
+                        Text("\(moveCount(c.primaryAlgorithm)) moves")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.tertiary)
+                        if showCopiedFeedback {
+                            Text("Copied")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.green)
+                                .transition(.opacity)
+                        }
+                        Button {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(c.primaryAlgorithm, forType: .string)
                             withAnimation { showCopiedFeedback = true }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                                 withAnimation { showCopiedFeedback = false }
                             }
+                        } label: {
+                            Image(systemName: showCopiedFeedback ? "checkmark" : "doc.on.doc")
+                                .font(.system(size: 11))
                         }
-                    }) {
-                        Image(systemName: "doc.on.doc")
+                        .buttonStyle(.plain)
+                        .foregroundStyle(showCopiedFeedback ? Color.green : .secondary)
                     }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
-                    .help("Copy primary algorithm")
-                }
-                .padding(8)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-                .padding(.horizontal, 10)
+                    .padding(.horizontal, 12)
 
-                if showCopiedFeedback {
-                    Text("Copied")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 2)
-                }
-            }
-
-            if !c.alternativeAlgorithms.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Alternatives")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
+                    Text(c.primaryAlgorithm)
+                        .font(.system(size: 15, weight: .medium, design: .monospaced))
+                        .foregroundStyle(.primary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.1), lineWidth: 0.5)
+                        )
+                        .padding(.horizontal, 10)
+                        .accessibilityLabel("Primary: \(c.primaryAlgorithm)")
+                }
 
-                    VStack(alignment: .leading, spacing: 3) {
-                        ForEach(Array(c.alternativeAlgorithms.enumerated()), id: \.offset) { idx, alt in
-                            HStack {
-                                Text(alt)
-                                    .font(.system(size: 13, design: .monospaced))
-                                    .foregroundStyle(.secondary)
-                                    .padding(.vertical, 3)
-                                    .padding(.horizontal, 8)
-                                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4, style: .continuous))
-                                    .accessibilityLabel("Alternative \(idx + 1): \(alt)")
+                // Alternatives
+                if !c.alternativeAlgorithms.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("ALTERNATIVES")
+                            .font(.system(size: 9, weight: .semibold, design: .rounded))
+                            .foregroundStyle(.tertiary)
+                            .tracking(0.5)
+                            .padding(.horizontal, 12)
+
+                        VStack(spacing: 3) {
+                            ForEach(Array(c.alternativeAlgorithms.enumerated()), id: \.offset) { idx, alt in
+                                HStack(spacing: 8) {
+                                    Text("\(idx + 1)")
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(Color.secondary.opacity(0.4))
+                                        .frame(width: 12, alignment: .trailing)
+                                    Text(alt)
+                                        .font(.system(size: 13, weight: .regular, design: .monospaced))
+                                        .foregroundStyle(.secondary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    Text("\(moveCount(alt))")
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(.tertiary)
+                                    Button {
+                                        NSPasteboard.general.clearContents()
+                                        NSPasteboard.general.setString(alt, forType: .string)
+                                    } label: {
+                                        Image(systemName: "doc.on.doc")
+                                            .font(.system(size: 10))
+                                    }
+                                    .buttonStyle(.plain)
+                                    .foregroundStyle(.tertiary)
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                                .padding(.horizontal, 10)
+                                .accessibilityLabel("Alternative \(idx + 1): \(alt)")
                             }
                         }
                     }
-                    .padding(.horizontal, 10)
+                }
+
+                // Recognition tip
+                if let tip = c.recognitionTip {
+                    HStack(spacing: 6) {
+                        Image(systemName: "eye")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.tertiary)
+                        Text(tip)
+                            .font(.system(size: 12).italic())
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 4)
                 }
             }
-
-            Spacer(minLength: 4)
-
-            if let tip = c.recognitionTip {
-                Text(tip)
-                    .font(.caption.italic())
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 12)
-            }
+            .padding(.bottom, 8)
         }
     }
 

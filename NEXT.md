@@ -497,6 +497,27 @@ The current scrambler prevents same-face repeats but not opposite-face repeats (
 
 ---
 
+## Phase 17B — UI Visual Overhaul
+
+**Status: DONE** (2026-06-28)
+
+Complete visual redesign of the four main UI tabs to be clean, professional, and minimal.
+
+### Files changed:
+- `Sources/Features/Timer/TimerView.swift` — full rewrite: timer is the hero (72pt ultraLight), stats strip (AO5/AO12/AO100/BEST as labeled cells with dividers), alternating solve history rows, minimal bottom bar (Cross toggle + session name + Session/Export buttons), PB banner with animation, hold-space hint text
+- `Sources/Features/Stats/StatsView.swift` — full rewrite: card-based layout (session card, PB records card, lifetime/streak card, sparkline card), proper section labels, empty state with SF Symbol
+- `Sources/Features/Trainer/TrainerView.swift` — full rewrite: accuracy badge with color-coded dot, Got it (green) / Missed (red) buttons with icons, result badge with transition animation, cleaner reveal flow
+- `Sources/UI/MainOverlayViews.swift` — `caseDetailView` redesigned: algorithm in prominent card with styled header (PRIMARY / move count / copy button), alternatives as individual rows with index number + move count + copy button, recognition tip with eye icon
+
+### Visual principles applied:
+- Timer: `72pt ultraLight` (not light — ultraLight is more refined), armed state shows green
+- Stats cells: 9pt uppercase tracking labels, 14pt medium values
+- Cards: `Color.white.opacity(0.05)` background + `0.5pt strokeBorder` at `0.08` opacity
+- Solve history: alternating row shading, compact 12pt monospaced times
+- All secondary labels: `.tertiary` or `.secondary.opacity(0.X)` for proper depth
+
+---
+
 ## Phase 18 — Onboarding & First-Run Experience
 
 **Status: NOT STARTED** (do not begin until Phase 17 is done)
