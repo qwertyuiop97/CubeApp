@@ -79,8 +79,8 @@ public struct StatsView: View {
 
     private var recordsCard: some View {
         statCard {
-            sectionLabel("Personal Bests")
-            pbRow("Single", store.pbSingle)
+            sectionLabel("Records")
+            pbRow("PB Single", store.pbSingle)
             cardDivider
             pbRow("Ao5", store.pbAo5)
             cardDivider
