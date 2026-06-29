@@ -1,12 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(git remote *)",
-      "Bash(git branch *)",
-      "Bash(git push *)",
-      "Bash(git add *)",
-      "Bash(git commit -m ' *)",
-      "WebSearch"
-    ]
+    "defaultMode": "acceptEdits"
   }
 }

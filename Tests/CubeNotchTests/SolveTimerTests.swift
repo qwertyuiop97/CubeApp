@@ -34,13 +34,13 @@ final class SolveTimerTests: XCTestCase {
     func testToggleFromIdleToRunning() {
         let timer = SolveTimer()
         XCTAssertEqual(timer.state, .idle)
-        timer.toggle()
-        XCTAssertEqual(timer.state, .running)
+        timer.toggle() // idle does nothing now (hold-to-arm path)
+        XCTAssertEqual(timer.state, .idle)
     }
 
     func testToggleFromRunningToStopped() {
         let timer = SolveTimer()
-        timer.toggle() // idle -> running
+        timer.start() // use start directly (toggle from idle no longer starts)
         XCTAssertEqual(timer.state, .running)
         timer.toggle() // running -> stopped
         XCTAssertEqual(timer.state, .stopped)
@@ -48,13 +48,13 @@ final class SolveTimerTests: XCTestCase {
 
     func testToggleFromStoppedStartsFreshRunning() {
         // With WCA Inspection OFF, stopped → toggle must start running immediately
-        UserDefaults.standard.set(false, forKey: "wcaInspection")
+        UserDefaults.standard.set(false, forKey: UDKey.wcaInspection)
         let timer = SolveTimer()
-        timer.toggle() // -> running
+        timer.start()
         timer.toggle() // -> stopped
-        timer.toggle() // from stopped should go directly to running
+        timer.toggle() // from stopped should go directly to running (or inspection)
         XCTAssertEqual(timer.state, .running)
         XCTAssertNil(timer.finalTime)
-        UserDefaults.standard.removeObject(forKey: "wcaInspection")
+        UserDefaults.standard.removeObject(forKey: UDKey.wcaInspection)
     }
 }
