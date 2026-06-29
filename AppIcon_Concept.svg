@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#1A2435"/>
+      <stop offset="100%" stop-color="#07090D"/>
+    </radialGradient>
+    <linearGradient id="top" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#9DCEFF"/>
+      <stop offset="100%" stop-color="#4A94F5"/>
+    </linearGradient>
+    <linearGradient id="right" x1="0%" y1="0%" x2="30%" y2="100%">
+      <stop offset="0%" stop-color="#2B70D5"/>
+      <stop offset="100%" stop-color="#0E3A8C"/>
+    </linearGradient>
+    <linearGradient id="left" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#163D8A"/>
+      <stop offset="100%" stop-color="#050F2A"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.5"/>
+      <stop offset="40%" stop-color="white" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#3A7FFF" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#3A7FFF" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#3A7FFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background rounded rect -->
+  <rect width="1024" height="1024" rx="220" fill="url(#bg)"/>
+
+  <!-- Blue glow behind cube -->
+  <ellipse cx="512" cy="490" rx="290" ry="235" fill="url(#glow)"/>
+
+  <!-- === CUBE FACES ===
+       Vertices (side=280, cos30=243, center=(512,480)):
+       T  = (512, 200)   top apex
+       TR = (755, 340)   top-right
+       BR = (755, 620)   bottom-right
+       B  = (512, 760)   bottom apex
+       BL = (269, 620)   bottom-left
+       TL = (269, 340)   top-left
+       M  = (512, 480)   center ridge
+  -->
+
+  <!-- Left face (darkest) -->
+  <polygon points="269,340 512,480 512,760 269,620" fill="url(#left)"/>
+
+  <!-- Right face (medium) -->
+  <polygon points="755,340 755,620 512,760 512,480" fill="url(#right)"/>
+
+  <!-- Top face (brightest) -->
+  <polygon points="512,200 755,340 512,480 269,340" fill="url(#top)"/>
+
+  <!-- === STICKER GRID — 3×3 on each face, subtle dark lines === -->
+  <!-- Top face grid (lines parallel to T→TR) -->
+  <line x1="431" y1="247" x2="674" y2="387" stroke="rgba(0,15,50,0.28)" stroke-width="2"/>
+  <line x1="350" y1="293" x2="593" y2="433" stroke="rgba(0,15,50,0.28)" stroke-width="2"/>
+  <!-- Top face grid (lines parallel to T→TL) -->
+  <line x1="593" y1="247" x2="350" y2="387" stroke="rgba(0,15,50,0.28)" stroke-width="2"/>
+  <line x1="674" y1="293" x2="431" y2="433" stroke="rgba(0,15,50,0.28)" stroke-width="2"/>
+
+  <!-- Right face grid (horizontal rows) -->
+  <line x1="755" y1="433" x2="512" y2="573" stroke="rgba(0,8,35,0.28)" stroke-width="2"/>
+  <line x1="755" y1="527" x2="512" y2="667" stroke="rgba(0,8,35,0.28)" stroke-width="2"/>
+  <!-- Right face grid (vertical dividers) -->
+  <line x1="674" y1="387" x2="674" y2="667" stroke="rgba(0,8,35,0.28)" stroke-width="2"/>
+  <line x1="593" y1="433" x2="593" y2="713" stroke="rgba(0,8,35,0.28)" stroke-width="2"/>
+
+  <!-- Left face grid (horizontal rows) -->
+  <line x1="269" y1="433" x2="512" y2="573" stroke="rgba(0,4,25,0.32)" stroke-width="2"/>
+  <line x1="269" y1="527" x2="512" y2="667" stroke="rgba(0,4,25,0.32)" stroke-width="2"/>
+  <!-- Left face grid (vertical dividers) -->
+  <line x1="350" y1="387" x2="350" y2="667" stroke="rgba(0,4,25,0.32)" stroke-width="2"/>
+  <line x1="431" y1="433" x2="431" y2="713" stroke="rgba(0,4,25,0.32)" stroke-width="2"/>
+
+  <!-- === EDGE LINES for depth and definition === -->
+  <!-- Top apex edges — white highlight -->
+  <line x1="512" y1="200" x2="755" y2="340" stroke="rgba(255,255,255,0.32)" stroke-width="2.5"/>
+  <line x1="512" y1="200" x2="269" y2="340" stroke="rgba(255,255,255,0.32)" stroke-width="2.5"/>
+  <!-- Center ridge (face separators) -->
+  <line x1="512" y1="480" x2="755" y2="340" stroke="rgba(0,0,0,0.35)" stroke-width="2"/>
+  <line x1="512" y1="480" x2="269" y2="340" stroke="rgba(0,0,0,0.35)" stroke-width="2"/>
+  <!-- Vertical center spine -->
+  <line x1="512" y1="480" x2="512" y2="760" stroke="rgba(0,0,0,0.45)" stroke-width="2.5"/>
+  <!-- Side vertical edges -->
+  <line x1="755" y1="340" x2="755" y2="620" stroke="rgba(0,0,0,0.28)" stroke-width="2"/>
+  <line x1="269" y1="340" x2="269" y2="620" stroke="rgba(0,0,0,0.28)" stroke-width="2"/>
+  <!-- Bottom apex edges -->
+  <line x1="755" y1="620" x2="512" y2="760" stroke="rgba(0,0,0,0.38)" stroke-width="2"/>
+  <line x1="269" y1="620" x2="512" y2="760" stroke="rgba(0,0,0,0.38)" stroke-width="2"/>
+
+  <!-- === GLASS HIGHLIGHT — top-left quadrant of top face === -->
+  <polygon points="512,200 634,270 512,340 390,270" fill="url(#glass)" opacity="0.75"/>
+
+  <!-- Soft inner glow on top two edges -->
+  <line x1="512" y1="200" x2="755" y2="340" stroke="rgba(200,225,255,0.18)" stroke-width="10" stroke-linecap="round"/>
+  <line x1="512" y1="200" x2="269" y2="340" stroke="rgba(200,225,255,0.18)" stroke-width="10" stroke-linecap="round"/>
+</svg>

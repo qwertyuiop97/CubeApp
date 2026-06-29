@@ -171,7 +171,7 @@ public struct ContentView: View {
     }
 
     private var browserHeader: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 4) {
             Group {
                 if #available(macOS 26.0, *) {
                     GlassEffectContainer(spacing: 8) { headerTopRow }
@@ -202,6 +202,7 @@ public struct ContentView: View {
         }
         .pickerStyle(.segmented)
         .accessibilityLabel("Case category")
+        .frame(maxWidth: .infinity)
         .cubeNotchGlass(cornerRadius: 8)
     }
 
