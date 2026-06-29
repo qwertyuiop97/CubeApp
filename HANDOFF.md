@@ -7,8 +7,9 @@ Floating macOS HUD overlay for speedcubers. Stays on top of all apps, non-activa
 ## Current build state
 - `swift build` — clean, zero errors
 - `swift test` — 24/24 passing
-- Last commit: `e0eb952` — bug fixes from audit
+- Last commit: `b0947d2` — Phase 17B visual overhaul (TimerView, StatsView, TrainerView, caseDetailView)
 - GitHub: https://github.com/qwertyuiop97/CubeApp
+- Completed phases: 5A → 17A → Tasks 1-5 → 17B (all done, all pushed)
 
 ## Architecture
 - `Sources/App/AppDelegate.swift` — window setup, CGEventTap spacebar, hotkey, status bar menu
