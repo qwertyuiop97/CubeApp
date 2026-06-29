@@ -27,6 +27,7 @@ public struct ContentView: View {
     @State private var mode: String = "Cases" // "Cases" | "Timer" | "Train" | "Stats"
     @State private var showSavedFeedback = false
     @State private var showCopiedFeedback = false
+    @State private var copiedAltIndex: Int? = nil
     @State private var searchText: String = ""
 
     // 13A-5: Recent and Pinned
@@ -471,8 +472,15 @@ public struct ContentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
                 // Diagram
-                CubeStateView(currentCase: c, visualMode: manager.visualMode, sizeMode: manager.sizeMode)
-                    .frame(height: manager.sizeMode == .compact ? 110 : 148)
+                Text("RECOGNIZE THIS:")
+                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                    .foregroundStyle(.tertiary)
+                    .textCase(.uppercase)
+                    .tracking(0.5)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 4)
+                CubeStateView(currentCase: c, visualMode: .preExecution, sizeMode: .large)
+                    .frame(width: 200, height: 160)
                     .frame(maxWidth: .infinity)
                     .background(Color.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                     .padding(.horizontal, 10)
@@ -498,7 +506,7 @@ public struct ContentView: View {
                             NSPasteboard.general.clearContents()
                             NSPasteboard.general.setString(c.primaryAlgorithm, forType: .string)
                             withAnimation { showCopiedFeedback = true }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                                 withAnimation { showCopiedFeedback = false }
                             }
                         } label: {
@@ -536,33 +544,7 @@ public struct ContentView: View {
 
                         VStack(spacing: 3) {
                             ForEach(Array(c.alternativeAlgorithms.enumerated()), id: \.offset) { idx, alt in
-                                HStack(spacing: 8) {
-                                    Text("\(idx + 1)")
-                                        .font(.system(size: 10))
-                                        .foregroundStyle(Color.secondary.opacity(0.4))
-                                        .frame(width: 12, alignment: .trailing)
-                                    Text(alt)
-                                        .font(.system(size: 13, weight: .regular, design: .monospaced))
-                                        .foregroundStyle(.secondary)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                    Text("\(moveCount(alt))")
-                                        .font(.system(size: 10))
-                                        .foregroundStyle(.tertiary)
-                                    Button {
-                                        NSPasteboard.general.clearContents()
-                                        NSPasteboard.general.setString(alt, forType: .string)
-                                    } label: {
-                                        Image(systemName: "doc.on.doc")
-                                            .font(.system(size: 10))
-                                    }
-                                    .buttonStyle(.plain)
-                                    .foregroundStyle(.tertiary)
-                                }
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-                                .padding(.horizontal, 10)
-                                .accessibilityLabel("Alternative \(idx + 1): \(alt)")
+                                altRow(idx: idx, alt: alt)
                             }
                         }
                     }
@@ -584,6 +566,42 @@ public struct ContentView: View {
             }
             .padding(.bottom, 8)
         }
+    }
+
+    private func altRow(idx: Int, alt: String) -> some View {
+        HStack(spacing: 8) {
+            Text("\(idx + 1)")
+                .font(.system(size: 10))
+                .foregroundStyle(Color.secondary.opacity(0.4))
+                .frame(width: 12, alignment: .trailing)
+            Text(alt)
+                .font(.system(size: 13, weight: .regular, design: .monospaced))
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text("\(moveCount(alt))")
+                .font(.system(size: 11))
+                .foregroundStyle(.tertiary)
+            Button {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(alt, forType: .string)
+                withAnimation { copiedAltIndex = idx }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    withAnimation {
+                        if copiedAltIndex == idx { copiedAltIndex = nil }
+                    }
+                }
+            } label: {
+                Image(systemName: (copiedAltIndex == idx) ? "checkmark" : "doc.on.doc")
+                    .font(.system(size: 10))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(copiedAltIndex == idx ? .green : Color.secondary.opacity(0.6))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Color.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+        .padding(.horizontal, 10)
+        .accessibilityLabel("Alternative \(idx + 1): \(alt)")
     }
 
     private var settingsDrawer: some View {
