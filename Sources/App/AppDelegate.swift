@@ -102,6 +102,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Global spacebar for timer (CGEventTap) — only active when window visible + timer tab + appropriate state
         setupSpacebarEventTap()
+        if eventTap == nil {
+            // Accessibility permission missing — inform the HUD so it can show a prompt sheet
+            NotificationCenter.default.post(name: .requestAccessibilityPrompt, object: nil)
+        }
+
+        // Listen for retry requests from the accessibility prompt
+        NotificationCenter.default.addObserver(
+            forName: .requestRetryEventTap,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.setupSpacebarEventTap()
+        }
     }
 
     private func setupStatusItem() {
@@ -116,6 +129,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let menu = NSMenu()
         menu.addItem(NSMenuItem(title: "Toggle Overlay", action: #selector(toggleWindowFromMenu), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Open Library", action: #selector(openLibrary), keyEquivalent: ""))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "About CubeNotch", action: #selector(showAbout), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         let quit = NSMenuItem(title: "Quit CubeNotch", action: #selector(quitApp), keyEquivalent: "q")
         quit.target = self
@@ -137,6 +152,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         libraryWindowController?.showWindow(nil)
         libraryWindowController?.window?.makeKeyAndOrderFront(nil)
+    }
+
+    @objc private func showAbout() {
+        let aboutWindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 280),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+        aboutWindow.title = "About CubeNotch"
+        aboutWindow.isReleasedWhenClosed = false
+        aboutWindow.center()
+
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let aboutView = AboutView(version: version)
+        aboutWindow.contentView = NSHostingView(rootView: aboutView)
+
+        aboutWindow.makeKeyAndOrderFront(nil)
     }
 
     private func positionWindowUsingCurrentState(size: NSSize) {

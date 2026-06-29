@@ -520,30 +520,30 @@ Complete visual redesign of the four main UI tabs to be clean, professional, and
 
 ## Phase 18 — Onboarding & First-Run Experience
 
-**Status: NOT STARTED** (do not begin until Phase 17 is done)
+**Status: DONE** (2026-06-28)
 
 Users who open a utility app and don't immediately understand what it does uninstall it. This phase adds zero-friction onboarding.
 
 ### 18A-1: First Launch Detection
-- [ ] `@AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding = false`
-- [ ] On first launch only: show an `OnboardingView` as a sheet over the HUD
-- [ ] Three swipeable cards (no scroll view, just a PageTabViewStyle picker):
+- [x] `@AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding = false`
+- [x] On first launch only: show an `OnboardingView` as a sheet over the HUD
+- [x] Three swipeable cards (macOS ScrollView + paging dots because PageTabViewStyle unavailable on macOS):
   1. "Your Speedcubing HUD" — what the app does in one sentence + screenshot
   2. "Algorithm Library" — "57 OLL + 21 PLL cases always one glance away"
   3. "Train Your Recognition" — quick explainer of the trainer mode
-- [ ] Final card has "Get Started" button that sets `hasCompletedOnboarding = true` and dismisses
-- [ ] Onboarding can be re-triggered from Settings: "Show Intro Again"
+- [x] Final card has "Get Started" button that sets `hasCompletedOnboarding = true` and dismisses
+- [x] Onboarding can be re-triggered from Settings: "Show Intro Again"
 
 ### 18A-2: Accessibility Permission Prompt
-- [ ] CGEventTap requires Accessibility permission — if denied, the spacebar timer won't work
-- [ ] On first launch, if the tap fails to create, show a sheet: "Spacebar Timer Needs Accessibility Access"
+- [x] CGEventTap requires Accessibility permission — if denied, the spacebar timer won't work
+- [x] On first launch, if the tap fails to create, show a sheet: "Spacebar Timer Needs Accessibility Access"
   - Explain in plain language why
   - "Open System Settings" button → `NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)`
-- [ ] After user grants permission, re-create the event tap (via NotificationCenter observer for NSWorkspace didActivateApplication, or a "Retry" button)
+- [x] "Retry" button re-creates the event tap via NotificationCenter observer
 
 ### 18A-3: Settings — Hotkey Tooltip
-- [ ] In Settings, below the hotkey customizer, add: "Tip: Option+Space works even while another app is in focus"
-- [ ] First time settings drawer opens: show a brief pulse animation on the "Hotkey" row to draw attention
+- [x] In Settings, below the hotkey customizer, add: "Tip: Ctrl+Shift+Space works even while another app is in focus" (updated from Option+Space per Task 4)
+- [x] First time settings drawer opens: brief pulse animation on the "Hotkey" row (green dot + scale) to draw attention
 
 ---
 
@@ -560,10 +560,11 @@ Make the app feel finished and distributable.
 - [ ] All sizes must be PNG with correct naming per Apple spec
 
 ### 19A-2: About Window
-- [ ] `@objc func showAbout()` in AppDelegate — opens a small centered `NSWindow` (400×280, titled, non-resizable)
-- [ ] Content: app icon, "CubeNotch" title, version string, "Made for speedcubers. Built with ❤️"
-- [ ] Add "About CubeNotch" to status bar menu
-- [ ] Version pulled from `Bundle.main.infoDictionary["CFBundleShortVersionString"]`
+- [x] `@objc func showAbout()` in AppDelegate — opens a small centered `NSWindow` (400×280, titled, non-resizable)
+- [x] Content: SF Symbol cube + "CubeNotch" title, version string, "Made for speedcubers. Built with ❤️"
+- [x] Add "About CubeNotch" to status bar menu
+- [x] Version pulled from `Bundle.main.infoDictionary["CFBundleShortVersionString"]`
+- [x] Implemented `AboutView.swift` (SwiftUI hosted in NSWindow)
 
 ### 19A-3: Entitlements & Sandboxing Prep
 - [ ] Audit current entitlements — if no `CubeNotch.entitlements` file exists, create it

@@ -15,7 +15,12 @@ public struct ContentView: View {
     @AppStorage(UDKey.preferredScreen) private var preferredScreen: String = ""
     @AppStorage(UDKey.blurIntensity) private var blurIntensity: Double = 0.5
     @AppStorage(UDKey.backgroundTint) private var backgroundTint: String = "neutral"
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @State private var showSettings = false
+    @State private var showOnboarding = false
+    @State private var showAccessibilityPrompt = false
+    @State private var pulseHotkey = false
+    @State private var hasPulsedHotkeyThisSession = false
     @State private var caseCategory: String = "OLL" // "F2L" | "OLL" | "PLL"
     @State private var detailCase: CubeCase? = nil
     @State private var launchAtLoginEnabled: Bool = LaunchAtLogin.isEnabled
@@ -123,6 +128,26 @@ public struct ContentView: View {
             if !reduceMotion {
                 NotificationCenter.default.post(name: .requestAnimatedHide, object: nil)
             }
+        }
+        .sheet(isPresented: $showOnboarding) {
+            OnboardingView {
+                hasCompletedOnboarding = true
+                showOnboarding = false
+            }
+        }
+        .sheet(isPresented: $showAccessibilityPrompt) {
+            accessibilityPromptView
+        }
+        .onAppear {
+            if !hasCompletedOnboarding {
+                // show after a tiny delay so the HUD is visible first
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    showOnboarding = true
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .requestAccessibilityPrompt)) { _ in
+            showAccessibilityPrompt = true
         }
     }
 
@@ -274,6 +299,15 @@ public struct ContentView: View {
             .foregroundStyle(.secondary)
             .accessibilityLabel(showSettings ? "Close settings" : "Open settings")
             .cubeNotchGlass(cornerRadius: 6)
+            .onChange(of: showSettings) { _, newValue in
+                if newValue && !hasPulsedHotkeyThisSession {
+                    hasPulsedHotkeyThisSession = true
+                    pulseHotkey = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+                        withAnimation { pulseHotkey = false }
+                    }
+                }
+            }
         }
     }
 
@@ -614,24 +648,49 @@ public struct ContentView: View {
                 }
             }
 
-            // 13A-4 Hotkey customizer
+            // 13A-4 Hotkey customizer + 18A-3 tip + pulse
             VStack(alignment: .leading, spacing: 4) {
-                Text("Hotkey").font(.caption.weight(.medium))
+                HStack(spacing: 6) {
+                    Text("Hotkey").font(.caption.weight(.medium))
+                    if pulseHotkey {
+                        Circle()
+                            .fill(Color.accentColor.opacity(0.8))
+                            .frame(width: 5, height: 5)
+                            .transition(.opacity)
+                    }
+                }
                 Text(listeningForHotkey ? "Press new combo…" : GlobalHotKeyManager.shared.currentHotkeyDisplay())
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(listeningForHotkey ? .orange : .primary)
+                    .scaleEffect(pulseHotkey ? 1.04 : 1.0)
+                    .animation(pulseHotkey ? .easeInOut(duration: 0.6).repeatCount(2, autoreverses: true) : .default, value: pulseHotkey)
                 Button(listeningForHotkey ? "Listening…" : "Change…") {
                     startHotkeyCapture()
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
                 .disabled(listeningForHotkey)
+
+                Text("Tip: Ctrl+Shift+Space works even while another app is in focus")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.tertiary)
             }
 
             Button("Close") {
                 showSettings = false
             }
             .font(.caption)
+
+            Divider()
+
+            Button("Show Intro Again") {
+                showSettings = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    showOnboarding = true
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
         .padding(12)
         .frame(width: drawerWidth, height: currentWindowSize.height)
@@ -720,6 +779,36 @@ public struct ContentView: View {
         }
 
         hotkeyBox.monitor = monitor
+    }
+
+    // Accessibility permission prompt (shown if CGEventTap fails at launch)
+    private var accessibilityPromptView: some View {
+        VStack(spacing: 12) {
+            Text("Spacebar Timer Needs Accessibility Access")
+                .font(.headline)
+            Text("CubeNotch uses a global event tap for the spacebar timer. Without Accessibility permission the timer won't respond while other apps are focused.")
+                .font(.caption)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+
+            HStack {
+                Button("Open System Settings") {
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+
+                Button("Retry") {
+                    showAccessibilityPrompt = false
+                    NotificationCenter.default.post(name: .requestRetryEventTap, object: nil)
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(16)
+        .frame(width: 320)
     }
 }
 

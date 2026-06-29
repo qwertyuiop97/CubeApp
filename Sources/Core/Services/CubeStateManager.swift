@@ -26,6 +26,9 @@ extension Notification.Name {
     static let cubeStateDidChange = Notification.Name("cubeStateDidChange")
     static let requestAnimatedHide = Notification.Name("requestAnimatedHide")
     static let requestHotkeyRebind = Notification.Name("requestHotkeyRebind")
+    static let requestAccessibilityPrompt = Notification.Name("requestAccessibilityPrompt")
+    static let requestRetryEventTap = Notification.Name("requestRetryEventTap")
+    static let accessibilityPermissionGranted = Notification.Name("accessibilityPermissionGranted")
 }
 
 @Observable
