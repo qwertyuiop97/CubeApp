@@ -7,11 +7,13 @@ public struct CubeStateView: View {
     let currentCase: CubeCase
     let visualMode: VisualMode
     let sizeMode: SizeMode
+    var uFaceOnly: Bool = false
 
-    public init(currentCase: CubeCase, visualMode: VisualMode, sizeMode: SizeMode) {
+    public init(currentCase: CubeCase, visualMode: VisualMode, sizeMode: SizeMode, uFaceOnly: Bool = false) {
         self.currentCase = currentCase
         self.visualMode = visualMode
         self.sizeMode = sizeMode
+        self.uFaceOnly = uFaceOnly
     }
 
     public var body: some View {
@@ -31,6 +33,25 @@ public struct CubeStateView: View {
         let h = size.height
 
         let state = computeStickerState()
+
+        // U-face-only mode: fill the canvas with just the 3x3 top face (used for OLL list thumbnails)
+        if uFaceOnly {
+            let pad: CGFloat = 3
+            let s = (min(w, h) - pad * 2) / 3.0
+            let uOx = (w - 3 * s) / 2
+            let uOy = (h - 3 * s) / 2
+            for row in 0..<3 {
+                for col in 0..<3 {
+                    let x = uOx + CGFloat(col) * s
+                    let y = uOy + CGFloat(row) * s
+                    let rect = CGRect(x: x + 1.5, y: y + 1.5, width: s - 3, height: s - 3)
+                    let color = state.uFace[row * 3 + col]
+                    context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(color))
+                    context.stroke(Path(roundedRect: rect, cornerRadius: 3), with: .color(.black.opacity(0.5)), lineWidth: 1)
+                }
+            }
+            return
+        }
 
         // Cross layout: U centered with side strips on four edges
         // Total cross spans 5s x 5s

@@ -171,13 +171,22 @@ public struct ContentView: View {
     }
 
     private var browserHeader: some View {
-        Group {
-            if #available(macOS 26.0, *) {
-                GlassEffectContainer(spacing: 8) {
-                    headerContent
+        VStack(spacing: 6) {
+            Group {
+                if #available(macOS 26.0, *) {
+                    GlassEffectContainer(spacing: 8) { headerTopRow }
+                } else {
+                    headerTopRow
                 }
-            } else {
-                headerContent
+            }
+            if detailCase == nil && mode == "Cases" {
+                Group {
+                    if #available(macOS 26.0, *) {
+                        GlassEffectContainer(spacing: 8) { categoryRow }
+                    } else {
+                        categoryRow
+                    }
+                }
             }
         }
         .padding(.horizontal, 12)
@@ -185,7 +194,20 @@ public struct ContentView: View {
         .padding(.bottom, 6)
     }
 
-    private var headerContent: some View {
+    private var categoryRow: some View {
+        Picker("", selection: $caseCategory) {
+            Text("F2L").tag("F2L")
+            Text("OLL").tag("OLL")
+            Text("PLL").tag("PLL")
+        }
+        .pickerStyle(.segmented)
+        .accessibilityLabel("Case category")
+        .cubeNotchGlass(cornerRadius: 8)
+    }
+
+    private var headerContent: some View { headerTopRow }
+
+    private var headerTopRow: some View {
         HStack(spacing: 8) {
             if detailCase != nil {
                 Button(action: { detailCase = nil }) {
@@ -202,20 +224,7 @@ public struct ContentView: View {
                     Text("Stats").tag("Stats")
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 120)
                 .accessibilityLabel("Mode")
-                .cubeNotchGlass(cornerRadius: 8)
-            }
-
-            if detailCase == nil && mode == "Cases" {
-                Picker("", selection: $caseCategory) {
-                    Text("F2L").tag("F2L")
-                    Text("OLL").tag("OLL")
-                    Text("PLL").tag("PLL")
-                }
-                .pickerStyle(.segmented)
-                .frame(width: 140)
-                .accessibilityLabel("Case category")
                 .cubeNotchGlass(cornerRadius: 8)
             }
 
@@ -376,38 +385,52 @@ public struct ContentView: View {
             detailCase = c
             addToRecent(c.id)
         }) {
-            HStack {
-                Text("\(c.caseNumber). \(c.name)")
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
+            HStack(spacing: 10) {
+                // Diagram thumbnail — OLL shows U face only (the recognizable shape),
+                // PLL shows full cross (side colors are the recognition cue)
+                CubeStateView(
+                    currentCase: c,
+                    visualMode: .preExecution,
+                    sizeMode: .compact,
+                    uFaceOnly: c.caseType != "PLL"
+                )
+                .frame(width: 44, height: 44)
+                .background(Color(white: 0.12), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
 
-                if let tip = c.recognitionTip {
-                    Text(tip)
-                        .font(.caption2.italic())
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(c.caseType) \(c.caseNumber)")
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
+                    Text(c.name)
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundStyle(.primary)
                         .lineLimit(1)
                 }
+
                 Spacer()
-                if c.id == manager.currentCase.id {
-                    Image(systemName: "checkmark")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                if pinnedCaseIDs.contains(c.id) {
-                    Image(systemName: "pin.fill")
-                        .font(.caption2)
-                        .foregroundStyle(.yellow)
+
+                HStack(spacing: 4) {
+                    if c.id == manager.currentCase.id {
+                        Image(systemName: "checkmark")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    if pinnedCaseIDs.contains(c.id) {
+                        Image(systemName: "pin.fill")
+                            .font(.caption2)
+                            .foregroundStyle(.yellow)
+                    }
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
             .background(
                 c.id == manager.currentCase.id
                     ? Color.white.opacity(0.08)
-                    : Color.clear
+                    : Color.clear,
+                in: RoundedRectangle(cornerRadius: 6, style: .continuous)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
             .accessibilityLabel("\(c.caseType) \(c.caseNumber) \(c.name)\(c.id == manager.currentCase.id ? ", current" : "")")
         }
         .buttonStyle(.plain)
