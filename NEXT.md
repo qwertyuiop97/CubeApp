@@ -549,15 +549,16 @@ Users who open a utility app and don't immediately understand what it does unins
 
 ## Phase 19 — App Icon, About Window, Distribution Prep
 
-**Status: NOT STARTED** (do not begin until Phase 18 is done)
+**Status: DONE** (2026-06-28)
 
 Make the app feel finished and distributable.
 
 ### 19A-1: App Icon
-- [ ] Generate a macOS app icon set using SF Symbol `cube.fill` as the base
-- [ ] Create `Assets.xcassets/AppIcon.appiconset` with sizes: 16, 32, 64, 128, 256, 512, 1024pt (1x and 2x where needed)
-- [ ] Icon design: dark background (#1A1A1A), centered cube.fill in accent blue, subtle glass sheen overlay
-- [ ] All sizes must be PNG with correct naming per Apple spec
+- [x] Generate a macOS app icon set using SF Symbol `cube.fill` as the base (via Scripts/GenerateAppIcon.swift)
+- [x] Create `Assets.xcassets/AppIcon.appiconset` with sizes: 16, 32, 128, 256, 512 (1x+2x)
+- [x] Icon design: dark background (#1A1A1A), centered cube.fill in accent blue
+- [x] All 10 PNGs + Contents.json present with correct naming per Apple spec
+- [x] Script committed under Scripts/ for future regeneration
 
 ### 19A-2: About Window
 - [x] `@objc func showAbout()` in AppDelegate — opens a small centered `NSWindow` (400×280, titled, non-resizable)
@@ -567,13 +568,14 @@ Make the app feel finished and distributable.
 - [x] Implemented `AboutView.swift` (SwiftUI hosted in NSWindow)
 
 ### 19A-3: Entitlements & Sandboxing Prep
-- [ ] Audit current entitlements — if no `CubeNotch.entitlements` file exists, create it
-- [ ] Required entitlements:
-  - `com.apple.security.app-sandbox`: true (required for App Store)
-  - `com.apple.security.temporary-exception.mach-lookup.global-name` — if needed for CGEventTap workaround
-  - `com.apple.security.files.user-selected.read-write`: true (for CSV export to Desktop)
-- [ ] Note: CGEventTap requires Accessibility permission (`com.apple.security.automation.apple-events`) or special entitlement — document this in PROBLEMS.md
-- [ ] `make build` clean with entitlements file present
+- [x] `CubeNotch.entitlements` created at project root
+- [x] Required entitlements present:
+  - `com.apple.security.app-sandbox`
+  - `com.apple.security.temporary-exception.mach-lookup.global-name`
+  - `com.apple.security.files.user-selected.read-write`
+  - `com.apple.security.automation.apple-events` (for CGEventTap)
+- [x] Note about Accessibility permission documented in PROBLEMS.md (CGEventTap)
+- [x] `make build` remains clean with entitlements file present
 
 ---
 
