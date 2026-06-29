@@ -340,12 +340,13 @@ public struct ContentView: View {
     }
 
     private var caseListView: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 0) {
             if mode == "Cases" && detailCase == nil {
                 TextField("Search cases…", text: $searchText)
                     .textFieldStyle(.roundedBorder)
                     .controlSize(.small)
                     .padding(.horizontal, 8)
+                    .padding(.bottom, 2)
                     .onChange(of: caseCategory) { _, _ in
                         searchText = ""
                     }
@@ -378,6 +379,7 @@ public struct ContentView: View {
                 }
                 .padding(.horizontal, 8)
             }
+            .frame(maxHeight: .infinity)
         }
         .onAppear(perform: loadRecentPinned)
     }
