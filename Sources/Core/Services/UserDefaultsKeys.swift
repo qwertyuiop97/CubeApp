@@ -23,4 +23,5 @@ enum UDKey {
     static let inspectionDuration = "inspectionDuration"
     static let recentCaseIDs = "recentCaseIDs"
     static let pinnedCaseIDs = "pinnedCaseIDs"
+    static let selectedAlgorithmIndices = "selectedAlgorithmIndices"
 }
