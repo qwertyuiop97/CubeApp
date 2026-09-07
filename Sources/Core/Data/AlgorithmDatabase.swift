@@ -799,7 +799,8 @@ public struct AlgorithmDatabase {
                 "R2 u R' U R' U' R u' R2 y' R' U R",
                 "y' D' R' U' R U D R2' U R' U R U' R U' R2'"
             ],
-            diagramImagePlaceholder: "pll_ga"
+            diagramImagePlaceholder: "pll_ga",
+            auf: "none"
         ),
         CubeCase(
             caseNumber: 5,
@@ -810,7 +811,8 @@ public struct AlgorithmDatabase {
                 "y' R' U' y F R2 u R' U R U' R u' R2'",
                 "y D R' U' R U D' R2 U R' U R U' R U' R2'"
             ],
-            diagramImagePlaceholder: "pll_gb"
+            diagramImagePlaceholder: "pll_gb",
+            auf: "none"
         ),
         CubeCase(
             caseNumber: 6,
@@ -821,7 +823,8 @@ public struct AlgorithmDatabase {
                 "y2 R2' F2 R U2' R U2' R' F R U R' U' R' F R2",
                 "y2 R2 u' R U' R U R' u R2 y R U' R'"
             ],
-            diagramImagePlaceholder: "pll_gc"
+            diagramImagePlaceholder: "pll_gc",
+            auf: "none"
         ),
         CubeCase(
             caseNumber: 7,
@@ -832,7 +835,8 @@ public struct AlgorithmDatabase {
                 "R U R' y' R2 u' R U' R' U R' u R2",
                 "y' R' U' y F' R2 u' R U' R' U R' u R2"
             ],
-            diagramImagePlaceholder: "pll_gd"
+            diagramImagePlaceholder: "pll_gd",
+            auf: "none"
         ),
         CubeCase(
             caseNumber: 8,
