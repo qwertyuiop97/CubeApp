@@ -38,7 +38,8 @@ public struct AlgorithmDatabase {
                 "y' r' R U R U R' U' r2 R2' U R U' r'",
                 "F R U R' U' F' y' f R U R' U' f'"
             ],
-            diagramImagePlaceholder: "oll_1"
+            diagramImagePlaceholder: "oll_1",
+            recognitionTip: "Dot — only the center is yellow; solid yellow bars face right and left."
         ),
         CubeCase(
             caseNumber: 2,
@@ -49,7 +50,8 @@ public struct AlgorithmDatabase {
                 "y r U r' U2 R U2' R' U2 r U' r'",
                 "f R U R' U' f' F R U R' U' F'"
             ],
-            diagramImagePlaceholder: "oll_2"
+            diagramImagePlaceholder: "oll_2",
+            recognitionTip: "Dot — only the center is yellow; solid yellow bar faces left."
         ),
         CubeCase(
             caseNumber: 3,
@@ -60,7 +62,8 @@ public struct AlgorithmDatabase {
                 "y' f R U R' U' f' U' F R U R' U' F'",
                 "r' R2 U R' U' r U2 r' U M'"
             ],
-            diagramImagePlaceholder: "oll_3"
+            diagramImagePlaceholder: "oll_3",
+            recognitionTip: "Dot with the front-right corner yellow on top."
         ),
         CubeCase(
             caseNumber: 4,
@@ -71,7 +74,8 @@ public struct AlgorithmDatabase {
                 "y' f R U R' U' f' U F R U R' U' F'",
                 "r' U2 R U R' U r U F R U R' U' F'"
             ],
-            diagramImagePlaceholder: "oll_4"
+            diagramImagePlaceholder: "oll_4",
+            recognitionTip: "Dot with the back-right corner yellow on top."
         ),
 
         // MARK: Squares
@@ -85,7 +89,8 @@ public struct AlgorithmDatabase {
                 "y2 l' U2 L U L' U l",
                 "y' F R' F' R U2 R U2' R'"
             ],
-            diagramImagePlaceholder: "oll_5"
+            diagramImagePlaceholder: "oll_5",
+            recognitionTip: "2x2 yellow square at front-right; yellow pairs face back and left."
         ),
         CubeCase(
             caseNumber: 6,
@@ -96,7 +101,8 @@ public struct AlgorithmDatabase {
                 "y2 l U2 L' U' L U' l'",
                 "F R U R' U' F' U' F R U R' U' F'"
             ],
-            diagramImagePlaceholder: "oll_6"
+            diagramImagePlaceholder: "oll_6",
+            recognitionTip: "2x2 yellow square at back-right; yellow pairs face front and left."
         ),
 
         // MARK: Lightning Bolts
@@ -110,7 +116,8 @@ public struct AlgorithmDatabase {
                 "y2 l U L' U L U2' l'",
                 "F R U R' U' R U R' U' F'"
             ],
-            diagramImagePlaceholder: "oll_7"
+            diagramImagePlaceholder: "oll_7",
+            recognitionTip: "Lightning bolt — front-left corner up; yellow pairs hug the front-right edge."
         ),
         CubeCase(
             caseNumber: 8,
@@ -121,7 +128,8 @@ public struct AlgorithmDatabase {
                 "y2 l' U' L U' L' U2 l",
                 "R U2' R' U' R U' R' F R U R' U' F'"
             ],
-            diagramImagePlaceholder: "oll_8"
+            diagramImagePlaceholder: "oll_8",
+            recognitionTip: "Mirror lightning — back-left corner up; yellow pairs hug the back-right edge."
         ),
 
         // MARK: Fish Shapes
@@ -135,7 +143,8 @@ public struct AlgorithmDatabase {
                 "R' U' R y r U' r' U r U r'",
                 "y' r U R' U' r' R U R U' R'"
             ],
-            diagramImagePlaceholder: "oll_9"
+            diagramImagePlaceholder: "oll_9",
+            recognitionTip: "Fish — front-right corner up; yellow pair on the front-left."
         ),
         CubeCase(
             caseNumber: 10,
@@ -146,7 +155,8 @@ public struct AlgorithmDatabase {
                 "R U R' y R' F R U' R' F' R",
                 "y2 L U L' U L' B L B' L U2' L'"
             ],
-            diagramImagePlaceholder: "oll_10"
+            diagramImagePlaceholder: "oll_10",
+            recognitionTip: "Fish — back-right corner up; one yellow edge faces right."
         ),
 
         // MARK: Lightning Bolts (continued)
@@ -160,7 +170,8 @@ public struct AlgorithmDatabase {
                 "y2 M' U2 R U R' U R U2 R' U M",
                 "F' L' U' L U L' U' L U F"
             ],
-            diagramImagePlaceholder: "oll_11"
+            diagramImagePlaceholder: "oll_11",
+            recognitionTip: "Lightning bolt — front-left corner up; one yellow edge faces left."
         ),
         CubeCase(
             caseNumber: 12,
@@ -171,7 +182,8 @@ public struct AlgorithmDatabase {
                 "y F R U R' U' F' U F R U R' U' F'",
                 "r U R' U R U2' r' r' U' R U' R' U2 r"
             ],
-            diagramImagePlaceholder: "oll_12"
+            diagramImagePlaceholder: "oll_12",
+            recognitionTip: "Mirror lightning — back-left corner up; one yellow edge faces left."
         ),
 
         // MARK: Knight Move Shapes
@@ -185,7 +197,8 @@ public struct AlgorithmDatabase {
                 "F U R U' R2' F' R U R U' R'",
                 "y' r U' r' U' r U r' y R U' R'"
             ],
-            diagramImagePlaceholder: "oll_13"
+            diagramImagePlaceholder: "oll_13",
+            recognitionTip: "Knight move — front-right corner up; yellow pairs hug the right face."
         ),
         CubeCase(
             caseNumber: 14,
@@ -196,7 +209,8 @@ public struct AlgorithmDatabase {
                 "y L' B' L U' L' B L B' U B",
                 "y2 r' U r U r' U' r y R U R'"
             ],
-            diagramImagePlaceholder: "oll_14"
+            diagramImagePlaceholder: "oll_14",
+            recognitionTip: "Knight move — front-right corner up; yellow pairs hug the left face."
         ),
         CubeCase(
             caseNumber: 15,
@@ -207,7 +221,8 @@ public struct AlgorithmDatabase {
                 "y2 l' U' l L' U' L U l' U l",
                 "y' R' F R2 U' R' U' R U R' F'"
             ],
-            diagramImagePlaceholder: "oll_15"
+            diagramImagePlaceholder: "oll_15",
+            recognitionTip: "Knight move — front-right corner up; one yellow edge faces front."
         ),
         CubeCase(
             caseNumber: 16,
@@ -218,7 +233,8 @@ public struct AlgorithmDatabase {
                 "y2 l U l' L U L' U' l U' l'",
                 "y L F' L2 U L U L' U' L F"
             ],
-            diagramImagePlaceholder: "oll_16"
+            diagramImagePlaceholder: "oll_16",
+            recognitionTip: "Knight move — back-right corner up; one yellow edge faces back."
         ),
 
         // MARK: No Edges Flipped (continued)
@@ -232,7 +248,8 @@ public struct AlgorithmDatabase {
                 "y2 f R U R' U' f' U R U R' U' R' F R F'",
                 "r U R' U R U2' r' r' U' R U' R' U2 r"
             ],
-            diagramImagePlaceholder: "oll_17"
+            diagramImagePlaceholder: "oll_17",
+            recognitionTip: "Dot with two diagonal corners yellow (front-right and back-left)."
         ),
         CubeCase(
             caseNumber: 18,
@@ -243,7 +260,8 @@ public struct AlgorithmDatabase {
                 "r U R' U R U2 r' r' U' R U' R' U2 r",
                 "F R U R' U' F' U F R U R' U' F'"
             ],
-            diagramImagePlaceholder: "oll_18"
+            diagramImagePlaceholder: "oll_18",
+            recognitionTip: "Dot with both front corners yellow; solid yellow bar faces left."
         ),
         CubeCase(
             caseNumber: 19,
@@ -254,7 +272,8 @@ public struct AlgorithmDatabase {
                 "y2 M' U' R' U' R U M R' F R F'",
                 "r' R2 B R' B' r U R U' R'"
             ],
-            diagramImagePlaceholder: "oll_19"
+            diagramImagePlaceholder: "oll_19",
+            recognitionTip: "Dot with both back corners yellow."
         ),
         CubeCase(
             caseNumber: 20,
@@ -265,7 +284,8 @@ public struct AlgorithmDatabase {
                 "r U R' U' M2' U R U' R' U' M'",
                 "y M' U' M2' U' M2' U' M' U2' M2'"
             ],
-            diagramImagePlaceholder: "oll_20"
+            diagramImagePlaceholder: "oll_20",
+            recognitionTip: "Dot with all four corners yellow and every edge flipped."
         ),
 
         // MARK: All Edges Correct (OCLL group)
@@ -381,7 +401,8 @@ public struct AlgorithmDatabase {
                 "M U R U R' U' R' F R F' M'",
                 "y2 R U R' U' R U' R' F' U' F R U R'"
             ],
-            diagramImagePlaceholder: "oll_29"
+            diagramImagePlaceholder: "oll_29",
+            recognitionTip: "Awkward — right pair of corners up; yellow pair on the front-left."
         ),
         CubeCase(
             caseNumber: 30,
@@ -392,7 +413,8 @@ public struct AlgorithmDatabase {
                 "y' F R' F R2 U' R' U' R U R' F2",
                 "y2 r' D' r U r' D r U' r U r'"
             ],
-            diagramImagePlaceholder: "oll_30"
+            diagramImagePlaceholder: "oll_30",
+            recognitionTip: "Awkward — both front corners up; one yellow edge faces front."
         ),
 
         // MARK: P-Shapes
@@ -406,7 +428,8 @@ public struct AlgorithmDatabase {
                 "y L' U' F' U L U' L' F L",
                 "y2 S R U R' U' R' F R f'"
             ],
-            diagramImagePlaceholder: "oll_31"
+            diagramImagePlaceholder: "oll_31",
+            recognitionTip: "P-shape — right pair of corners up; yellow pair on the front-left."
         ),
         CubeCase(
             caseNumber: 32,
@@ -417,7 +440,8 @@ public struct AlgorithmDatabase {
                 "S R U R' U' R' F R f'",
                 "y' L U B' U' L' U L B L'"
             ],
-            diagramImagePlaceholder: "oll_32"
+            diagramImagePlaceholder: "oll_32",
+            recognitionTip: "P-shape — right pair of corners up; yellow pair on the back-right."
         ),
 
         // MARK: T-Shapes
@@ -446,7 +470,8 @@ public struct AlgorithmDatabase {
                 "y2 R' U' R' F R F' R U2 R'",
                 "F R U R' U' R U R' U' F'"
             ],
-            diagramImagePlaceholder: "oll_34"
+            diagramImagePlaceholder: "oll_34",
+            recognitionTip: "C-shape — front pair of corners up; yellow edges face front and back."
         ),
 
         // MARK: Fish Shapes (continued)
@@ -460,7 +485,8 @@ public struct AlgorithmDatabase {
                 "y2 f R U R' U' f' R U R' U R U2 R'",
                 "y L U2 L2 F' L F L U2 L'"
             ],
-            diagramImagePlaceholder: "oll_35"
+            diagramImagePlaceholder: "oll_35",
+            recognitionTip: "Fish with diagonal corners up (back-left and front-right); yellow edges face back and left."
         ),
 
         // MARK: W-Shapes
@@ -474,7 +500,8 @@ public struct AlgorithmDatabase {
                 "y2 R U R' F' R U R' U' R' F R U' R' F R F'",
                 "y' R' U' R U' R' U R U y R U' R' F'"
             ],
-            diagramImagePlaceholder: "oll_36"
+            diagramImagePlaceholder: "oll_36",
+            recognitionTip: "W-shape — diagonal corners up (back-left, front-right); yellow pair on the right."
         ),
 
         // MARK: Fish Shapes (continued)
@@ -488,7 +515,8 @@ public struct AlgorithmDatabase {
                 "y2 F L U' L' U' L U L' F'",
                 "R' U' F U R U' R' F' R"
             ],
-            diagramImagePlaceholder: "oll_37"
+            diagramImagePlaceholder: "oll_37",
+            recognitionTip: "Fish with diagonal corners up; yellow pairs on front-left and back-right."
         ),
 
         // MARK: W-Shapes (continued)
@@ -502,7 +530,8 @@ public struct AlgorithmDatabase {
                 "y R' U' R U' R' U R y' R U' R' F'",
                 "y2 L' U' L U' L' U L U L F' L' F"
             ],
-            diagramImagePlaceholder: "oll_38"
+            diagramImagePlaceholder: "oll_38",
+            recognitionTip: "W-shape — the other diagonal corners up; one yellow edge faces front."
         ),
 
         // MARK: Lightning Bolts (B5, B6)
@@ -516,7 +545,8 @@ public struct AlgorithmDatabase {
                 "F R U R' U' F' R' U' R U' R' U2 R",
                 "y2 R' U' R U' R' U R y R U' R' F'"
             ],
-            diagramImagePlaceholder: "oll_39"
+            diagramImagePlaceholder: "oll_39",
+            recognitionTip: "Big lightning — diagonal corners up (back-right, front-left); one yellow edge faces front."
         ),
         CubeCase(
             caseNumber: 40,
@@ -527,7 +557,8 @@ public struct AlgorithmDatabase {
                 "y L' B L U L' U' B' U L",
                 "y2 F R U R' U' F' U' F R U R' U' F'"
             ],
-            diagramImagePlaceholder: "oll_40"
+            diagramImagePlaceholder: "oll_40",
+            recognitionTip: "Big lightning — the other diagonal corners up; one yellow edge faces front."
         ),
 
         // MARK: Awkward Shapes (continued)
@@ -541,7 +572,8 @@ public struct AlgorithmDatabase {
                 "y2 R U2 R' U' R U R' U' F R U R' U' F'",
                 "y' R U' R' U2 R U y R U' R' U' F'"
             ],
-            diagramImagePlaceholder: "oll_41"
+            diagramImagePlaceholder: "oll_41",
+            recognitionTip: "Awkward — both front corners up; yellow edges face front and right."
         ),
         CubeCase(
             caseNumber: 42,
@@ -552,7 +584,8 @@ public struct AlgorithmDatabase {
                 "y R' F R F' R' F R F' R U R' U' R U R'",
                 "y2 R' U2 R U R' U' R U F R U R' U' F'"
             ],
-            diagramImagePlaceholder: "oll_42"
+            diagramImagePlaceholder: "oll_42",
+            recognitionTip: "Awkward — both back corners up; yellow edges face right and back."
         ),
 
         // MARK: P-Shapes (continued)
@@ -566,7 +599,8 @@ public struct AlgorithmDatabase {
                 "f' L' U' L U f",
                 "y2 F U R U' R' F'"
             ],
-            diagramImagePlaceholder: "oll_43"
+            diagramImagePlaceholder: "oll_43",
+            recognitionTip: "P-shape — back pair of corners up; full yellow bar faces front."
         ),
         CubeCase(
             caseNumber: 44,
@@ -577,7 +611,8 @@ public struct AlgorithmDatabase {
                 "y2 F U R U' R' F'",
                 "y' F' U' L' U L F"
             ],
-            diagramImagePlaceholder: "oll_44"
+            diagramImagePlaceholder: "oll_44",
+            recognitionTip: "P-shape — front pair of corners up; full yellow bar faces left."
         ),
 
         // MARK: T-Shapes (continued)
@@ -606,7 +641,8 @@ public struct AlgorithmDatabase {
                 "y L' U' L' B L B' U L",
                 "y2 R' U' R' F R F' R U R"
             ],
-            diagramImagePlaceholder: "oll_46"
+            diagramImagePlaceholder: "oll_46",
+            recognitionTip: "C-shape — left pair of corners up; full yellow bar faces right."
         ),
 
         // MARK: L-Shapes
@@ -620,7 +656,8 @@ public struct AlgorithmDatabase {
                 "R' U' R' F R F' R' F R F' U R",
                 "y2 F R U R' U' R U R' U' F'"
             ],
-            diagramImagePlaceholder: "oll_47"
+            diagramImagePlaceholder: "oll_47",
+            recognitionTip: "L-shape — yellow L at back-right; no corners up."
         ),
         CubeCase(
             caseNumber: 48,
@@ -631,7 +668,8 @@ public struct AlgorithmDatabase {
                 "y2 F' L' U' L U L' U' L U F",
                 "r' U' R U r F' R' F"
             ],
-            diagramImagePlaceholder: "oll_48"
+            diagramImagePlaceholder: "oll_48",
+            recognitionTip: "L-shape — yellow L at back-left; no corners up."
         ),
         CubeCase(
             caseNumber: 49,
@@ -642,7 +680,8 @@ public struct AlgorithmDatabase {
                 "y R U2 R' U' R U' R' F R U R' U' F'",
                 "y2 l' U l2 U' l2' U' l2 U l'"
             ],
-            diagramImagePlaceholder: "oll_49"
+            diagramImagePlaceholder: "oll_49",
+            recognitionTip: "L-shape — like OLL 47 but with a full yellow bar facing left."
         ),
         CubeCase(
             caseNumber: 50,
@@ -653,7 +692,8 @@ public struct AlgorithmDatabase {
                 "y' R U2 R' U' R U' R' F R U R' U' F'",
                 "y2 l U' l2 U l2 U l2' U' l"
             ],
-            diagramImagePlaceholder: "oll_50"
+            diagramImagePlaceholder: "oll_50",
+            recognitionTip: "L-shape — yellow L at front-right; two yellow corners face back-right."
         ),
 
         // MARK: I-Shapes
@@ -667,7 +707,8 @@ public struct AlgorithmDatabase {
                 "y2 F U R U' R' U R U' R' F'",
                 "F R U R' U' F' U F R U R' U' F'"
             ],
-            diagramImagePlaceholder: "oll_51"
+            diagramImagePlaceholder: "oll_51",
+            recognitionTip: "I-shape — diagonal yellow line (back-right to front-left); yellow pairs on front-right and back-left."
         ),
         CubeCase(
             caseNumber: 52,
@@ -678,7 +719,8 @@ public struct AlgorithmDatabase {
                 "R U R' U R U' y R U' R' F'",
                 "y2 r U R' U' r' U R U' R' r U' r'"
             ],
-            diagramImagePlaceholder: "oll_52"
+            diagramImagePlaceholder: "oll_52",
+            recognitionTip: "I-shape — same diagonal as OLL 51, but a full yellow bar faces back."
         ),
 
         // MARK: L-Shapes (continued)
@@ -692,7 +734,8 @@ public struct AlgorithmDatabase {
                 "y r' U2' R U R' U' R U R' U r",
                 "y2 l' U' L U' L' U L U' L' U2 l"
             ],
-            diagramImagePlaceholder: "oll_53"
+            diagramImagePlaceholder: "oll_53",
+            recognitionTip: "L-shape — yellow L at front-right with a bar facing left; one yellow edge faces back."
         ),
         CubeCase(
             caseNumber: 54,
@@ -703,7 +746,8 @@ public struct AlgorithmDatabase {
                 "y' r U2 R' U' R U R' U' R U' r'",
                 "y2 l U L' U L U' L' U L U2' l'"
             ],
-            diagramImagePlaceholder: "oll_54"
+            diagramImagePlaceholder: "oll_54",
+            recognitionTip: "L-shape — twin of OLL 47 with a bar facing left; one yellow edge faces front."
         ),
 
         // MARK: I-Shapes (rare)
@@ -717,7 +761,8 @@ public struct AlgorithmDatabase {
                 "R U R' U R U' y R U' R' F'",
                 "y2 F R U R' U' F' y R' U2 R U R' U R"
             ],
-            diagramImagePlaceholder: "oll_55"
+            diagramImagePlaceholder: "oll_55",
+            recognitionTip: "I-shape — diagonal yellow line with full yellow bars facing front and back."
         ),
         CubeCase(
             caseNumber: 56,
@@ -728,7 +773,8 @@ public struct AlgorithmDatabase {
                 "y2 l' U' l U' L' U L U' L' U L l' U l",
                 "F R U R' U' F' f R U R' U' f'"
             ],
-            diagramImagePlaceholder: "oll_56"
+            diagramImagePlaceholder: "oll_56",
+            recognitionTip: "I-shape — diagonal yellow line; one yellow edge faces front, one faces back."
         ),
 
         // MARK: Corners Correct Edges Flipped (rare)
@@ -800,7 +846,8 @@ public struct AlgorithmDatabase {
                 "y' D' R' U' R U D R2' U R' U R U' R U' R2'"
             ],
             diagramImagePlaceholder: "pll_ga",
-            auf: "none"
+            auf: "none",
+            recognitionTip: "Headlights on the left; 1x2 block on the front face."
         ),
         CubeCase(
             caseNumber: 5,
@@ -812,7 +859,8 @@ public struct AlgorithmDatabase {
                 "y D R' U' R U D' R2 U R' U R U' R U' R2'"
             ],
             diagramImagePlaceholder: "pll_gb",
-            auf: "none"
+            auf: "none",
+            recognitionTip: "Headlights on the back; 1x2 block on the front face."
         ),
         CubeCase(
             caseNumber: 6,
@@ -824,7 +872,8 @@ public struct AlgorithmDatabase {
                 "y2 R2 u' R U' R U R' u R2 y R U' R'"
             ],
             diagramImagePlaceholder: "pll_gc",
-            auf: "none"
+            auf: "none",
+            recognitionTip: "Headlights on the left; 1x2 block on the back face."
         ),
         CubeCase(
             caseNumber: 7,
@@ -836,7 +885,8 @@ public struct AlgorithmDatabase {
                 "y' R' U' y F' R2 u' R U' R' U R' u R2"
             ],
             diagramImagePlaceholder: "pll_gd",
-            auf: "none"
+            auf: "none",
+            recognitionTip: "Headlights on the left; 1x2 block on the right face."
         ),
         CubeCase(
             caseNumber: 8,
