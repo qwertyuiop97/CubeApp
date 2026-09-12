@@ -1,35 +1,18 @@
 import SwiftUI
 
 /// First-run onboarding cards.
-/// macOS-compatible implementation using horizontal ScrollView + paging (no PageTabViewStyle, which is unavailable on macOS).
+/// PageTabViewStyle / `.tabViewStyle(.page)` is not available on macOS, so paging
+/// uses a horizontal ScrollView bound to the existing page index.
 struct OnboardingView: View {
     var onComplete: () -> Void
     @State private var currentPage: Int = 0
-
-    private let pages: [OnboardingPage] = [
-        OnboardingPage(
-            icon: "cube.fill",
-            title: "Your Speedcubing HUD",
-            body: "See OLL, PLL, and F2L algorithms instantly while solving. Always on top, never steals focus."
-        ),
-        OnboardingPage(
-            icon: "book.fill",
-            title: "Algorithm Library",
-            body: "57 OLL + 21 PLL cases always one glance away. Primary alg + alternatives with move counts."
-        ),
-        OnboardingPage(
-            icon: "target",
-            title: "Train Your Recognition",
-            body: "Random cases appear. Recall the alg from memory, then reveal and score yourself to improve."
-        )
-    ]
 
     var body: some View {
         VStack(spacing: 12) {
             // Swipeable content
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 0) {
-                    ForEach(Array(pages.enumerated()), id: \.offset) { idx, page in
+                    ForEach(Array(OnboardingContent.pages.enumerated()), id: \.offset) { idx, page in
                         VStack(spacing: 14) {
                             Image(systemName: page.icon)
                                 .font(.system(size: 52))
@@ -55,11 +38,12 @@ struct OnboardingView: View {
                 .scrollTargetLayout()
             }
             .scrollTargetBehavior(.paging)
+            .scrollPosition(id: OnboardingPageSelection.boundIndex($currentPage))
             .frame(height: 200)
 
             // Page dots
             HStack(spacing: 8) {
-                ForEach(0..<pages.count, id: \.self) { i in
+                ForEach(0..<OnboardingContent.pages.count, id: \.self) { i in
                     Circle()
                         .fill(i == currentPage ? Color.primary : Color.secondary.opacity(0.3))
                         .frame(width: 6, height: 6)
@@ -67,7 +51,7 @@ struct OnboardingView: View {
             }
 
             // Get Started on last page
-            if currentPage == pages.count - 1 {
+            if currentPage == OnboardingContent.pages.count - 1 {
                 Button(action: onComplete) {
                     Text("Get Started")
                         .font(.system(size: 14, weight: .semibold))
@@ -79,7 +63,7 @@ struct OnboardingView: View {
                 .padding(.top, 4)
             } else {
                 Button("Next") {
-                    withAnimation { currentPage = min(currentPage + 1, pages.count - 1) }
+                    withAnimation { currentPage = min(currentPage + 1, OnboardingContent.pages.count - 1) }
                 }
                 .font(.caption)
                 .padding(.top, 4)
@@ -88,14 +72,43 @@ struct OnboardingView: View {
         .padding(12)
         .frame(width: 320)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .onAppear {
-            // keep currentPage in sync if user swipes (SwiftUI paging updates via drag, we use simple dots)
-        }
     }
 }
 
-private struct OnboardingPage {
+struct OnboardingPage {
     let icon: String
     let title: String
     let body: String
+}
+
+enum OnboardingContent {
+    static let pages: [OnboardingPage] = [
+        OnboardingPage(
+            icon: "cube.fill",
+            title: "Your Speedcubing HUD",
+            body: "See OLL, PLL, and F2L algorithms instantly while solving. The overlay stays on top and does not take focus, except when recording a shortcut."
+        ),
+        OnboardingPage(
+            icon: "book.fill",
+            title: "Algorithm Library",
+            body: "57 OLL + 21 PLL cases always one glance away. Primary alg + alternatives with move counts."
+        ),
+        OnboardingPage(
+            icon: "target",
+            title: "Train Your Recognition",
+            body: "Random cases appear. Recall the alg from memory, then reveal and score yourself to improve."
+        )
+    ]
+}
+
+enum OnboardingPageSelection {
+    static func boundIndex(_ currentPage: Binding<Int>) -> Binding<Int?> {
+        Binding(
+            get: { currentPage.wrappedValue },
+            set: { newValue in
+                guard let newValue else { return }
+                currentPage.wrappedValue = newValue
+            }
+        )
+    }
 }

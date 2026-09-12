@@ -1,6 +1,6 @@
 import SwiftUI
 
-// Phase 15A-1: Liquid Glass modifier (macOS 26+)
+// Liquid Glass modifier (macOS 26+)
 // Provides .cubeNotchGlass() which uses the new glass APIs when available,
 // falling back to ultraThinMaterial + tint for older macOS and when Reduce Transparency is on.
 

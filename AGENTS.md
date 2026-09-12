@@ -7,3 +7,5 @@
 5. **Protected data.** Do not modify `Sources/Core/Data/AlgorithmDatabase.swift` or `Sources/Core/Data/F2LDatabase.swift` unless a specific case is independently verified. Notation match, parser validity, and inverse/forward playback are not case identity.
 
 Product commands and limits: `README.md`.
+
+Public documentation should explain installation, behavior, or a maintenance decision. Keep agent dispatch notes, temporary paths, and intermediate test failures in local notes rather than the README. Preserve useful technical evidence without repeating it across several documents.

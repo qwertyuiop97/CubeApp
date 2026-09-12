@@ -2,8 +2,31 @@ import XCTest
 @testable import CubeNotch
 
 final class TimeStoreTests: XCTestCase {
+    private var suiteName: String!
+    private var defaults: UserDefaults!
+
+    override func setUp() {
+        super.setUp()
+        suiteName = "TimeStoreTests.\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: suiteName)
+        defaults.removePersistentDomain(forName: suiteName)
+    }
+
+    override func tearDown() {
+        if let suiteName {
+            defaults?.removePersistentDomain(forName: suiteName)
+        }
+        defaults = nil
+        suiteName = nil
+        super.tearDown()
+    }
+
+    private func makeStore() -> TimeStore {
+        TimeStore(defaults: defaults)
+    }
+
     func testAo5ReturnsNilWhenFewerThan5() {
-        let store = TimeStore()
+        let store = makeStore()
         store.clearSession()
         XCTAssertNil(store.ao5)
         store.addSolve(time: 1.0, scramble: "U")
@@ -11,7 +34,7 @@ final class TimeStoreTests: XCTestCase {
     }
 
     func testAo5UsesTrimmedMean() {
-        let store = TimeStore()
+        let store = makeStore()
         store.clearSession()
         // Add older solves first (they end up at the back)
         store.addSolve(time: 100, scramble: "U")
@@ -25,7 +48,7 @@ final class TimeStoreTests: XCTestCase {
     }
 
     func testAo12AndAo100SameLogic() {
-        let store = TimeStore()
+        let store = makeStore()
         store.clearSession()
         // Older first
         for i in 100..<110 { store.addSolve(time: Double(i), scramble: "U") }
@@ -37,7 +60,7 @@ final class TimeStoreTests: XCTestCase {
     }
 
     func testBestTimeReturnsMinimumIgnoringDNF() {
-        let store = TimeStore()
+        let store = makeStore()
         store.clearSession()
         store.addSolve(time: 5.0, scramble: "U")
         store.addSolve(time: 3.0, scramble: "U")
@@ -47,9 +70,89 @@ final class TimeStoreTests: XCTestCase {
     }
 
     func testClearSessionEmptiesAll() {
-        let store = TimeStore()
+        let store = makeStore()
         store.addSolve(time: 1.0, scramble: "U")
         store.clearSession()
         XCTAssertTrue(store.solves.isEmpty)
+    }
+
+    func testUpdateLastSolveTogglesPlusTwoNoneAndDNFWithoutMutatingRawTime() {
+        let store = makeStore()
+        store.addSolve(time: 10.0, scramble: "U")
+
+        store.updateLastSolve(addPenalty: .plusTwo)
+        XCTAssertEqual(store.solves[0].time, 10.0, accuracy: 0.001)
+        XCTAssertEqual(store.solves[0].penalty, .plusTwo)
+        XCTAssertEqual(store.bestTime ?? -1, 12.0, accuracy: 0.001)
+
+        store.updateLastSolve(addPenalty: .plusTwo)
+        XCTAssertEqual(store.solves[0].time, 10.0, accuracy: 0.001)
+        XCTAssertEqual(store.solves[0].penalty, .none)
+        XCTAssertEqual(store.bestTime ?? -1, 10.0, accuracy: 0.001)
+
+        store.updateLastSolve(addPenalty: .dnf)
+        XCTAssertEqual(store.solves[0].time, 10.0, accuracy: 0.001)
+        XCTAssertEqual(store.solves[0].penalty, .dnf)
+        XCTAssertNil(store.bestTime)
+
+        store.updateLastSolve(addPenalty: .none)
+        XCTAssertEqual(store.solves[0].time, 10.0, accuracy: 0.001)
+        XCTAssertEqual(store.solves[0].penalty, .none)
+        XCTAssertEqual(store.bestTime ?? -1, 10.0, accuracy: 0.001)
+
+        store.updateLastSolve(addPenalty: .plusTwo)
+        store.updateLastSolve(addPenalty: .dnf)
+        XCTAssertEqual(store.solves[0].time, 10.0, accuracy: 0.001)
+        XCTAssertEqual(store.solves[0].penalty, .dnf)
+    }
+
+    func testPenaltyPersistsRawElapsedAndPenaltyFlag() {
+        let store = makeStore()
+        store.addSolve(time: 10.0, scramble: "U")
+        store.updateLastSolve(addPenalty: .plusTwo)
+
+        let reloaded = makeStore()
+        XCTAssertEqual(reloaded.solves.count, 1)
+        XCTAssertEqual(reloaded.solves[0].time, 10.0, accuracy: 0.001)
+        XCTAssertEqual(reloaded.solves[0].penalty, .plusTwo)
+        XCTAssertEqual(reloaded.meanOfSession ?? -1, 12.0, accuracy: 0.001)
+        XCTAssertEqual(reloaded.bestTime ?? -1, 12.0, accuracy: 0.001)
+    }
+
+    func testMeanOfSessionUsesEffectiveTimeAndExcludesDNF() {
+        let store = makeStore()
+        store.addSolve(time: 10.0, scramble: "U")
+        store.addSolve(time: 10.0, scramble: "U")
+        store.updateLastSolve(addPenalty: .plusTwo)
+        XCTAssertEqual(store.meanOfSession ?? -1, 11.0, accuracy: 0.001)
+
+        store.addSolve(time: 8.0, scramble: "U")
+        store.updateLastSolve(addPenalty: .dnf)
+        XCTAssertEqual(store.meanOfSession ?? -1, 11.0, accuracy: 0.001)
+    }
+
+    func testNewPBNotifiesOnlyWhenNewEligibleSolveBeatsPriorPB() {
+        defaults.set(
+            ["single": 5.0, "ao5": -1.0, "ao12": -1.0, "ao100": -1.0],
+            forKey: UDKey.cubeNotchPersonalBests
+        )
+        let store = makeStore()
+        XCTAssertEqual(store.pbSingle ?? -1, 5.0, accuracy: 0.001)
+
+        store.addSolve(time: 6.0, scramble: "U")
+        XCTAssertNil(store.newPBMessage)
+        XCTAssertEqual(store.pbSingle ?? -1, 5.0, accuracy: 0.001)
+
+        store.addSolve(time: 5.0, scramble: "U")
+        XCTAssertNil(store.newPBMessage)
+        XCTAssertEqual(store.pbSingle ?? -1, 5.0, accuracy: 0.001)
+
+        store.addSolve(time: 4.0, scramble: "U", penalty: .dnf)
+        XCTAssertNil(store.newPBMessage)
+        XCTAssertEqual(store.pbSingle ?? -1, 5.0, accuracy: 0.001)
+
+        store.addSolve(time: 4.0, scramble: "U")
+        XCTAssertEqual(store.newPBMessage, "🎉 New PB!")
+        XCTAssertEqual(store.pbSingle ?? -1, 4.0, accuracy: 0.001)
     }
 }

@@ -83,18 +83,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.window?.toggleVisibility()
         }
 
-        // Listen for hotkey change requests (13A-4)
+        // Listen for hotkey change requests
         NotificationCenter.default.addObserver(
             forName: .requestHotkeyRebind,
             object: nil,
             queue: .main
         ) { [weak self] _ in
             self?.rebindHotkey()
-        }
-
-        // 13A-4: Apply any saved custom hotkey at launch
-        if UserDefaults.standard.integer(forKey: UDKey.customHotKeyCode) > 0 {
-            // rebindIfSaved already did it above
         }
 
         // Menu bar icon for quick toggle
@@ -176,7 +171,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let window = window else { return }
         let anchor = stateManager.anchorPosition
         let scr = preferredOrActiveScreen()
-        // Spring glide on initial show (Phase 5A)
+        // Spring glide on initial show
         window.animatedShowTo(anchor: anchor, size: size, screen: scr)
     }
 
@@ -318,7 +313,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return Unmanaged.passUnretained(event)
     }
 
-    // 13A-4: called when user changes hotkey in settings
+    // Called when the user changes the hotkey in Settings
     private func rebindHotkey() {
         GlobalHotKeyManager.shared.rebindIfSaved { [weak self] in
             self?.window?.toggleVisibility()

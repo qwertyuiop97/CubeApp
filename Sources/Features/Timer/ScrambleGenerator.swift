@@ -1,6 +1,6 @@
 import Foundation
 
-/// WCA-valid style random-move 3x3 scramble generator.
+/// Random-move 3x3 scrambles for practice, not official WCA random-state scrambles.
 /// Produces exactly 20 moves using faces U D F B L R with suffixes '', "'", "2".
 /// No two consecutive moves on same face or opposite face (axis rule).
 public enum ScrambleGenerator {

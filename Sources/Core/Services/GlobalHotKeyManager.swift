@@ -173,7 +173,7 @@ public final class GlobalHotKeyManager {
     private var handler: (() -> Void)?
     private var isRegistered = false
 
-    // 13A-4: custom hotkey storage
+    // Custom hotkey storage
     private var currentKeyCode: UInt32 = 49
     private var currentModifiers: UInt32 = UInt32(optionKey)
 
@@ -216,7 +216,7 @@ public final class GlobalHotKeyManager {
         handler = nil
     }
 
-    // 13A-4 helpers
+    // Shortcut settings
     public func currentHotkeyDisplay() -> String {
         let mod = currentModifiers
         var parts: [String] = []
@@ -274,7 +274,7 @@ public final class GlobalHotKeyManager {
         }
     }
 
-    // 13A-4 persisted values
+    // Persisted values
     public var savedKeyCode: UInt32 {
         unsigned32(forKey: UDKey.customHotKeyCode) ?? 49
     }

@@ -1,6 +1,6 @@
-# Algorithm verification (conservative source audit)
+# Algorithm source comparison
 
-Bounded audit of CubeApp **primary** algorithms against already-downloaded public references. Local databases were not edited. No network fetch was performed in this pass.
+This report compares the primary algorithms in CubeNotch with saved reference data. It records text matches and differences; it does not verify the starting cube state for each case.
 
 Local primaries: **57 OLL + 21 PLL** in `Sources/Core/Data/AlgorithmDatabase.swift`, **41 F2L** in `Sources/Core/Data/F2LDatabase.swift`. AlgorithmDatabase.swift comments CubeSkills OLL/PLL sheets by Feliks Zemdegs and Andy Klise as the in-repo source note.
 
@@ -28,7 +28,7 @@ CubeSkills PDFs are two-column layouts. Individual-case assignment from the extr
 
 `jperm-f2l.js` in cache is an HTML tutorial page, not `algsetAlgs` JS, so JPerm F2L is **source_unavailable**. `cubeskills-f2l.txt` is **not** in the verified URL set and is **not** read.
 
-Repro: `python3 Scripts/audit_primary_algs_source_compare.py` (reads local Swift + `--cache-dir`, default `/tmp/cubeapp-audit/`; writes `--output` and compact `--docs-json`). Missing cache files or incomplete parsed case counts abort instead of emitting a fake full audit.
+Repro: `python3 Scripts/audit_primary_algs_source_compare.py` (reads local Swift + `--cache-dir`, default `/tmp/cubeapp-audit/`; writes `--output` and compact `--docs-json`). Missing cache files or incomplete parsed case counts abort rather than producing an incomplete report.
 
 ## Match ranks (conservative)
 
@@ -182,7 +182,7 @@ SpeedCubeDB uses its own F2L numbering; a same-id miss is **not** automatically 
 
 ## Case-by-case: F2L
 
-`elsewhere (id:rank)` lists SpeedCubeDB F2L numbers where a conservative token match exists when the same id does not match, with the best notation rank for that other id. That is numbering-offset evidence, not a verdict that CubeApp is wrong.
+`elsewhere (id:rank)` lists SpeedCubeDB F2L numbers where a conservative token match exists when the same id does not match, with the best notation rank for that other id. These matches may help map case numbers; they do not establish which starting state a case depicts.
 
 | # | Name | Primary | SCDB same id [5] | SCDB elsewhere | Elsewhere (id:rank) | JPerm |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -240,7 +240,7 @@ SpeedCubeDB uses its own F2L numbering; a same-id miss is **not** automatically 
 - Cache hashes: see table above. Sources may have changed since download (cache dated from local files).
 - This audit does not modify protected databases or tests and does not claim the local list is incorrect where matches are unresolved.
 
-## Honest headline
+## Summary
 
 | Set | Id/name-aligned resolved (JPerm and/or SCDB) | Unresolved on both id sources | Notes |
 | --- | --- | --- | --- |

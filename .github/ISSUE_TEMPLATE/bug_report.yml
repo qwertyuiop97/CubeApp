@@ -1,0 +1,31 @@
+name: Bug report
+description: Report a problem with CubeNotch.
+body:
+  - type: markdown
+    attributes:
+      value: For security issues, use the private reporting link in SECURITY.md instead.
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: macOS version and CubeNotch commit or version.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include the algorithm case and window size if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots or logs
+      description: Remove personal information before attaching files.

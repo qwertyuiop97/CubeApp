@@ -24,19 +24,20 @@ public struct ContentView: View {
     @State private var caseCategory: String = "OLL" // "F2L" | "OLL" | "PLL"
     @State private var detailCase: CubeCase? = nil
     @State private var launchAtLoginEnabled: Bool = LaunchAtLogin.isEnabled
+    @State private var launchAtLoginError: String?
     @State private var mode: String = "Cases" // "Cases" | "Timer" | "Train" | "Stats"
     @State private var showSavedFeedback = false
     @State private var showCopiedFeedback = false
     @State private var copiedAltIndex: Int? = nil
     @State private var searchText: String = ""
 
-    // 13A-5: Recent and Pinned
+    // Recent and pinned cases
     @State private var recentCaseIDs: [String] = []
     @State private var pinnedCaseIDs: Set<String> = []
     private let recentKey = UDKey.recentCaseIDs
     private let pinnedKey = UDKey.pinnedCaseIDs
 
-    // 13A-4 Hotkey capture
+    // Hotkey capture
     @State private var listeningForHotkey = false
     @State private var hotkeyError: String?
     @State private var hotkeyCapture = HotkeyCaptureController.usingAppKit()
@@ -147,7 +148,7 @@ public struct ContentView: View {
     private func takeScreenshot() {
         guard let img = ScreenshotService.captureOverlay() else { return }
         ScreenshotService.copyToClipboard(img)
-        if let url = ScreenshotService.saveToDesktop(img) {
+        if ScreenshotService.saveToDesktop(img) != nil {
             // brief feedback
             if reduceMotion {
                 showSavedFeedback = true
@@ -158,8 +159,6 @@ public struct ContentView: View {
                     withAnimation { showSavedFeedback = false }
                 }
             }
-            // Optional: log or print path in console for now
-            print("Screenshot saved:", url.path)
         }
     }
 
@@ -499,10 +498,16 @@ public struct ContentView: View {
             Toggle("Launch at login", isOn: Binding(
                 get: { launchAtLoginEnabled },
                 set: { newValue in
-                    launchAtLoginEnabled = newValue
-                    _ = LaunchAtLogin.setEnabled(newValue)
+                    let result = LaunchAtLogin.apply(newValue)
+                    launchAtLoginEnabled = result.isEnabled
+                    launchAtLoginError = result.errorMessage
                 }
             ))
+            if let launchAtLoginError {
+                Text(launchAtLoginError)
+                    .font(.caption2)
+                    .foregroundStyle(.red)
+            }
 
             Toggle("WCA Inspection", isOn: Binding(
                 get: { UserDefaults.standard.object(forKey: UDKey.wcaInspection) as? Bool ?? true },
@@ -547,7 +552,7 @@ public struct ContentView: View {
                 }
             }
 
-            // 13A-4 Hotkey customizer + 18A-3 tip + pulse
+            // Hotkey customizer
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text("Hotkey").font(.caption.weight(.medium))

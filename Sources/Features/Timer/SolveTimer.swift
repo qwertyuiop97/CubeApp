@@ -17,7 +17,7 @@ public final class SolveTimer: ObservableObject {
     @Published public var crossSolveCount: Int = 0
     @Published public var lastSolvePenalty: Penalty = .none
 
-    // 17A-2 Inspection
+    // Inspection
     @Published public var isInspecting: Bool = false
     @Published public var inspectionRemaining: TimeInterval = 15.0
     @Published public var isArmed: Bool = false
@@ -30,11 +30,14 @@ public final class SolveTimer: ObservableObject {
     private var pendingPenalty: Penalty = .none
     private var armWorkItem: DispatchWorkItem?
 
+    private let defaults: UserDefaults
+
     private var wcaInspectionEnabled: Bool {
-        UserDefaults.standard.object(forKey: UDKey.wcaInspection) as? Bool ?? true
+        defaults.object(forKey: UDKey.wcaInspection) as? Bool ?? true
     }
 
-    public init() {
+    public init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         newScramble()
     }
 
@@ -94,6 +97,7 @@ public final class SolveTimer: ObservableObject {
 
     public func reset() {
         stopUpdateTimer()
+        stopInspection()
         state = .idle
         startTime = nil
         finalTime = nil
@@ -141,17 +145,12 @@ public final class SolveTimer: ObservableObject {
         if isInspecting {
             // space during inspection starts solve; apply any auto penalty
             let pen = pendingInspectionPenalty()
-            lastSolvePenalty = pen
             stopInspection()
-            // start fresh solve (inspection done)
             reset()
+            lastSolvePenalty = pen
             start()
         } else if state == .running {
             stop()
-            // after stop, if WCA inspection on, begin countdown
-            if wcaInspectionEnabled {
-                DispatchQueue.main.async { self.startInspection() }
-            }
         } else if state == .stopped {
             if wcaInspectionEnabled {
                 startInspection()

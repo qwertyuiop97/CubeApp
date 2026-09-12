@@ -44,17 +44,19 @@ public final class TimeStore: ObservableObject {
 
     private let sessionsListKey = UDKey.cubeNotchSessions
     private let currentSessionKey = UDKey.cubeNotchCurrentSession
+    private let defaults: UserDefaults
     private func storageKey(for name: String) -> String { "cubeNotchSession_\(name)" }
 
-    public init() {
+    public init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         loadSessionsList()
-        if let saved = UserDefaults.standard.string(forKey: currentSessionKey) {
+        if let saved = defaults.string(forKey: currentSessionKey) {
             currentSessionName = saved
         }
         load()
         loadPBs()
-        lifetimeSolveCount = UserDefaults.standard.integer(forKey: UDKey.cubeNotchLifetimeSolves)
-        if let dates = UserDefaults.standard.array(forKey: UDKey.cubeNotchSolveDates) as? [String] {
+        lifetimeSolveCount = defaults.integer(forKey: UDKey.cubeNotchLifetimeSolves)
+        if let dates = defaults.array(forKey: UDKey.cubeNotchSolveDates) as? [String] {
             solveDateKeys = Set(dates)
         }
     }
@@ -63,32 +65,34 @@ public final class TimeStore: ObservableObject {
         let record = SolveRecord(time: time, scramble: scramble, penalty: penalty)
         solves.insert(record, at: 0)
         save()
+        let priorPB = pbSingle
+        let candidate: TimeInterval? = record.penalty == .dnf ? nil : effectiveTime(record)
         updatePersonalBests()
         incrementLifetime()
         recordSolveDate(record.date)
-        checkAndSetNewPB()
+        checkAndSetNewPB(prior: priorPB, candidate: candidate)
     }
 
     public func clearSession() {
         solves.removeAll()
-        UserDefaults.standard.removeObject(forKey: storageKey(for: currentSessionName))
+        defaults.removeObject(forKey: storageKey(for: currentSessionName))
         save()
     }
 
     public func startNewNamedSession(name: String) {
         if !solves.isEmpty {
             if let data = try? JSONEncoder().encode(solves) {
-                UserDefaults.standard.set(data, forKey: storageKey(for: currentSessionName))
+                defaults.set(data, forKey: storageKey(for: currentSessionName))
             }
         }
         let newName = name.isEmpty ? defaultSessionName() : name
         if !knownSessions.contains(newName) {
             knownSessions.append(newName)
-            UserDefaults.standard.set(knownSessions, forKey: sessionsListKey)
+            defaults.set(knownSessions, forKey: sessionsListKey)
         }
         currentSessionName = newName
-        UserDefaults.standard.set(newName, forKey: currentSessionKey)
-        if let data = UserDefaults.standard.data(forKey: storageKey(for: newName)),
+        defaults.set(newName, forKey: currentSessionKey)
+        if let data = defaults.data(forKey: storageKey(for: newName)),
            let decoded = try? JSONDecoder().decode([SolveRecord].self, from: data) {
             solves = decoded
         } else {
@@ -104,14 +108,14 @@ public final class TimeStore: ObservableObject {
     }
 
     private func loadSessionsList() {
-        if let list = UserDefaults.standard.array(forKey: sessionsListKey) as? [String] {
+        if let list = defaults.array(forKey: sessionsListKey) as? [String] {
             knownSessions = list
         } else {
             knownSessions = ["Default"]
         }
     }
 
-    // 14A-1 CSV Export (columns: date,time,scramble,penalty,session)
+    // CSV Export (columns: date,time,scramble,penalty,session)
     public func exportCSV() -> String {
         var lines = ["date,time,scramble,penalty,session"]
         let df = ISO8601DateFormatter()
@@ -140,7 +144,7 @@ public final class TimeStore: ObservableObject {
         }
     }
 
-    // 14A-3 CSTimer JSON: [[penalty_int, time_ms, comment, timestamp_ms], ...]
+    // CSTimer JSON: [[penalty_int, time_ms, comment, timestamp_ms], ...]
     public func exportCSTimerJSON() -> String {
         var items: [[Any]] = []
         for rec in solves {
@@ -182,7 +186,7 @@ public final class TimeStore: ObservableObject {
         solves.filter { $0.penalty != .dnf }.map { effectiveTime($0) }.min()
     }
 
-    // Phase 16A-1: Personal Bests (never cleared by "New Session")
+    // Personal Bests (never cleared by "New Session")
     @Published public private(set) var pbSingle: TimeInterval?
     @Published public private(set) var pbAo5: TimeInterval?
     @Published public private(set) var pbAo12: TimeInterval?
@@ -212,11 +216,11 @@ public final class TimeStore: ObservableObject {
             "ao12": pbAo12 ?? -1,
             "ao100": pbAo100 ?? -1
         ]
-        UserDefaults.standard.set(dict, forKey: pbKey)
+        defaults.set(dict, forKey: pbKey)
     }
 
     private func loadPBs() {
-        if let dict = UserDefaults.standard.dictionary(forKey: pbKey) as? [String: TimeInterval] {
+        if let dict = defaults.dictionary(forKey: pbKey) as? [String: TimeInterval] {
             pbSingle = dict["single"].flatMap { $0 < 0 ? nil : $0 }
             pbAo5    = dict["ao5"].flatMap    { $0 < 0 ? nil : $0 }
             pbAo12   = dict["ao12"].flatMap   { $0 < 0 ? nil : $0 }
@@ -228,12 +232,11 @@ public final class TimeStore: ObservableObject {
         guard var first = solves.first else { return }
         switch addPenalty {
         case .plusTwo:
-            if first.penalty == .plusTwo { first.time -= 2.0; first.penalty = .none }
-            else if first.penalty != .dnf { first.time += 2.0; first.penalty = .plusTwo }
+            if first.penalty == .plusTwo { first.penalty = .none }
+            else if first.penalty != .dnf { first.penalty = .plusTwo }
         case .dnf:
             first.penalty = .dnf
         case .none:
-            if first.penalty == .plusTwo { first.time -= 2.0 }
             first.penalty = .none
         }
         solves[0] = first
@@ -268,12 +271,12 @@ public final class TimeStore: ObservableObject {
 
     private func save() {
         if let data = try? JSONEncoder().encode(solves) {
-            UserDefaults.standard.set(data, forKey: storageKey(for: currentSessionName))
+            defaults.set(data, forKey: storageKey(for: currentSessionName))
         }
     }
 
     private func load() {
-        guard let data = UserDefaults.standard.data(forKey: storageKey(for: currentSessionName)),
+        guard let data = defaults.data(forKey: storageKey(for: currentSessionName)),
               let decoded = try? JSONDecoder().decode([SolveRecord].self, from: data) else {
             solves = []
             return
@@ -281,10 +284,10 @@ public final class TimeStore: ObservableObject {
         solves = decoded
     }
 
-    // 16A-1/16A-2 helpers
+    // Lifetime activity
     private func incrementLifetime() {
         lifetimeSolveCount += 1
-        UserDefaults.standard.set(lifetimeSolveCount, forKey: lifetimeKey)
+        defaults.set(lifetimeSolveCount, forKey: lifetimeKey)
     }
 
     private func recordSolveDate(_ date: Date) {
@@ -292,15 +295,15 @@ public final class TimeStore: ObservableObject {
         df.dateFormat = "yyyy-MM-dd"
         let key = df.string(from: date)
         solveDateKeys.insert(key)
-        UserDefaults.standard.set(Array(solveDateKeys), forKey: streakDatesKey)
+        defaults.set(Array(solveDateKeys), forKey: streakDatesKey)
     }
 
-    private func checkAndSetNewPB() {
-        // called after addSolve; if any pb changed to a new low, set message briefly
-        if let b = bestTime, let cur = pbSingle, b <= cur {
-            newPBMessage = "🎉 New PB!"
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.newPBMessage = nil }
-        }
+    private func checkAndSetNewPB(prior: TimeInterval?, candidate: TimeInterval?) {
+        guard let candidate else { return }
+        let isNewPB = prior.map { candidate < $0 } ?? true
+        guard isNewPB else { return }
+        newPBMessage = "🎉 New PB!"
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.newPBMessage = nil }
     }
 
     public var dailyStreak: Int {
@@ -321,7 +324,7 @@ public final class TimeStore: ObservableObject {
         guard !solves.isEmpty else { return nil }
         let valid = solves.filter { $0.penalty != .dnf }
         guard !valid.isEmpty else { return nil }
-        let sum = valid.reduce(0) { $0 + $1.time }
+        let sum = valid.reduce(0) { $0 + effectiveTime($1) }
         return sum / Double(valid.count)
     }
 }

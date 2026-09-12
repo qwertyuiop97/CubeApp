@@ -1,22 +1,19 @@
-# NEXT
+# Current work
 
-`AGENTS.md` is the workflow. This file is the task list only.
+## Timer follow-up
 
-## Publication decision
+- Unify the stopped timer display and stored penalty state: repeated +2 clicks currently update them differently.
+- Recompute affected personal bests when a recorded solve receives a penalty.
 
-- Cleanup and privacy checks are documented in `docs/PUBLIC-RELEASE-CHECK.md`. No detected Git secrets or personal commit metadata; no GitHub review threads needed removal.
-- Repository remains private pending publication choice. No license is selected; public visibility does not itself grant an open-source license. Do not add a grant or claim notarized/signed distribution.
-- Do not add home paths, personal names/emails, or agent session logs.
-- Do not re-audit archived plans or protected algorithm files as a substitute for the work below.
+## Verification
 
-## Remaining product work
+- Test shortcut recording with another app active, then check cancel and focus restoration.
+- Check screenshots and materials in the running overlay.
+- Map F2L cases across reference numbering schemes. Compare starting cube states rather than move strings; preserve the existing data until a correction is verified.
 
-- Interactive foreground smoke: hotkey capture while the HUD is key, materials on a live `NSPanel`. Offscreen SwiftUI renders are not that check.
-- Algorithm identity vs notation, especially F2L numbering. Log source disagreements; do not rewrite protected cases on a string match. Details: `docs/ALGORITHM-VERIFICATION.md`.
+## Later
 
-## Future enhancements
+- Signed app packaging and installation instructions.
+- Smooth turn animation and a 3D F2L slot view.
 
-- Intra-move (smooth) playback animation
-- 3D F2L slot visualization
-
-Do not restart completed HUD/Library/timer/trainer/stats work from historical phase lists.
+The repository is public. Build, test, and contribution instructions are in [CONTRIBUTING.md](CONTRIBUTING.md); known limits are in [PROBLEMS.md](PROBLEMS.md).
