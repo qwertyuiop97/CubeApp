@@ -1,112 +1,68 @@
 # CubeNotch
 
-A high-performance, lightweight, native macOS utility designed specifically for speedcubers (3x3x3 algorithms).
+Native macOS overlay for 3x3 speedcubing. A borderless, non-activating HUD stays above a timer or browser so algorithm sheets, case diagrams, and setup playback stay glanceable without stealing focus. A separate Library window covers the same cases in a standard Mac document layout.
 
-It functions as a **borderless, floating, semi-transparent Heads-Up Display (HUD)** that stays pinned on top of active workspaces, browsers, or web-based timers (like CSTimer). Its primary goal is to provide instantaneous, glanceable algorithm sheets, case visualizations, and setup sequences without requiring the user to switch windows, break focus, or disrupt their solve flow.
+![Compact HUD, light](docs/images/playback-compact-light.png)
+![Compact HUD, dark](docs/images/playback-compact-dark.png)
+![Large HUD, light](docs/images/playback-large-light.png)
 
-## Development
+Invalid-input chrome (no cube diagram): [docs/images/playback-error-compact-light.png](docs/images/playback-error-compact-light.png)
 
-Requires Xcode 26 with its macOS SDK; deployment target is macOS 14 or later.
+Captures are checked-in SwiftUI renders of playback/detail chrome, not live `NSPanel` screenshots.
 
-```sh
-make build   # compile; warnings are errors
-make test    # complete XCTest suite; warnings are errors
-make run     # start the local executable
-```
+## Requirements
 
-The Makefile selects the SDK paired with the active Xcode toolchain, avoiding a mismatched SDK inherited from a shell. It does not change the machine's Xcode selection.
+- macOS 14 or later (`Package.swift`)
+- Xcode 26 with its macOS SDK (the Makefile sets `SDKROOT` from the selected toolchain)
+- Python 3 for the audit regression tests
 
-### Current work and evidence
-
-- [`NEXT.md`](NEXT.md): current continuation and remaining work.
-- [`HANDOFF.md`](HANDOFF.md): decisions, implementation work, observed verification and historical context.
-- [`PROBLEMS.md`](PROBLEMS.md): open limitations and resolved issues.
-- [`DESIGN.md`](DESIGN.md): native visual direction and design constraints.
-
-Algorithm data is protected: OLL/PLL and F2L remain in their original databases. Parser validity, model/diagram consistency, playback roundtrips and independent source verification are different checks; none alone proves every named algorithm is correct.
-
-To render the diagram QA sheet without changing desktop preferences:
+## Build, run, test
 
 ```sh
-CUBEAPP_RENDER_DIR=/tmp/cubeapp-renders \
-  SDKROOT="$(xcrun --sdk macosx --show-sdk-path)" \
-  swift test --filter DiagramRenderingTests
+make build   # swift build, warnings as errors
+make test    # 123 Swift tests + 17 Python source-audit tests; warnings as errors
+make run     # local executable
 ```
 
----
+`make` pairs `SDKROOT` with the active Xcode SDK. It does not change the machine’s Xcode selection.
 
-# Original Project Blueprint: macOS Speedcubing HUD Overlay
+Direct Swift, if needed:
 
-## 1. Executive Summary & Core Intent
+```sh
+SDKROOT="$(xcrun --sdk macosx --show-sdk-path)" swift test
+```
 
-The application is a high-performance, lightweight, native macOS utility designed specifically for speedcubers (3x3x3 algorithms). It functions as a borderless, floating, semi-transparent Heads-Up Display (HUD) that stays pinned on top of active workspaces, browsers, or web-based timers (like CSTimer). Its primary goal is to provide instantaneous, glanceable algorithm sheets, case visualizations, and setup sequences without requiring the user to switch windows, break focus, or disrupt their solve flow.
+## Features
 
----
+- Floating HUD: non-activating panel, corner anchors, compact / medium / large
+- Library window plus HUD case browser (search, pins, recents, favorites, copy)
+- 57 OLL + 21 PLL (`AlgorithmDatabase.swift`) and 41 F2L (`F2LDatabase.swift`)
+- Beginner layer-by-layer steps
+- Engine-derived 2D diagrams and discrete inverse/forward algorithm playback
+- Built-in timer (inspection, penalties, averages, sessions, export), trainer, and stats
+- Global hotkey toggle; spacebar timer (Accessibility permission)
 
-## 2. Architectural Design & System Components
+## Limitations
 
-The application is structured into four highly decoupled, specialized architectural layers to ensure performance, state consistency, and rapid UI scaling:
+- Playback is discrete (one cube state per move). It is not intra-move animation or a 3D F2L slot view.
+- Parser, diagram, and playback tests do not prove that a named case matches a canonical identity. Public-source checks are notation candidates; F2L numbering in particular is unverified against SpeedCubeDB ids. See [docs/ALGORITHM-VERIFICATION.md](docs/ALGORITHM-VERIFICATION.md).
+- Interactive foreground hotkey/material smoke checks are not complete.
 
-### A. Core Window Engine (`FloatingOverlayWindow.swift`)
+This repository does not grant a license and does not claim notarized or signed distribution.
 
-Built entirely on low-level **AppKit (`NSWindow`)** rather than standard SwiftUI window structures to allow deep control over macOS window server traits.
+## Data
 
-* **Always-on-Top Level:** The window level is set explicitly to `.floating` or `.statusBar`, ensuring it stays visible above full-screen web apps or local tools.
-* **Non-Activating Panel:** Configured as an `NSPanel` with the `.nonActivatingPanel` collection behavior. This ensures that clicking the overlay or adjusting its settings **never steals keyboard focus** from the user’s background timer or active app.
-* **Zero-Chrome Transparency:** The window has a completely borderless style mask (`.borderless`), a completely transparent background (`.clear`), and suppresses standard macOS window controls (minimize, maximize, close frames).
-* **Corner-Anchoring Metrics:** Reads screen constraints natively using `NSScreen.main`. It includes a programmatic alignment function that subtracts the native macOS Menu Bar height and dynamically calculates exact pixel positions to snap the window cleanly into one of four corners: Top-Left, Top-Right, Bottom-Left, or Bottom-Right.
+OLL/PLL primaries in-repo are noted as CubeSkills sheets by Feliks Zemdegs and Andy Klise:
 
-### B. State Management & Core Logic (`CubeStateManager.swift`)
+- https://www.cubeskills.com/uploads/pdf/tutorials/oll-algorithms.pdf
+- https://www.cubeskills.com/uploads/pdf/tutorials/pll-algorithms.pdf
 
-A centralized state machine utilizing modern observation paradigms (`@Observable` or `ObservableObject`) to serve as the unified source of truth.
+Bounded notation comparison (not identity proofs) used JPerm and SpeedCubeDB:
 
-* **Active Case Tracking:** Reads, filters, and loads active OLL (Orientation of the Last Layer) or PLL (Permutation of the Last Layer) cases directly from `AlgorithmDatabase.swift`.
-* **Layout Scaling States:** Dictates a multi-tier size state (`.compact`, `.medium`, `.large`) that scales every visual aspect of the application uniformly using proportional scaling factors.
-* **Algorithm Parsing:** Houses a sequence text parser that ingests standard World Cube Association (WCA) notation (e.g., `R U R' U' F'`). It converts these strings into active instruction sequences for the renderer.
+- https://jperm.net/lib/oll.js
+- https://jperm.net/lib/pll.js
+- https://speedcubedb.com/a/3x3/OLL
+- https://speedcubedb.com/a/3x3/PLL
+- https://speedcubedb.com/a/3x3/F2L
 
-### C. Interactive Cube Visualizer (`CubeStateView.swift`)
-
-A highly optimized visualizer built using a native **SwiftUI `Canvas`** layer or custom vector `Shape` paths rather than heavy 3D assets to keep CPU and memory overhead near 0%.
-
-* **Sticker Representation:** Renders a clean 2D top-down (or stylized isometric oblique projection) 3x3 grid layer representing the last layer of a Rubik's cube, surrounded by outer edge indicators.
-* **Mode 1: Pre-Execution State (Recognition Mode):** Paints the grid layout showing the exact sticker orientation the user needs to recognize on their physical cube right before executing the active algorithm.
-* **Mode 2: Setup State (Inversion Mode):** Programmatically inverts the algorithm sequence to show the cube state required to *generate* that specific case from a solved state, allowing for rapid, hands-on muscle memory practice.
-* **Mode 3: Hide Visuals (Minimalist Mode):** Collapses the graphical Canvas entirely with a clean transition, reducing the interface to a single text string line for experienced cubers who only need quick text lookups.
-
-### D. User Interface Assembly (`MainOverlayViews.swift`)
-
-The visual presentation envelope assembled in SwiftUI, balancing premium aesthetic design with raw scannability.
-
-* **Visual Aesthetic:** Wrapped completely in a native macOS frosted-glass system effect (`.ultraThinMaterial`) with thin, elegant borders, making it blend seamlessly into the modern macOS desktop environment.
-* **Dynamic Type & Scale Responsiveness:** Font hierarchies, padding constraints, frame limits, and vector drawing calculations are completely bound to the global scale state.
-* **Heads-Up Control Overlay:** An expandable, slide-out, or popover configuration panel that exposes clean dropdown menus/toggles for layout scale adjustments, viewport orientation changes, and corner-snap positions without cluttering the screen.
-
----
-
-## 3. Core Technical Specifications
-
-| Component | Technical Framework / API | Implementation Target |
-| --- | --- | --- |
-| **Window Level** | AppKit (`NSPanel` / `NSWindow`) | `.floating`, `.nonActivatingPanel` |
-| **UI Framework** | SwiftUI | Canvas API, `.ultraThinMaterial` styling |
-| **State Machine** | SwiftUI Combine / Observation | Proportional dynamic layout scale bindings |
-| **Data Feed** | Swift Data Model | Raw string WCA algorithm database parsing |
-| **Build Tooling** | Command Line Engine | `Makefile` driven automated builds |
-
----
-
-## 4. Intended Runtime Behavior
-
-When launched, the application initializes as a headless utility, preventing an aggressive app window popup. It immediately fetches the user's default configuration, anchors itself perfectly to the preferred corner screen boundary, and presents a beautiful, responsive, blurred overlay.
-
-As the user cycles through algorithms via keyboard shortcuts or minimal menu interaction, the text updates instantly, the canvas re-draws the correct vector color positions in real time, and the panel remains a quiet, non-obtrusive, hyper-functional visual companion.
-
----
-
-## Current Implementation Notes
-
-- The four-layer architecture above is implemented.
-- See `SCRATCHPAD.md` for the full verbatim copy of this blueprint plus ongoing experiments.
-- `AlgorithmDatabase.swift` remains the protected single source of truth (ignore any model-related details outside the data layer).
-
-_Last updated: 2026-06-27_
+JPerm F2L and a CubeSkills F2L dump were not in that verified set. Case tallies and unresolved F2L numbering: [docs/ALGORITHM-VERIFICATION.md](docs/ALGORITHM-VERIFICATION.md).

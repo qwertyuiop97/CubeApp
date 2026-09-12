@@ -18,6 +18,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Scan Git history for secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew install gitleaks
+          gitleaks git . --redact
 
       - name: Select Xcode 26
         shell: bash

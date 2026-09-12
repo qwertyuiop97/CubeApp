@@ -28,7 +28,7 @@ Harness: `Tests/CubeNotchTests/PlaybackRenderingTests.swift`. HUD snapshots use 
 - **Progress.** Custom `ProgressTrack` (capsule fill), not `ProgressView`. ImageRenderer drew a full yellow bar plus a red prohibition glyph for `ProgressView(value: 0)` — that is not a real “move 0 of N” state.
 - **Materials.** Semantic `.quaternary` fills instead of `Color.white.opacity` (those assumed dark HUD). Glass stays off content. No `NSApplication.activate`.
 - **Errors.** Diagram is gated on **successful loaded playback** (`hasLoadedPlayback && visualMode != .textOnly`). Passing `cubeState: nil` is not used: `CubeStateView` would fall back to a valid case-recognition diagram. Invalid token shows “Invalid move “Q”.” plus the source string; transport/progress hidden. Idle load does not flash the animator’s solved reset cube.
-- **Motion.** `@Environment(\.accessibilityReduceMotion)` skips the 0.12s index tween. That environment key is **read-only** in the SDK — `DESIGN.md` `.environment(\.accessibilityReduceMotion/Transparency, true)` overrides are invalid. Behavior is unit-tested via `PlaybackPresentation`, not by flipping system prefs.
+- **Motion.** `@Environment(\.accessibilityReduceMotion)` skips the 0.12s index tween. That environment key is **read-only** in the SDK; direct `.environment(\.accessibilityReduceMotion/Transparency, true)` overrides are invalid. Behavior is unit-tested via `PlaybackPresentation`, not by flipping system prefs.
 - **No 3D / intra-move animation.** Playback is discrete cube states per token.
 
 ## Inspection findings (vision on the PNGs above)
