@@ -3,6 +3,7 @@
 The current task queue lives in [NEXT.md](NEXT.md). This file records product limitations, not a second development plan.
 
 - **Algorithm case mapping:** The [source comparison](docs/ALGORITHM-VERIFICATION.md) checks notation candidates. It does not prove every algorithm belongs to its displayed canonical case; F2L numbering differs between references. Match actual cube cases before changing protected data. Missing string matches are not proof of incorrect algorithms.
+- **Accessibility permission:** macOS can drop the grant when a rebuild changes the app's signing identity. `make app` prefers an Apple Development certificate to keep it, but re-approve the switch in System Settings if the spacebar timer stops responding after a rebuild.
 - **Interactive verification:** Native light/dark renders and offscreen focus tests pass. Foreground shortcut recording, physical shortcut presses, and the live overlay's material capture still need interactive smoke coverage. See [visual evidence](docs/VISUAL-VERIFICATION.md) and [focus coverage](docs/HOTKEY-FOCUS-VERIFICATION.md).
 - **Playback scope:** Moves advance discretely. Smooth intra-move animation and a 3D F2L slot view are not implemented.
 - **Older timer records:** Earlier builds could store a manually applied +2 in both elapsed time and the penalty flag. New edits keep these separate; existing records are not rewritten because manual and inspection penalties cannot be distinguished reliably.

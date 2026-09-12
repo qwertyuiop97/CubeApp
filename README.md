@@ -31,7 +31,7 @@ make run
 
 `make run` builds and opens `build/CubeNotch.app`. You can also open that bundle in Finder. The app uses an accessory window, so it intentionally has no Dock icon; Finder uses the bundled cube artwork, while the menu bar uses a monochrome cube symbol.
 
-Hide the overlay with its close button, a double-click, the menu bar item, or the keyboard shortcut. Escape hides it whenever it holds the keyboard. Reduce Motion makes hiding instant instead of animated. Use the menu bar item to show it again. The default shortcut is **Control–Shift–Space**; change it in Settings. The global spacebar timer needs macOS Accessibility permission.
+Hide the overlay with its close button, a double-click, the menu bar item, or the keyboard shortcut. Escape hides it whenever it holds the keyboard. Reduce Motion makes hiding instant instead of animated. Use the menu bar item to show it again. The default shortcut is **Control–Shift–Space**; change it in Settings. The global spacebar timer needs macOS Accessibility permission, granted once in System Settings → Privacy & Security → Accessibility. macOS ties that permission to the app's signing identity, so `make app` signs with an installed Apple Development certificate when it finds one: the grant then survives rebuilds. Without a certificate it falls back to an ad-hoc signature, which changes on every rebuild and needs the permission granted again. If the tap cannot start, the overlay shows a prompt and you can grant access and retry from there.
 
 The Makefile selects the macOS SDK from your active Xcode installation. If the compiler or SDK cannot be found, check `xcode-select -p` and select your installed Xcode through its settings.
 

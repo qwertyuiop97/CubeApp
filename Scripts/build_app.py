@@ -1,8 +1,11 @@
 """Package the Swift executable and canonical artwork for local macOS use.
 
-The ad-hoc signature is for local development, not notarized distribution.
+Signs with an Apple Development identity when one is installed, so macOS keeps
+granted permissions across rebuilds; falls back to ad-hoc otherwise. Neither is
+a notarized distribution signature.
 """
 import json
+import os
 import pathlib
 import plistlib
 import shutil
@@ -10,6 +13,27 @@ import subprocess
 import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+
+
+def signing_identity():
+    """Prefer a real signing identity over ad-hoc.
+
+    macOS ties Accessibility permission to the app's code identity. An ad-hoc
+    signature is identified by a content hash that changes on every rebuild, so
+    the permission has to be granted again each time. A certificate-based
+    identity keeps the permission across rebuilds.
+    """
+    override = os.environ.get("CUBENOTCH_SIGN_IDENTITY")
+    if override:
+        return override
+    found = subprocess.run(
+        ["security", "find-identity", "-v", "-p", "codesigning"],
+        capture_output=True, text=True, check=True
+    ).stdout
+    for line in found.splitlines():
+        if "Apple Development" in line and '"' in line:
+            return line.split('"')[1]
+    return "-"
 
 
 def main():
@@ -51,7 +75,9 @@ def main():
             "NSHighResolutionCapable": True,
         }
         (contents / "Info.plist").write_bytes(plistlib.dumps(info))
-        subprocess.run(["codesign", "--force", "--sign", "-", str(bundle)], check=True)
+        identity = signing_identity()
+        subprocess.run(["codesign", "--force", "--sign", identity, str(bundle)], check=True)
+        print(f"Signed with: {identity}")
         subprocess.run(["codesign", "--verify", "--strict", str(bundle)], check=True)
         destination = output / "CubeNotch.app"
         if destination.exists():
