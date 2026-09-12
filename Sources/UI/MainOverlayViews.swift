@@ -38,18 +38,8 @@ public struct ContentView: View {
 
     // 13A-4 Hotkey capture
     @State private var listeningForHotkey = false
-
-    // Box so the monitor token can be mutated from inside the NSEvent closure
-    private final class HotkeyBox {
-        var monitor: Any?
-    }
-    @State private var hotkeyBox = HotkeyBox()
-    @State private var _hotkeyEventMonitor: Any? = nil
-
-    private var hotkeyEventMonitor: Any? {
-        get { _hotkeyEventMonitor }
-        set { _hotkeyEventMonitor = newValue }
-    }
+    @State private var hotkeyError: String?
+    @State private var hotkeyCapture = HotkeyCaptureController.usingAppKit()
 
     private var sizeBinding: Binding<SizeMode> {
         Binding(
@@ -71,8 +61,9 @@ public struct ContentView: View {
         )
     }
 
-    private func moveCount(_ alg: String) -> Int {
-        alg.split(separator: " ").filter { !$0.isEmpty }.count
+    private func moveCount(_ alg: String) -> String {
+        guard let count = try? CubeEngine.sliceTurnCount(alg) else { return "—" }
+        return String(count)
     }
 
     private var filteredCases: [CubeCase] {
@@ -136,6 +127,7 @@ public struct ContentView: View {
                 showOnboarding = false
             }
         }
+        .onDisappear { stopHotkeyCapture() }
         .sheet(isPresented: $showAccessibilityPrompt) {
             accessibilityPromptView
         }
@@ -311,6 +303,7 @@ public struct ContentView: View {
             .accessibilityLabel(showSettings ? "Close settings" : "Open settings")
             .cubeNotchGlass(cornerRadius: 6)
             .onChange(of: showSettings) { _, newValue in
+                if !newValue { stopHotkeyCapture() }
                 if newValue && !hasPulsedHotkeyThisSession {
                     hasPulsedHotkeyThisSession = true
                     pulseHotkey = true
@@ -325,7 +318,13 @@ public struct ContentView: View {
     private var browserMain: some View {
         Group {
             if let detail = detailCase {
-                caseDetailView(for: detail)
+                HUDCaseDetailView(
+                    cubeCase: detail,
+                    visualMode: manager.visualMode,
+                    sizeMode: sizeMode,
+                    showCopiedFeedback: $showCopiedFeedback,
+                    copiedAltIndex: $copiedAltIndex
+                )
             } else if mode == "Timer" {
                 TimerView()
             } else if mode == "Train" {
@@ -353,27 +352,21 @@ public struct ContentView: View {
             }
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 2) {
-                    // 13A-5 Recent + Pinned
-                    if searchText.isEmpty && mode == "Cases" {
-                        let recents = recentCaseIDs.compactMap { id in filteredCases.first(where: { $0.id == id }) }.prefix(5)
-                        if !recents.isEmpty {
-                            Text("Recent").font(.system(size: 13, design: .rounded)).foregroundStyle(.secondary).padding(.horizontal, 12).padding(.top, 4)
-                            ForEach(Array(recents)) { c in
-                                caseRow(for: c)
-                            }
-                            Divider().padding(.horizontal, 8)
-                        }
-                        let pinned = filteredCases.filter { pinnedCaseIDs.contains($0.id) }
-                        if !pinned.isEmpty {
-                            Text("Pinned").font(.caption.weight(.medium)).foregroundStyle(.secondary).padding(.horizontal, 12)
-                            ForEach(pinned) { c in
-                                caseRow(for: c)
-                            }
-                            Divider().padding(.horizontal, 8)
-                        }
+                    let sections = CaseListSections(
+                        cases: filteredCases, recentIDs: recentCaseIDs,
+                        pinnedIDs: pinnedCaseIDs, showHistory: searchText.isEmpty && mode == "Cases"
+                    )
+                    if !sections.pinned.isEmpty {
+                        Text("Pinned").font(.caption.weight(.medium)).foregroundStyle(.secondary).padding(.horizontal, 12)
+                        ForEach(sections.pinned) { c in caseRow(for: c) }
+                        Divider().padding(.horizontal, 8)
                     }
-
-                    ForEach(filteredCases.filter { !pinnedCaseIDs.contains($0.id) && !recentCaseIDs.contains($0.id) }) { c in
+                    if !sections.recent.isEmpty {
+                        Text("Recent").font(.system(size: 13, design: .rounded)).foregroundStyle(.secondary).padding(.horizontal, 12).padding(.top, 4)
+                        ForEach(sections.recent) { c in caseRow(for: c) }
+                        Divider().padding(.horizontal, 8)
+                    }
+                    ForEach(sections.remaining) { c in
                         caseRow(for: c)
                     }
                 }
@@ -446,9 +439,7 @@ public struct ContentView: View {
     }
 
     private func addToRecent(_ id: String) {
-        recentCaseIDs.removeAll { $0 == id }
-        recentCaseIDs.insert(id, at: 0)
-        if recentCaseIDs.count > 8 { recentCaseIDs.removeLast() }
+        recentCaseIDs = CaseListSections.remember(id, in: recentCaseIDs)
         UserDefaults.standard.set(recentCaseIDs, forKey: UDKey.recentCaseIDs)
     }
 
@@ -468,142 +459,6 @@ public struct ContentView: View {
         if let pin = UserDefaults.standard.stringArray(forKey: pinnedKey) {
             pinnedCaseIDs = Set(pin)
         }
-    }
-
-    private func caseDetailView(for c: CubeCase) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
-                // Diagram
-                Text("RECOGNIZE THIS:")
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .foregroundStyle(.tertiary)
-                    .textCase(.uppercase)
-                    .tracking(0.5)
-                    .padding(.horizontal, 12)
-                    .padding(.top, 4)
-                CubeStateView(currentCase: c, visualMode: .preExecution, sizeMode: .large)
-                    .frame(width: 200, height: 160)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .padding(.horizontal, 10)
-
-                // Primary algorithm
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text("PRIMARY")
-                            .font(.system(size: 9, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.tertiary)
-                            .tracking(0.5)
-                        Spacer()
-                        Text("\(moveCount(c.primaryAlgorithm)) moves")
-                            .font(.system(size: 10))
-                            .foregroundStyle(.tertiary)
-                        if showCopiedFeedback {
-                            Text("Copied")
-                                .font(.system(size: 10))
-                                .foregroundStyle(.green)
-                                .transition(.opacity)
-                        }
-                        Button {
-                            NSPasteboard.general.clearContents()
-                            NSPasteboard.general.setString(c.primaryAlgorithm, forType: .string)
-                            withAnimation { showCopiedFeedback = true }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                                withAnimation { showCopiedFeedback = false }
-                            }
-                        } label: {
-                            Image(systemName: showCopiedFeedback ? "checkmark" : "doc.on.doc")
-                                .font(.system(size: 11))
-                        }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(showCopiedFeedback ? Color.green : .secondary)
-                    }
-                    .padding(.horizontal, 12)
-
-                    Text(c.primaryAlgorithm)
-                        .font(.system(size: 15, weight: .medium, design: .monospaced))
-                        .foregroundStyle(.primary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .strokeBorder(Color.white.opacity(0.1), lineWidth: 0.5)
-                        )
-                        .padding(.horizontal, 10)
-                        .accessibilityLabel("Primary: \(c.primaryAlgorithm)")
-                }
-
-                // Alternatives
-                if !c.alternativeAlgorithms.isEmpty {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("ALTERNATIVES")
-                            .font(.system(size: 9, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.tertiary)
-                            .tracking(0.5)
-                            .padding(.horizontal, 12)
-
-                        VStack(spacing: 3) {
-                            ForEach(Array(c.alternativeAlgorithms.enumerated()), id: \.offset) { idx, alt in
-                                altRow(idx: idx, alt: alt)
-                            }
-                        }
-                    }
-                }
-
-                // Recognition tip
-                if let tip = c.recognitionTip {
-                    HStack(spacing: 6) {
-                        Image(systemName: "eye")
-                            .font(.system(size: 10))
-                            .foregroundStyle(.tertiary)
-                        Text(tip)
-                            .font(.system(size: 12).italic())
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 4)
-                }
-            }
-            .padding(.bottom, 8)
-        }
-    }
-
-    private func altRow(idx: Int, alt: String) -> some View {
-        HStack(spacing: 8) {
-            Text("\(idx + 1)")
-                .font(.system(size: 10))
-                .foregroundStyle(Color.secondary.opacity(0.4))
-                .frame(width: 12, alignment: .trailing)
-            Text(alt)
-                .font(.system(size: 13, weight: .regular, design: .monospaced))
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Text("\(moveCount(alt))")
-                .font(.system(size: 11))
-                .foregroundStyle(.tertiary)
-            Button {
-                NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(alt, forType: .string)
-                withAnimation { copiedAltIndex = idx }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    withAnimation {
-                        if copiedAltIndex == idx { copiedAltIndex = nil }
-                    }
-                }
-            } label: {
-                Image(systemName: (copiedAltIndex == idx) ? "checkmark" : "doc.on.doc")
-                    .font(.system(size: 10))
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(copiedAltIndex == idx ? .green : Color.secondary.opacity(0.6))
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(Color.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-        .padding(.horizontal, 10)
-        .accessibilityLabel("Alternative \(idx + 1): \(alt)")
     }
 
     private var settingsDrawer: some View {
@@ -708,14 +563,17 @@ public struct ContentView: View {
                     .foregroundStyle(listeningForHotkey ? .orange : .primary)
                     .scaleEffect(pulseHotkey ? 1.04 : 1.0)
                     .animation(pulseHotkey ? .easeInOut(duration: 0.6).repeatCount(2, autoreverses: true) : .default, value: pulseHotkey)
-                Button(listeningForHotkey ? "Listening…" : "Change…") {
-                    startHotkeyCapture()
+                Button(listeningForHotkey ? "Cancel" : "Change…") {
+                    if listeningForHotkey { stopHotkeyCapture() }
+                    else { startHotkeyCapture() }
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
-                .disabled(listeningForHotkey)
+                if let hotkeyError {
+                    Text(hotkeyError).font(.caption2).foregroundStyle(.red)
+                }
 
-                Text("Tip: Ctrl+Shift+Space works even while another app is in focus")
+                Text("The configured shortcut works while another app is in focus. Escape cancels recording.")
                     .font(.system(size: 10))
                     .foregroundStyle(.tertiary)
             }
@@ -780,19 +638,18 @@ public struct ContentView: View {
         }
     }
 
-    // 13A-4: Hotkey capture (listening mode)
-    // Note: Full live capture is wired in GlobalHotKeyManager + AppDelegate.
-    // This stub just provides the "listening" UI state for now.
+    // Local capture keeps key input scoped to the overlay. Change… may request temporary key focus.
     private func startHotkeyCapture() {
         listeningForHotkey = true
+        hotkeyError = nil
 
-        // Remove any previous monitor
-        if let mon = hotkeyBox.monitor {
-            NSEvent.removeMonitor(mon)
-            hotkeyBox.monitor = nil
+        guard let overlay = NSApp.windows.compactMap({ $0 as? FloatingOverlayWindow }).first else {
+            listeningForHotkey = false
+            hotkeyError = "Overlay is not available for recording."
+            return
         }
 
-        let monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+        hotkeyCapture.start(on: overlay) { event in
             let keyCode = event.keyCode
             var mods: UInt32 = 0
             let flags = event.modifierFlags
@@ -801,28 +658,28 @@ public struct ContentView: View {
             if flags.contains(.shift)   { mods |= UInt32(shiftKey) }
             if flags.contains(.control) { mods |= UInt32(controlKey) }
 
-            // Guard invalid combos
-            if keyCode == 49 && mods == 0 { return event } // Space alone
-            if keyCode == 53 || keyCode == 36 { return event } // Esc / Return
-
-            GlobalHotKeyManager.shared.setHotkey(keyCode: UInt32(keyCode), modifiers: mods) { }
-
-            // Ask AppDelegate to rebind (on main)
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: .requestHotkeyRebind, object: nil)
+            if keyCode == 53 {
+                self.stopHotkeyCapture()
+                return nil
+            }
+            let result = GlobalHotKeyManager.shared.setHotkey(keyCode: UInt32(keyCode), modifiers: mods)
+            guard result == .bound else {
+                self.hotkeyError = result == .registrationFailed
+                    ? "That shortcut is unavailable. Try another combination."
+                    : "Space alone and Return are reserved. Choose another shortcut."
+                return nil
             }
 
             DispatchQueue.main.async {
-                self.listeningForHotkey = false
-                if let mon = self.hotkeyBox.monitor {
-                    NSEvent.removeMonitor(mon)
-                    self.hotkeyBox.monitor = nil
-                }
+                self.stopHotkeyCapture()
             }
-            return nil // consume
+            return nil
         }
+    }
 
-        hotkeyBox.monitor = monitor
+    private func stopHotkeyCapture() {
+        listeningForHotkey = false
+        hotkeyCapture.stop()
     }
 
     // Accessibility permission prompt (shown if CGEventTap fails at launch)
@@ -856,4 +713,207 @@ public struct ContentView: View {
     }
 }
 
+struct HUDCaseDetailView: View {
+    let cubeCase: CubeCase
+    let visualMode: VisualMode
+    let sizeMode: SizeMode
+    @Binding var showCopiedFeedback: Bool
+    @Binding var copiedAltIndex: Int?
+    var scrolls: Bool = true
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var playbackShowsLiveNotation: Bool {
+        PlaybackPresentation(
+            visualMode: visualMode,
+            loadError: nil,
+            reduceMotion: reduceMotion,
+            hasLoadedPlayback: true
+        ).showsLiveNotation
+    }
+
+    var body: some View {
+        if scrolls {
+            ScrollView { detailStack }
+        } else {
+            detailStack
+        }
+    }
+
+    private var detailStack: some View {
+        VStack(alignment: .leading, spacing: 8) {
+                Text(visualMode == .textOnly ? "ALGORITHM" : "PLAYBACK")
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
+                    .tracking(0.6)
+                    .padding(.horizontal, 8)
+                    .padding(.top, 4)
+
+                AlgorithmPlaybackView(
+                    cubeCase: cubeCase,
+                    algorithm: cubeCase.primaryAlgorithm,
+                    visualMode: visualMode,
+                    sizeMode: sizeMode
+                )
+                .id("\(cubeCase.id)|\(cubeCase.primaryAlgorithm)")
+                .background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                primaryCopyChrome
+
+                if !cubeCase.alternativeAlgorithms.isEmpty {
+                    alternativesSection
+                }
+
+                if let tip = cubeCase.recognitionTip {
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "eye")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.tertiary)
+                            .padding(.top, 1)
+                        Text(tip)
+                            .font(.system(size: 12).italic())
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.bottom, 4)
+                }
+            }
+            .padding(.horizontal, 8)
+            .padding(.bottom, 8)
+    }
+
+    private var primaryCopyChrome: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Text("PRIMARY")
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .tracking(0.6)
+                Spacer()
+                Text("\(moveCount(cubeCase.primaryAlgorithm)) moves")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.tertiary)
+                    .monospacedDigit()
+                if showCopiedFeedback {
+                    Text("Copied")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.green)
+                }
+                Button(action: copyPrimary) {
+                    Image(systemName: showCopiedFeedback ? "checkmark" : "doc.on.doc")
+                        .font(.system(size: 12, weight: .medium))
+                        .frame(width: 28, height: 28)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(showCopiedFeedback ? Color.green : .secondary)
+                .accessibilityLabel("Copy primary algorithm")
+            }
+
+            if CaseDetailCopyPolicy.showsStandaloneNotation(playbackShowsLiveNotation: playbackShowsLiveNotation) {
+                Text(cubeCase.primaryAlgorithm)
+                    .font(.system(size: PlaybackLayoutMetrics.notationSize(for: sizeMode), weight: .medium, design: .monospaced))
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(8)
+                    .background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .accessibilityLabel("Primary: \(cubeCase.primaryAlgorithm)")
+            }
+        }
+        .padding(.horizontal, 8)
+    }
+
+    private var alternativesSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("ALTERNATIVES")
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundStyle(.secondary)
+                .tracking(0.6)
+                .padding(.horizontal, 8)
+
+            VStack(spacing: 4) {
+                ForEach(Array(cubeCase.alternativeAlgorithms.enumerated()), id: \.offset) { idx, alt in
+                    altRow(idx: idx, alt: alt)
+                }
+            }
+        }
+    }
+
+    private func altRow(idx: Int, alt: String) -> some View {
+        HStack(spacing: 8) {
+            Text("\(idx + 1)")
+                .font(.system(size: 11, design: .rounded))
+                .foregroundStyle(.tertiary)
+                .frame(width: 16, alignment: .trailing)
+            Text(alt)
+                .font(.system(size: 13, weight: .regular, design: .monospaced))
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
+            Text("\(moveCount(alt))")
+                .font(.system(size: 11))
+                .foregroundStyle(.tertiary)
+                .monospacedDigit()
+            Button {
+                copyString(alt)
+                setCopiedAlt(idx)
+            } label: {
+                Image(systemName: copiedAltIndex == idx ? "checkmark" : "doc.on.doc")
+                    .font(.system(size: 11))
+                    .frame(width: 28, height: 28)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(copiedAltIndex == idx ? Color.green : Color.secondary)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .accessibilityLabel("Alternative \(idx + 1): \(alt)")
+    }
+
+    private func copyPrimary() {
+        copyString(cubeCase.primaryAlgorithm)
+        if reduceMotion {
+            showCopiedFeedback = true
+        } else {
+            withAnimation { showCopiedFeedback = true }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            if reduceMotion {
+                showCopiedFeedback = false
+            } else {
+                withAnimation { showCopiedFeedback = false }
+            }
+        }
+    }
+
+    private func setCopiedAlt(_ idx: Int) {
+        if reduceMotion {
+            copiedAltIndex = idx
+        } else {
+            withAnimation { copiedAltIndex = idx }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            if copiedAltIndex == idx {
+                if reduceMotion {
+                    copiedAltIndex = nil
+                } else {
+                    withAnimation { copiedAltIndex = nil }
+                }
+            }
+        }
+    }
+
+    private func copyString(_ text: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+    }
+
+    private func moveCount(_ alg: String) -> String {
+        guard let count = try? CubeEngine.sliceTurnCount(alg) else { return "—" }
+        return String(count)
+    }
+}

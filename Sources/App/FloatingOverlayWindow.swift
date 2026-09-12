@@ -1,6 +1,12 @@
 import AppKit
 
 public final class FloatingOverlayWindow: NSPanel {
+    private var allowsTemporaryKeyboardFocus = false
+
+    public override var canBecomeKey: Bool {
+        allowsTemporaryKeyboardFocus
+    }
+
     public init() {
         let initialSize = NSSize(width: 340, height: 440)
         let contentRect = NSRect(origin: .zero, size: initialSize)
@@ -126,6 +132,19 @@ public final class FloatingOverlayWindow: NSPanel {
             hideWindow()
         } else {
             showWindow()
+        }
+    }
+
+    public func beginTemporaryKeyboardFocus() {
+        allowsTemporaryKeyboardFocus = true
+        becomesKeyOnlyIfNeeded = false
+    }
+
+    public func endTemporaryKeyboardFocus() {
+        allowsTemporaryKeyboardFocus = false
+        becomesKeyOnlyIfNeeded = true
+        if isKeyWindow {
+            resignKey()
         }
     }
 }

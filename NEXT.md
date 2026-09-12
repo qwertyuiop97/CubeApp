@@ -8,6 +8,16 @@
 
 ---
 
+## Current continuation — 2026-09-11
+
+**Status: implementation, local verification and final focused review complete; push pending.** Parent verified 123 Swift tests and 17 Python audit tests. See `HANDOFF.md` for evidence, `docs/VISUAL-VERIFICATION.md` for actual-width native renders, and `docs/ALGORITHM-VERIFICATION.md` for unresolved content identity. The historical “NOT STARTED” flags below lag the actual code; do not reimplement completed features.
+
+- Baseline: 39 tests pass, but print-only diagnostics reveal 52 incorrect OLL U-face patterns.
+- Active work: real engine-derived diagrams; literal inverse/forward playback; strict wide-move parsing and STM counts; lossless recent/pinned search; safe hotkey persistence/rebinding.
+- Preserve both protected algorithm databases. Public-source content verification is separate from parser and cube-mechanics tests.
+- Build with `make build`; verify with `make test`. SDK selection is project-local; no global Xcode settings changed.
+- Phase 11A/11C remain historical completed handoffs, not a new audit assignment.
+
 ## Phase 5A — Positions & Spring Animation
 **Status: DONE** (2026-06-27)
 - [x] notch + bottomCenter anchors, spring animations, double-click hide, 6-position picker, monitor picker

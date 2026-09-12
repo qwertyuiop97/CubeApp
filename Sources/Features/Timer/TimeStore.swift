@@ -306,7 +306,6 @@ public final class TimeStore: ObservableObject {
     public var dailyStreak: Int {
         let df = DateFormatter()
         df.dateFormat = "yyyy-MM-dd"
-        let today = df.string(from: Date())
         var streak = 0
         var d = Date()
         while true {

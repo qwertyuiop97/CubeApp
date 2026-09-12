@@ -275,10 +275,14 @@ private struct CaseDetailView: View {
                     .buttonStyle(.bordered)
                 }
 
-                // Diagram
-                CubeStateView(currentCase: cubeCase, visualMode: .preExecution, sizeMode: .large)
-                    .frame(width: 320, height: 260)
-                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                AlgorithmPlaybackView(
+                    cubeCase: cubeCase,
+                    algorithm: activeAlgorithm,
+                    visualMode: .preExecution,
+                    sizeMode: .large
+                )
+                .id("\(cubeCase.id)|\(activeAlgorithm)")
+                .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
                 // Active algorithm + dropdown picker
                 algorithmPickerSection
@@ -300,12 +304,15 @@ private struct CaseDetailView: View {
             Text("Algorithm")
                 .font(.headline)
 
-            // Active algorithm display
             HStack(alignment: .top, spacing: 8) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(activeAlgorithm)
-                        .font(.system(size: 15, weight: .medium, design: .monospaced))
-                        .textSelection(.enabled)
+                    if CaseDetailCopyPolicy.showsStandaloneNotation(
+                        playbackShowsLiveNotation: (try? CubeEngine.parse(activeAlgorithm)) != nil
+                    ) {
+                        Text(activeAlgorithm)
+                            .font(.system(size: 15, weight: .medium, design: .monospaced))
+                            .textSelection(.enabled)
+                    }
                     HStack(spacing: 8) {
                         Text(activeLabel)
                             .font(.caption)
@@ -323,11 +330,14 @@ private struct CaseDetailView: View {
                     copyToClipboard(activeAlgorithm)
                 } label: {
                     Image(systemName: "doc.on.doc")
+                        .frame(width: 28, height: 28)
+                        .contentShape(Rectangle())
                 }
                 .help("Copy")
+                .accessibilityLabel("Copy algorithm")
             }
             .padding(12)
-            .background(.quaternary, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
 
             // Dropdown to change
             HStack(spacing: 8) {
@@ -436,8 +446,9 @@ private struct CaseDetailView: View {
         .background(.quaternary, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
-    private func moveCount(_ alg: String) -> Int {
-        alg.split(separator: " ").filter { !$0.isEmpty }.count
+    private func moveCount(_ alg: String) -> String {
+        guard let count = try? CubeEngine.sliceTurnCount(alg) else { return "—" }
+        return String(count)
     }
 
     private func copyToClipboard(_ text: String) {

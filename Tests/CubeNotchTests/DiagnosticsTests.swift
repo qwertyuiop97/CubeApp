@@ -1,20 +1,9 @@
 import XCTest
-import SwiftUI
 @testable import CubeNotch
 
-/// One-shot diagnostic: verifies every OLL/PLL primary algorithm semantically with the
-/// real cube model and dumps the true recognition patterns (used to regenerate
-/// StickerDatabase). Findings feed PROBLEMS.md.
+/// Semantic checks: every OLL/PLL primary alg has a real recognition state, and
+/// cached diagrams match that state (U-face + side-top yellows / PLL face colors).
 final class DiagnosticsTests: XCTestCase {
-
-    private func bits(_ p: [Bool]) -> String { p.map { $0 ? "Y" : "." }.joined() }
-
-    /// Face letters of the 12 side top-row stickers, order F(18,19,20) R(9,10,11) B(45,46,47) L(36,37,38).
-    private func sideTopColors(_ c: CubeEngine) -> String {
-        let idx = [18, 19, 20, 9, 10, 11, 45, 46, 47, 36, 37, 38]
-        let letters = ["U", "R", "F", "D", "L", "B"]
-        return idx.map { letters[c.stickers[$0] / 9] }.joined()
-    }
 
     func testAllLastLayerAlgsAreValid() {
         var failures: [String] = []
@@ -29,45 +18,47 @@ final class DiagnosticsTests: XCTestCase {
     func testOLLSemantics() {
         var invalid: [String] = []
         var mismatches: [String] = []
-        print("OLL_PATTERN_DUMP_BEGIN")
         for c in AlgorithmDatabase.ollCases {
             guard let state = CubeEngine.recognitionState(alg: c.primaryAlgorithm) else {
                 invalid.append(c.id)
                 continue
             }
-            let yellow = state.uFaceYellow
-            let sides = state.sideTopYellow
-            print("OLL \(c.caseNumber): u=[\(bits(yellow))] sides=[\(bits(sides))]")
-            if let pat = StickerDatabase.pattern(for: c.id) {
-                var match = false
-                var r = pat.uFace
-                for _ in 0..<4 {
-                    if r == yellow { match = true; break }
-                    let o = r
-                    r = [o[6], o[3], o[0], o[7], o[4], o[1], o[8], o[5], o[2]]
-                }
-                if !match { mismatches.append("\(c.id): db=[\(bits(pat.uFace))] true=[\(bits(yellow))]") }
+            guard let pat = StickerDatabase.pattern(for: c.id) else {
+                mismatches.append("\(c.id) missing pattern")
+                continue
+            }
+            let yellow = pat.uFace.map { $0 == .yellow }
+            if yellow != state.uFaceYellow {
+                mismatches.append("\(c.id) u-face")
+            }
+            if StickerDatabase.engineSideTopYellow(from: pat) != state.sideTopYellow {
+                mismatches.append("\(c.id) side-yellow")
             }
         }
-        print("OLL_PATTERN_DUMP_END")
-        print("OLL_INVALID: \(invalid.isEmpty ? "NONE" : invalid.joined(separator: ","))")
-        print("OLL_STICKERDB_MISMATCHES: \(mismatches.count)")
-        for m in mismatches { print("  \(m)") }
+        XCTAssertTrue(invalid.isEmpty, "Invalid OLL algs: \(invalid)")
+        XCTAssertTrue(mismatches.isEmpty, "OLL diagram mismatches: \(mismatches.count) \(mismatches)")
     }
 
     func testPLLSemantics() {
         var failures: [String] = []
-        print("PLL_PATTERN_DUMP_BEGIN")
+        var mismatches: [String] = []
         for c in AlgorithmDatabase.pllCases {
             guard let state = CubeEngine.recognitionState(alg: c.primaryAlgorithm) else {
                 failures.append(c.id)
                 continue
             }
-            let f2l = state.firstTwoLayersSolved
-            let uAll = state.uFaceYellow.allSatisfy { $0 }
-            print("PLL \(c.caseNumber) \(c.name): f2lExact=\(f2l) uAllYellow=\(uAll) sides=\(sideTopColors(state)) storedAuf=\(c.auf ?? "-")")
+            XCTAssertTrue(state.firstTwoLayersSolved, "\(c.id) F2L not solved")
+            XCTAssertTrue(state.uFaceYellow.allSatisfy { $0 }, "\(c.id) U not all yellow")
+            guard let pat = StickerDatabase.pattern(for: c.id) else {
+                mismatches.append("\(c.id) missing pattern")
+                continue
+            }
+            let expected = StickerDatabase.displayPattern(from: state, ollOrientationMask: false)
+            if pat != expected {
+                mismatches.append(c.id)
+            }
         }
-        print("PLL_PATTERN_DUMP_END")
         XCTAssertTrue(failures.isEmpty, "Invalid PLL algs: \(failures)")
+        XCTAssertTrue(mismatches.isEmpty, "PLL diagram mismatches: \(mismatches)")
     }
 }

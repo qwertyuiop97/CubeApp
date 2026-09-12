@@ -6,41 +6,36 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   build-and-test:
     name: Build & Test
     runs-on: macos-15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Select Xcode 26
-        id: xcode
+        shell: bash
         run: |
-          if ls /Applications/Xcode_26*.app 2>/dev/null | head -1 | grep -q Xcode; then
-            dev="$(ls -d /Applications/Xcode_26*.app/Contents/Developer | head -1)"
-            sudo xcode-select -s "$dev"
-            echo "available=true" >> $GITHUB_OUTPUT
-            echo "✓ Xcode 26 found: $dev"
-          else
-            echo "available=false" >> $GITHUB_OUTPUT
-            echo "⚠️  Xcode 26 / macOS 26 SDK not available on this runner."
-            echo "    This project requires macOS 26 SDK (GlassEffect, etc)."
-            echo "    Build skipped — run swift build locally to verify."
-          fi
+          set -euo pipefail
+          for dev in /Applications/Xcode_26*.app/Contents/Developer; do
+            if [[ -d "$dev" ]]; then
+              sudo xcode-select -s "$dev"
+              xcodebuild -version
+              xcrun --sdk macosx --show-sdk-path
+              exit 0
+            fi
+          done
+          printf '%s\n' '::error::Xcode 26 is required. Refusing to report success without building and testing.'
+          exit 1
 
-      - name: Build
-        if: steps.xcode.outputs.available == 'true'
-        run: swift build 2>&1
+      - name: Build (warnings are errors)
+        run: make build
 
-      - name: Report warnings
-        if: steps.xcode.outputs.available == 'true'
-        run: |
-          count=$(swift build 2>&1 | grep -c ": warning:" || true)
-          [ "$count" -gt 0 ] && echo "⚠️  $count warning(s)" || echo "✓ No warnings"
-        continue-on-error: true
-
-      - name: Test
-        if: steps.xcode.outputs.available == 'true'
-        run: swift test 2>&1
+      - name: Test (warnings are errors)
+        run: make test

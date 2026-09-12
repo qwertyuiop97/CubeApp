@@ -95,14 +95,10 @@ public struct CubeEngine: Equatable {
         var tokens: [(Character, Int)] = []
         let trimmed = alg.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return [] }
-        for raw in trimmed.split(separator: " ") {
+        for raw in trimmed.split(whereSeparator: { $0.isWhitespace }) {
             let token = String(raw)
-            guard let base = token.first, isKnownBase(base) else { continue } // unknown tokens skipped by callers if desired
-            var turns = 1
-            let rest = token.dropFirst()
-            if rest.contains("2") { turns = 2 }
-            if rest.hasSuffix("'") && turns == 1 { turns = 3 }
-            tokens.append((base, turns))
+            guard let parsed = try? parse(token) else { continue }
+            tokens.append(contentsOf: parsed)
         }
         return tokens
     }
@@ -112,14 +108,18 @@ public struct CubeEngine: Equatable {
         let trimmed = alg.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw ParseError.emptyAlgorithm }
         var tokens: [(Character, Int)] = []
-        for raw in trimmed.split(separator: " ") {
+        for raw in trimmed.split(whereSeparator: { $0.isWhitespace }) {
             let token = String(raw)
             guard let first = token.first, isKnownBase(first) else {
                 throw ParseError.invalidToken(token)
             }
-            let rest = String(token.dropFirst())
+            var base = first
+            var checked = String(token.dropFirst())
+            if "UDRLFB".contains(first), checked.hasPrefix("w") {
+                base = Character(String(first).lowercased())
+                checked.removeFirst()
+            }
             var turns = 1
-            var checked = rest
             if checked.hasPrefix("2") {
                 turns = 2
                 checked = String(checked.dropFirst())
@@ -129,9 +129,15 @@ public struct CubeEngine: Equatable {
             } else if !checked.isEmpty {
                 throw ParseError.invalidToken(token)
             }
-            tokens.append((first, turns))
+            tokens.append((base, turns))
         }
         return tokens
+    }
+
+    /// Slice turn metric: face, wide and slice turns each count once;
+    /// whole-cube rotations do not count. Invalid notation is never counted.
+    public static func sliceTurnCount(_ alg: String) throws -> Int {
+        try parse(alg).filter { !"xyz".contains($0.base) }.count
     }
 
     public mutating func apply(token: (base: Character, turns: Int)) {
@@ -359,6 +365,7 @@ public struct CubeEngine: Equatable {
     /// from solved, un-rotated into the frame where the first two layers are home.
     /// Returns nil when no orientation yields a home F2L (alg is not a last-layer alg).
     public static func recognitionState(alg: String) -> CubeEngine? {
+        guard (try? parse(alg)) != nil else { return nil }
         let scrambled = applyingInverse(alg)
         if scrambled.f2lPiecesHome { return scrambled }
         for rot in allRotations.dropFirst() {

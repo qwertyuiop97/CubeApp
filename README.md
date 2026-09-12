@@ -4,9 +4,38 @@ A high-performance, lightweight, native macOS utility designed specifically for 
 
 It functions as a **borderless, floating, semi-transparent Heads-Up Display (HUD)** that stays pinned on top of active workspaces, browsers, or web-based timers (like CSTimer). Its primary goal is to provide instantaneous, glanceable algorithm sheets, case visualizations, and setup sequences without requiring the user to switch windows, break focus, or disrupt their solve flow.
 
+## Development
+
+Requires Xcode 26 with its macOS SDK; deployment target is macOS 14 or later.
+
+```sh
+make build   # compile; warnings are errors
+make test    # complete XCTest suite; warnings are errors
+make run     # start the local executable
+```
+
+The Makefile selects the SDK paired with the active Xcode toolchain, avoiding a mismatched SDK inherited from a shell. It does not change the machine's Xcode selection.
+
+### Current work and evidence
+
+- [`NEXT.md`](NEXT.md): current continuation and remaining work.
+- [`HANDOFF.md`](HANDOFF.md): decisions, implementation work, observed verification and historical context.
+- [`PROBLEMS.md`](PROBLEMS.md): open limitations and resolved issues.
+- [`DESIGN.md`](DESIGN.md): native visual direction and design constraints.
+
+Algorithm data is protected: OLL/PLL and F2L remain in their original databases. Parser validity, model/diagram consistency, playback roundtrips and independent source verification are different checks; none alone proves every named algorithm is correct.
+
+To render the diagram QA sheet without changing desktop preferences:
+
+```sh
+CUBEAPP_RENDER_DIR=/tmp/cubeapp-renders \
+  SDKROOT="$(xcrun --sdk macosx --show-sdk-path)" \
+  swift test --filter DiagramRenderingTests
+```
+
 ---
 
-# Project Blueprint: macOS Speedcubing HUD Overlay
+# Original Project Blueprint: macOS Speedcubing HUD Overlay
 
 ## 1. Executive Summary & Core Intent
 

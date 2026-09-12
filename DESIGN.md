@@ -112,6 +112,8 @@ extension View {
 
 ### Accessibility Compliance (Required)
 
+**SDK verification note (2026-09-11):** `accessibilityReduceMotion` and `accessibilityReduceTransparency` are read-only environment values in the selected Xcode 26.5 SDK. The historical `.environment(..., true)` preview examples below do not compile and are illustrative only, not test recipes. Read those values in production; exercise policy logic through an explicit test seam, or perform a documented manual run with the user's chosen system settings. Light/dark rendering tests are not accessibility-setting tests.
+
 ```swift
 @Environment(\.accessibilityReduceTransparency) var reduceTransparency
 @Environment(\.accessibilityReduceMotion) var reduceMotion
@@ -812,6 +814,13 @@ that simulates light catching the rim of a glass outperforms any amount of `.opa
 ---
 
 ## 11. Checklist Before Shipping
+
+### Active visual direction (2026-09-11 continuation)
+- Aesthetic quality is a user requirement, alongside functioning code and documented verification.
+- Give the cube and primary notation clear hierarchy; group transport controls with comfortable targets, keep speed/progress secondary, and avoid repeating notation in multiple competing cards.
+- Check actual native renders at compact/medium/large sizes and in light/dark, not just source-level styling.
+- Record chosen layouts, inspected images and remaining gaps in `docs/VISUAL-VERIFICATION.md`.
+
 
 - [ ] Timer uses `.monospacedDigit()` and `.contentTransition(.numericText())`
 - [ ] Panel uses `NSPanel` with `.nonactivatingPanel` + `becomesKeyOnlyIfNeeded = true`

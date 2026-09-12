@@ -1,10 +1,11 @@
 # AGENTS.md
 
-## Current State (2026-06-27)
-- Git repo initialized (`git init` done).
-- Standard macOS/Swift `.gitignore` present.
-- No `Package.swift`, no `.xcodeproj` — pure scaffolding.
-- One source file exists: `Sources/Core/Data/AlgorithmDatabase.swift` (finalized, exhaustive).
+## Current State
+- Native macOS SwiftPM executable (`Package.swift`), SwiftUI views hosted by AppKit.
+- `NEXT.md` is the current work/status entry point; dated phase details below it are historical.
+- The repository includes HUD, Library, timer, trainer, stats, onboarding and XCTest suites.
+- Protected content: 57 OLL + 21 PLL in `AlgorithmDatabase.swift`, 41 F2L in `F2LDatabase.swift`.
+- Do not infer correctness from old checkboxes: run the build/tests and read current issues.
 
 ## Must-Protect Data
 - `AlgorithmDatabase.swift` is the single source of truth:
@@ -35,10 +36,11 @@ Place every new file in the matching subfolder. Do not create top-level source f
 
 ## Commands & Verification
 - Always run `git status --short` before and after changes.
-- No build system yet. When adding manifest:
-  - `swift build` (SPM) or open in Xcode.
-- Run `swiftc Sources/Core/Data/AlgorithmDatabase.swift` (or equivalent) to verify the data file compiles in isolation.
-- No tests or lint configured yet.
+- `make build` and `make test` are the supported verification commands (warnings are errors).
+- The Makefile pairs SDKROOT with the selected Xcode SDK. This avoids an inherited CommandLineTools SDK being incompatible with Xcode's compiler.
+- For direct Swift commands: `SDKROOT="$(xcrun --sdk macosx --show-sdk-path)" swift test`.
+- For concurrent development, use separate scratch paths or isolated packages to avoid mixing unfinished test targets; run the full repository suite again after integration.
+- Never commit build products or local rendering/test artifacts.
 
 ## Floating Window Essentials (read CLAUDE.md first)
 - Host is AppKit (`NSPanel` / borderless `NSWindow`).

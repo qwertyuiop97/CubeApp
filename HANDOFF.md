@@ -1,5 +1,46 @@
 # CubeNotch — Handoff Document
-_Last updated: 2026-06-28_
+## Resume here
+
+Use `NEXT.md` for current continuation status, `PROBLEMS.md` for open findings, and `make build` / `make test` for fresh verification. The historical handoff below predates the current implementation; its old test totals, task flags and hand-entered sticker tables are **not authoritative**. Do not copy those tables into production: diagrams must be derived from the cube engine.
+
+## Continuation work log — 2026-09-11
+
+This section records observed work, not a release certificate. Final integration/review/push are pending.
+
+| Area | Work and evidence |
+| --- | --- |
+| Baseline | Clean `main` at `3c786a3`; 39 tests passed after fixing the local SDK pairing. Print-only OLL diagnostics still reported 52 pattern mismatches. |
+| Build environment | Inherited SDKROOT pointed at a Swift 6.4 CommandLineTools SDK while Xcode supplied Swift 6.3.3. Matching `xcrun --sdk macosx --show-sdk-path` fixed the manifest build. Makefile now pairs them locally. No global Xcode selection changed. |
+| Parsing and metrics | RED/GREEN coverage for `Rw`/other wide aliases, tabs/newlines, invalid recognition input, and STM excluding rotations. Strict notation checks cover every primary and alternative; protected content unchanged. |
+| Diagrams | Replaced handwritten patterns/heuristics with cached cube-engine-derived states; assertions replace diagnostic printouts. OLL side yellows retained; B/R strips reversed into cross-view order. Added white stickers for unmasked playback after a failing regression. |
+| Playback | Literal inverse setup, real forward moves, play/pause/step/reset, speed and progress. Corrected token-display splitting after a whitespace regression stopped playback early. Real main-run-loop timer test and all-primary roundtrip test added. This proves playback mechanics, not canonical case identity. |
+| Case navigation | Search no longer drops pinned/recent matches; sections are disjoint, pins first, five visible unique recents, older cases remain in the main list. Stored history updates deduplicate/cap at five. Regression tests exercise these cases. |
+| Shortcuts | Zero key code (A), zero modifiers, corrupt preferences and failed replacement covered. Added callback-preserving changes and same-combination rebinding regression. Settings exposes errors/cancellation instead of silently accepting failure. |
+| Screenshots/build hygiene | Warnings-as-errors exposed deprecated full-screen capture fallback and an unused daily-streak variable. Screenshot modernization was delegated; removed the unused variable. CI now fails rather than silently skipping build/tests when Xcode is missing. |
+| Integration evidence | `make build` and `make test` completed with warnings-as-errors: 95 tests passed. Subsequent native diagram render test passed separately for three sizes in light/dark; compact dark image inspected without clipping. Final rerun still required after visual polish/review. |
+| Parallel-work correction | A worker temporarily moved another worker's hotkey tests aside. Both copies were compared; the repository copy is present and includes the newer callback seam. No tests are intentionally excluded. Shared scratch directories do not isolate source changes; isolated mini-packages were used for independent RED/GREEN loops. |
+| Visual QA | User explicitly requires aesthetic polish. A dedicated native playback/detail pass is active; decisions and selected actual renders go in `docs/VISUAL-VERIFICATION.md`. Accessibility environment properties are read-only in this SDK; no system preference changes or false Reduce Motion/Transparency test claims. |
+| Runtime smoke attempt | Debug executable launched and remained running, but desktop tooling did not discover its window. This is not a successful interactive UI smoke test; offscreen SwiftUI rendering is verified separately. |
+| Content audit | Initial worker failed after a provider stream timeout (three retries), before delivering a report. Downloaded JPerm, SpeedCubeDB and CubeSkills evidence survives in `/tmp/cubeapp-audit/`; a bounded recovery worker is comparing those existing files and writing `docs/ALGORITHM-VERIFICATION.md`, with case-by-case matches and unresolved cases. No source-verification completion is claimed yet. Never fix a protected algorithm solely because an inverse/forward roundtrip succeeds. |
+
+### Latest integration result
+
+Parent reran `make build && make test` after the focus implementation: **123 tests, zero failures**, warnings-as-errors, exit 0. Evidence: `/tmp/cubeapp-final-integration.log`. This supersedes the intermediate failing checkpoint below. Final focused review passed with no scoped blockers. Parent reran 17 Python audit tests and confirmed persisted comparison results match fresh computation. Source-identity gaps remain documented, not silently corrected. Commit/push is the remaining delivery step. Focus coverage is offscreen AppKit plus lifecycle seams, not a foreground typing smoke test.
+
+### Review integration checkpoint (intermediate; superseded)
+
+`make build` passed with warnings-as-errors. Parent `make test` ran 123 tests with 12 assertion failures confined to the still-in-progress focus worker’s `HotkeyCaptureFocusTests`; Carbon hotkey (25) and screenshot (10) suites passed. Full integration is not green yet. Log: `/tmp/cubeapp-review-integration.log`. Compact light/dark playback renders were rerun and inspected at actual 240pt width; persisted images and limitations are in `docs/VISUAL-VERIFICATION.md`. Source audit totals remain pending strict-parser correction.
+
+### Current decisions and boundaries
+- Keep protected OLL/PLL/F2L algorithms unchanged; log source disagreements rather than invent corrections.
+- Prefer native, readable controls, semantic colors, consistent spacing and light/dark support; glass on controls, not algorithm content.
+- Playback is discrete move-by-move, **not** verified 60fps intra-move animation. F2L diagram is a real inverse-state plan view, not a 3D slot illustration.
+- Do not mutate the user's system accessibility settings to make screenshots/tests pass.
+- Keep clean build, real tests, independent review and verified remote push as separate gates.
+
+---
+
+_Historical handoff: 2026-06-28_
 
 ## What the app is
 Floating macOS HUD overlay for speedcubers. Stays on top of all apps, non-activating (never steals focus). Option+Space (or Ctrl+Shift+Space after Task 4 below) toggles it. Global spacebar starts/stops the timer from any app.

@@ -106,6 +106,42 @@ final class CubeEngineTests: XCTestCase {
         XCTAssertEqual(tokens[3].turns, 2)
     }
 
+    func testParserAcceptsExplicitWideMoveNotation() throws {
+        for (wide, short) in [("Rw", "r"), ("Lw", "l"), ("Uw", "u"), ("Dw", "d"), ("Fw", "f"), ("Bw", "b")] {
+            for suffix in ["", "'", "2", "2'"] {
+                let parsed = try CubeEngine.parse(wide + suffix)
+                let expected = try CubeEngine.parse(short + suffix)
+                XCTAssertEqual(parsed.map(\.base), expected.map(\.base))
+                XCTAssertEqual(parsed.map(\.turns), expected.map(\.turns))
+                XCTAssertEqual(CubeEngine.applying(wide + suffix), CubeEngine.applying(short + suffix))
+            }
+        }
+        for invalid in ["Mw", "xw", "rw", "Rww", "R'w", "Rw3", "Rw2''"] {
+            XCTAssertThrowsError(try CubeEngine.parse(invalid), invalid)
+        }
+    }
+
+    func testParserAcceptsWhitespaceBetweenMoves() throws {
+        let expected = try CubeEngine.parse("R U2 F' r")
+        let input = " R\tU2\nF'\r\nr "
+        let parsed = try CubeEngine.parse(input)
+        XCTAssertEqual(parsed.map(\.base), expected.map(\.base))
+        XCTAssertEqual(parsed.map(\.turns), expected.map(\.turns))
+        XCTAssertEqual(CubeEngine.applying(input), CubeEngine.applying("R U2 F' r"))
+    }
+
+    func testRecognitionRejectsMalformedAlgorithms() {
+        for invalid in ["", " \n ", "Q", "R# R'", "U nonsense"] {
+            XCTAssertNil(CubeEngine.recognitionState(alg: invalid), invalid)
+        }
+    }
+
+    func testSliceTurnMetricExcludesRotationsAndCountsWideAndHalfTurnsOnce() throws {
+        XCTAssertEqual(try CubeEngine.sliceTurnCount("x Rw2 M y' U2 z"), 3)
+        XCTAssertEqual(try CubeEngine.sliceTurnCount("R\tU\nR'"), 3)
+        XCTAssertThrowsError(try CubeEngine.sliceTurnCount("R Q"))
+    }
+
     func testSolvedStateDetection() {
         XCTAssertTrue(CubeEngine().isSolved)
         XCTAssertFalse(CubeEngine.applying("R").isSolved)

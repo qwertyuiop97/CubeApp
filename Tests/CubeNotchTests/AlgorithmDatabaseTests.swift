@@ -21,6 +21,23 @@ final class AlgorithmDatabaseTests: XCTestCase {
         }
     }
 
+    func testAllDatabaseAlgorithmsUseSupportedNotation() {
+        for cubeCase in AlgorithmDatabase.ollCases + AlgorithmDatabase.pllCases + F2LDatabase.f2lCases {
+            for algorithm in [cubeCase.primaryAlgorithm] + cubeCase.alternativeAlgorithms {
+                XCTAssertNoThrow(try CubeEngine.parse(algorithm), "\(cubeCase.id): \(algorithm)")
+            }
+        }
+    }
+
+    func testLastLayerMetadataIsPresent() {
+        for cubeCase in AlgorithmDatabase.ollCases + AlgorithmDatabase.pllCases {
+            XCTAssertFalse(cubeCase.recognitionTip?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true, cubeCase.id)
+        }
+        for cubeCase in AlgorithmDatabase.pllCases {
+            XCTAssertFalse(cubeCase.auf?.isEmpty ?? true, cubeCase.id)
+        }
+    }
+
     func testNoDuplicateIDs() {
         let all = AlgorithmDatabase.ollCases + AlgorithmDatabase.pllCases
         let ids = all.map { $0.id }

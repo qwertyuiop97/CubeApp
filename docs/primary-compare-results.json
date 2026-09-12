@@ -1,0 +1,1380 @@
+{
+  "summary": {
+    "local_counts": {
+      "OLL": 57,
+      "PLL": 21,
+      "F2L": 41
+    },
+    "source_case_counts": {
+      "jperm_oll": 57,
+      "jperm_pll": 21,
+      "scdb_oll": 57,
+      "scdb_pll": 21,
+      "scdb_f2l": 41,
+      "cubeskills_oll_corpus_seqs": 83,
+      "cubeskills_pll_corpus_seqs": 36
+    },
+    "oll": {
+      "jperm": {
+        "exact": 19,
+        "cosmetic": 2,
+        "half_turn_prime": 8,
+        "rotation_or_auf": 17,
+        "unresolved": 11
+      },
+      "scdb": {
+        "exact": 28,
+        "half_turn_prime": 12,
+        "rotation_or_auf": 13,
+        "unresolved": 4
+      },
+      "cubeskills_corpus": {
+        "exact": 6,
+        "cosmetic": 47,
+        "unresolved": 4
+      },
+      "resolved_any_id_source": 54
+    },
+    "pll": {
+      "jperm": {
+        "exact": 7,
+        "cosmetic": 3,
+        "half_turn_prime": 1,
+        "rotation_or_auf": 4,
+        "unresolved": 6
+      },
+      "scdb": {
+        "exact": 10,
+        "half_turn_prime": 4,
+        "rotation_or_auf": 7
+      },
+      "cubeskills_corpus": {
+        "cosmetic": 11,
+        "rotation_or_auf": 8,
+        "unresolved": 2
+      },
+      "resolved_any_id_source": 21
+    },
+    "f2l": {
+      "scdb_same_id": {
+        "unresolved": 41
+      },
+      "scdb_elsewhere": {
+        "exists_other_id": 8,
+        "unresolved": 33
+      },
+      "same_id_resolved": 0,
+      "elsewhere_only": 8,
+      "same_id_and_elsewhere_unresolved": 33
+    }
+  },
+  "source_hashes": [
+    {
+      "file": "jperm-oll.js",
+      "url": "https://jperm.net/lib/oll.js",
+      "cite": 1,
+      "sha256": "d893a359ccbbf66d808469414302933317393bf18b9cfb848f6f126a3c09b3f0",
+      "parsed": 57
+    },
+    {
+      "file": "jperm-pll.js",
+      "url": "https://jperm.net/lib/pll.js",
+      "cite": 2,
+      "sha256": "c455bd663c80a96ad8d1604aceac8c421000203191c2518060c1ba21e6a10689",
+      "parsed": 21
+    },
+    {
+      "file": "scdb-oll.md",
+      "url": "https://speedcubedb.com/a/3x3/OLL",
+      "cite": 3,
+      "sha256": "16417986cb83a30bdd9afc94f3e026376a5c26b0ab4cc8020df9d1c2bf8d1c34",
+      "parsed": 57
+    },
+    {
+      "file": "scdb-pll.md",
+      "url": "https://speedcubedb.com/a/3x3/PLL",
+      "cite": 4,
+      "sha256": "3d7a3fe1142fafba76b13518d92c05c58c0956b48c5df0898bfb10e1b6bc6d7b",
+      "parsed": 21
+    },
+    {
+      "file": "scdb-f2l.md",
+      "url": "https://speedcubedb.com/a/3x3/F2L",
+      "cite": 5,
+      "sha256": "6996b57270d10c051e3152166a9226a7658c77a30dc714feedd9d9c6d1827ecd",
+      "parsed": 41
+    },
+    {
+      "file": "cubeskills-pll.txt",
+      "url": "https://www.cubeskills.com/uploads/pdf/tutorials/pll-algorithms.pdf",
+      "cite": 6,
+      "sha256": "240b66f27c905aa67447b8ab619ed6427a3f0817ad057d2bda80c6df3003ad53",
+      "parsed": "36 seqs"
+    },
+    {
+      "file": "cubeskills-oll.txt",
+      "url": "https://www.cubeskills.com/uploads/pdf/tutorials/oll-algorithms.pdf",
+      "cite": 7,
+      "sha256": "fef8c73a02cb961839f3c329fd2970a27d5659bf5661e7a666fad5f16f6949fc",
+      "parsed": "83 seqs"
+    }
+  ],
+  "notes": {
+    "jperm_f2l_cache": "HTML tutorial page, not algsetAlgs JS",
+    "cubeskills": "two-column PDF extraction: no per-case attribution; F2L cache unused",
+    "matcher": "strict full-consume tokenize; 2' preserved until half_turn_prime; square [U] AUF is rotation_or_auf not cosmetic; leading rotations + terminal U only; not state-equivalent"
+  },
+  "oll": [
+    {
+      "id": 1,
+      "name": "Dot 1",
+      "primary": "R U2' R2' F R F' U2' R' F R F'",
+      "jperm": "unresolved",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 2,
+      "name": "Dot 2",
+      "primary": "F R U R' U' F' f R U R' U' f'",
+      "jperm": "rotation_or_auf",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 3,
+      "name": "Dot 3",
+      "primary": "f R U R' U' f' U' F R U R' U' F'",
+      "jperm": "rotation_or_auf",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 4,
+      "name": "Dot 4",
+      "primary": "f R U R' U' f' U F R U R' U' F'",
+      "jperm": "rotation_or_auf",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 5,
+      "name": "Square 1",
+      "primary": "r' U2' R U R' U r",
+      "jperm": "rotation_or_auf",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 6,
+      "name": "Square 2",
+      "primary": "r U2 R' U' R U' r'",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 7,
+      "name": "Lightning 1",
+      "primary": "r U R' U R U2' r'",
+      "jperm": "half_turn_prime",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 8,
+      "name": "Lightning 2",
+      "primary": "r' U' R U' R' U2 r",
+      "jperm": "rotation_or_auf",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 9,
+      "name": "Fish 1",
+      "primary": "R U R' U' R' F R2 U R' U' F'",
+      "jperm": "exact",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 10,
+      "name": "Fish 2",
+      "primary": "R U R' U R' F R F' R U2' R'",
+      "jperm": "half_turn_prime",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 11,
+      "name": "Lightning 3",
+      "primary": "r' R2 U R' U R U2 R' U M'",
+      "jperm": "rotation_or_auf",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 12,
+      "name": "Lightning 4",
+      "primary": "M' R' U' R U' R' U2 R U' M",
+      "jperm": "unresolved",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 13,
+      "name": "Knight Move 1",
+      "primary": "r U' r' U' r U r' y' R' U R",
+      "jperm": "exact",
+      "scdb": "unresolved",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 14,
+      "name": "Knight Move 2",
+      "primary": "R' F R U R' F' R F U' F'",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 15,
+      "name": "Knight Move 3",
+      "primary": "r' U' r R' U' R U r' U r",
+      "jperm": "rotation_or_auf",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 16,
+      "name": "Knight Move 4",
+      "primary": "r U r' R U R' U' r U' r'",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 17,
+      "name": "Dot 5",
+      "primary": "R U R' U R' F R F' U2' R' F R F'",
+      "jperm": "rotation_or_auf",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 18,
+      "name": "Dot 6",
+      "primary": "y R U2' R2' F R F' U2' M' U R U' r'",
+      "jperm": "unresolved",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "unresolved"
+    },
+    {
+      "id": 19,
+      "name": "Dot 7",
+      "primary": "M U R U R' U' M' R' F R F'",
+      "jperm": "unresolved",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "unresolved"
+    },
+    {
+      "id": 20,
+      "name": "Dot 8",
+      "primary": "M U R U R' U' M2' U R U' r'",
+      "jperm": "unresolved",
+      "scdb": "unresolved",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 21,
+      "name": "All Edges 1",
+      "primary": "R U2 R' U' R U R' U' R U' R'",
+      "jperm": "exact",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 22,
+      "name": "All Edges 2 (Pi)",
+      "primary": "R U2' R2' U' R2 U' R2' U2' R",
+      "jperm": "half_turn_prime",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "exact"
+    },
+    {
+      "id": 23,
+      "name": "All Edges 3 (U)",
+      "primary": "R2 D R' U2 R D' R' U2 R'",
+      "jperm": "rotation_or_auf",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 24,
+      "name": "All Edges 4 (T)",
+      "primary": "r U R' U' r' F R F'",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 25,
+      "name": "All Edges 5 (L)",
+      "primary": "y F' r U R' U' r' F R",
+      "jperm": "rotation_or_auf",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 26,
+      "name": "Anti-Sune",
+      "primary": "R U2 R' U' R U' R'",
+      "jperm": "cosmetic",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "exact"
+    },
+    {
+      "id": 27,
+      "name": "Sune",
+      "primary": "R U R' U R U2' R'",
+      "jperm": "half_turn_prime",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "exact"
+    },
+    {
+      "id": 28,
+      "name": "Edge Flip 1",
+      "primary": "r U R' U' M U R U' R'",
+      "jperm": "unresolved",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 29,
+      "name": "Awkward 1",
+      "primary": "y R U R' U' R U' R' F' U' F R U R'",
+      "jperm": "rotation_or_auf",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "unresolved"
+    },
+    {
+      "id": 30,
+      "name": "Awkward 2",
+      "primary": "y' F U R U2 R' U' R U2 R' U' F'",
+      "jperm": "rotation_or_auf",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "unresolved"
+    },
+    {
+      "id": 31,
+      "name": "P-Shape 1",
+      "primary": "R' U' F U R U' R' F' R",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 32,
+      "name": "P-Shape 2",
+      "primary": "R U B' U' R' U R B R'",
+      "jperm": "unresolved",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 33,
+      "name": "T-Shape 1",
+      "primary": "R U R' U' R' F R F'",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 34,
+      "name": "C-Shape 1",
+      "primary": "R U R2' U' R' F R U R U' F'",
+      "jperm": "half_turn_prime",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 35,
+      "name": "Fish 3",
+      "primary": "R U2' R2' F R F' R U2' R'",
+      "jperm": "unresolved",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 36,
+      "name": "W-Shape 1",
+      "primary": "R' U' R U' R' U R U l U' R' U x",
+      "jperm": "unresolved",
+      "scdb": "unresolved",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 37,
+      "name": "Fish 4",
+      "primary": "F R U' R' U' R U R' F'",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 38,
+      "name": "W-Shape 2",
+      "primary": "R U R' U R U' R' U' R' F R F'",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 39,
+      "name": "Lightning 5",
+      "primary": "L F' L' U' L U F U' L'",
+      "jperm": "exact",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 40,
+      "name": "Lightning 6",
+      "primary": "R' F R U R' U' F' U R",
+      "jperm": "exact",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 41,
+      "name": "Awkward 3",
+      "primary": "R U R' U R U2' R' F R U R' U' F'",
+      "jperm": "half_turn_prime",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 42,
+      "name": "Awkward 4",
+      "primary": "R' U' R U' R' U2 R F R U R' U' F'",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 43,
+      "name": "P-Shape 3",
+      "primary": "y R' U' F' U F R",
+      "jperm": "unresolved",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "exact"
+    },
+    {
+      "id": 44,
+      "name": "P-Shape 4",
+      "primary": "f R U R' U' f'",
+      "jperm": "rotation_or_auf",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 45,
+      "name": "T-Shape 2",
+      "primary": "F R U R' U' F'",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 46,
+      "name": "C-Shape 2",
+      "primary": "R' U' R' F R F' U R",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 47,
+      "name": "L-Shape 1",
+      "primary": "F' L' U' L U L' U' L U F",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 48,
+      "name": "L-Shape 2",
+      "primary": "F R U R' U' R U R' U' F'",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 49,
+      "name": "L-Shape 3",
+      "primary": "r U' r2' U r2 U r2' U' r",
+      "jperm": "half_turn_prime",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "exact"
+    },
+    {
+      "id": 50,
+      "name": "L-Shape 4",
+      "primary": "r' U r2 U' r2' U' r2 U r'",
+      "jperm": "half_turn_prime",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "exact"
+    },
+    {
+      "id": 51,
+      "name": "I-Shape 1",
+      "primary": "f R U R' U' R U R' U' f'",
+      "jperm": "rotation_or_auf",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 52,
+      "name": "I-Shape 2",
+      "primary": "R' U' R U' R' U y' R' U R B",
+      "jperm": "unresolved",
+      "scdb": "unresolved",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 53,
+      "name": "L-Shape 5",
+      "primary": "r' U' R U' R' U R U' R' U2 r",
+      "jperm": "rotation_or_auf",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 54,
+      "name": "L-Shape 6",
+      "primary": "r U R' U R U' R' U R U2' r'",
+      "jperm": "rotation_or_auf",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 55,
+      "name": "I-Shape 3",
+      "primary": "y R' F R U R U' R2' F' R2 U' R' U R U R'",
+      "jperm": "rotation_or_auf",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 56,
+      "name": "I-Shape 4",
+      "primary": "r' U' r U' R' U R U' R' U R r' U r",
+      "jperm": "cosmetic",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 57,
+      "name": "Edge Flip 2",
+      "primary": "R U R' U' M' U R U' r'",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    }
+  ],
+  "pll": [
+    {
+      "id": 1,
+      "name": "Aa-Perm",
+      "pll_key": "Aa",
+      "primary": "x R' U R' D2 R U' R' D2 R2 x'",
+      "jperm": "unresolved",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 2,
+      "name": "Ab-Perm",
+      "pll_key": "Ab",
+      "primary": "x R2' D2 R U R' D2 R U' R x'",
+      "jperm": "unresolved",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 3,
+      "name": "F-Perm",
+      "pll_key": "F",
+      "primary": "R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R",
+      "jperm": "exact",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 4,
+      "name": "Ga-Perm",
+      "pll_key": "Ga",
+      "primary": "R2 U R' U R' U' R U' R2 D U' R' U R D'",
+      "jperm": "unresolved",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "rotation_or_auf"
+    },
+    {
+      "id": 5,
+      "name": "Gb-Perm",
+      "pll_key": "Gb",
+      "primary": "F' U' F R2 u R' U R U' R u' R2'",
+      "jperm": "rotation_or_auf",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 6,
+      "name": "Gc-Perm",
+      "pll_key": "Gc",
+      "primary": "R2 U' R U' R U R' U R2 D' U R U' R' D",
+      "jperm": "unresolved",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "rotation_or_auf"
+    },
+    {
+      "id": 7,
+      "name": "Gd-Perm",
+      "pll_key": "Gd",
+      "primary": "D' R U R' U' D R2 U' R U' R' U R' U R2",
+      "jperm": "unresolved",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "rotation_or_auf"
+    },
+    {
+      "id": 8,
+      "name": "E-Perm",
+      "pll_key": "E",
+      "primary": "x' R U' R' D R U R' D' R U R' D R U' R' D' x",
+      "jperm": "unresolved",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 9,
+      "name": "H-Perm",
+      "pll_key": "H",
+      "primary": "M2' U M2' U2 M2' U M2'",
+      "jperm": "half_turn_prime",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 10,
+      "name": "Ja-Perm",
+      "pll_key": "Ja",
+      "primary": "R' U L' U2 R U' R' U2 R L",
+      "jperm": "rotation_or_auf",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "rotation_or_auf"
+    },
+    {
+      "id": 11,
+      "name": "Jb-Perm",
+      "pll_key": "Jb",
+      "primary": "R U R' F' R U R' U' R' F R2 U' R'",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "rotation_or_auf"
+    },
+    {
+      "id": 12,
+      "name": "Na-Perm",
+      "pll_key": "Na",
+      "primary": "R U R' U R U R' F' R U R' U' R' F R2 U' R' U2 R U' R'",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "unresolved"
+    },
+    {
+      "id": 13,
+      "name": "Nb-Perm",
+      "pll_key": "Nb",
+      "primary": "R' U R U' R' F' U' F R U R' F R' F' R U' R",
+      "jperm": "cosmetic",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "unresolved"
+    },
+    {
+      "id": 14,
+      "name": "Ra-Perm",
+      "pll_key": "Ra",
+      "primary": "R U' R' U' R U R D R' U' R D' R' U2 R'",
+      "jperm": "exact",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "rotation_or_auf"
+    },
+    {
+      "id": 15,
+      "name": "Rb-Perm",
+      "pll_key": "Rb",
+      "primary": "R' U2 R U2' R' F R U R' U' R' F' R2",
+      "jperm": "rotation_or_auf",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "rotation_or_auf"
+    },
+    {
+      "id": 16,
+      "name": "T-Perm",
+      "pll_key": "T",
+      "primary": "R U R' U' R' F R2 U' R' U' R U R' F'",
+      "jperm": "cosmetic",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 17,
+      "name": "Ua-Perm",
+      "pll_key": "Ua",
+      "primary": "R U' R U R U R U' R' U' R2",
+      "jperm": "exact",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 18,
+      "name": "Ub-Perm",
+      "pll_key": "Ub",
+      "primary": "R2 U R U R' U' R' U' R' U R'",
+      "jperm": "cosmetic",
+      "scdb": "rotation_or_auf",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 19,
+      "name": "V-Perm",
+      "pll_key": "V",
+      "primary": "R' U R' U' y R' F' R2 U' R' U R' F R F",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 20,
+      "name": "Y-Perm",
+      "pll_key": "Y",
+      "primary": "F R U' R' U' R U R' F' R U R' U' R' F R F'",
+      "jperm": "exact",
+      "scdb": "exact",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "cosmetic"
+    },
+    {
+      "id": 21,
+      "name": "Z-Perm",
+      "pll_key": "Z",
+      "primary": "M2' U M2' U M' U2 M2' U2 M'",
+      "jperm": "rotation_or_auf",
+      "scdb": "half_turn_prime",
+      "cubeskills_case": "skipped_two_column",
+      "cubeskills_corpus": "rotation_or_auf"
+    }
+  ],
+  "f2l": [
+    {
+      "id": 1,
+      "name": "Basic FR",
+      "primary": "R U' R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 2,
+      "name": "Basic FL",
+      "primary": "L' U L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 3,
+      "name": "Pair Ready FR",
+      "primary": "R U R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "exists_other_id",
+      "scdb_elsewhere_ids": [
+        "4"
+      ],
+      "scdb_elsewhere_ranks": {
+        "4": "exact"
+      },
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 4,
+      "name": "Pair Ready FL",
+      "primary": "L' U' L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "exists_other_id",
+      "scdb_elsewhere_ids": [
+        "3"
+      ],
+      "scdb_elsewhere_ranks": {
+        "3": "rotation_or_auf"
+      },
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 5,
+      "name": "Edge Flip FR",
+      "primary": "R U2 R' U' R U' R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 6,
+      "name": "Edge Flip FL",
+      "primary": "L' U2 L U L' U L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 7,
+      "name": "Corner Flip FR",
+      "primary": "R U R' U R U2 R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 8,
+      "name": "Corner Flip FL",
+      "primary": "L' U' L U' L' U2 L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 9,
+      "name": "Both Flip FR",
+      "primary": "R U' R' U' R U R' U2 R U' R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "exists_other_id",
+      "scdb_elsewhere_ids": [
+        "38"
+      ],
+      "scdb_elsewhere_ranks": {
+        "38": "exact"
+      },
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 10,
+      "name": "Both Flip FL",
+      "primary": "L' U L U L' U' L U2 L' U L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 11,
+      "name": "Back Slot FR",
+      "primary": "R' U' R U' R' U2 R",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 12,
+      "name": "Back Slot FL",
+      "primary": "L U L' U L U2 L'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 13,
+      "name": "Split Pair FR",
+      "primary": "R U' R' U R U R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 14,
+      "name": "Split Pair FL",
+      "primary": "L' U L U' L' U' L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 15,
+      "name": "Connected Pair FR",
+      "primary": "R U R' U' R U' R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 16,
+      "name": "Connected Pair FL",
+      "primary": "L' U' L U L' U L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 17,
+      "name": "White on Top FR",
+      "primary": "R U' R' U2 R U' R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 18,
+      "name": "White on Top FL",
+      "primary": "L' U L U2 L' U L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 19,
+      "name": "Sledge FR",
+      "primary": "R' F R F'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "exists_other_id",
+      "scdb_elsewhere_ids": [
+        "1"
+      ],
+      "scdb_elsewhere_ranks": {
+        "1": "exact"
+      },
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 20,
+      "name": "Sledge FL",
+      "primary": "L F' L' F",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 21,
+      "name": "Hedgeslammer FR",
+      "primary": "F R' F' R",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "exists_other_id",
+      "scdb_elsewhere_ids": [
+        "2"
+      ],
+      "scdb_elsewhere_ranks": {
+        "2": "exact"
+      },
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 22,
+      "name": "Hedgeslammer FL",
+      "primary": "F' L F L'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 23,
+      "name": "Wide Sledge FR",
+      "primary": "r U' r' F R' F' R",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 24,
+      "name": "Wide Sledge FL",
+      "primary": "l' U l F' L F L'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 25,
+      "name": "Keyhole FR",
+      "primary": "R U' R' U' R U R' U' R U' R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 26,
+      "name": "Keyhole FL",
+      "primary": "L' U L U L' U' L U L' U L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 27,
+      "name": "Free Pair FR",
+      "primary": "R U R' U' R U R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "exists_other_id",
+      "scdb_elsewhere_ids": [
+        "30"
+      ],
+      "scdb_elsewhere_ranks": {
+        "30": "exact"
+      },
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 28,
+      "name": "Free Pair FL",
+      "primary": "L' U' L U L' U' L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "exists_other_id",
+      "scdb_elsewhere_ids": [
+        "29"
+      ],
+      "scdb_elsewhere_ranks": {
+        "29": "rotation_or_auf"
+      },
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 29,
+      "name": "F2L 29",
+      "primary": "R U2 R' U R U' R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 30,
+      "name": "F2L 30",
+      "primary": "L' U2 L U' L' U L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 31,
+      "name": "F2L 31",
+      "primary": "R U R' U R U2 R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 32,
+      "name": "F2L 32",
+      "primary": "L' U' L U' L' U2 L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 33,
+      "name": "F2L 33",
+      "primary": "R U' R' U' R U2 R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 34,
+      "name": "F2L 34",
+      "primary": "L' U L U L' U2 L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 35,
+      "name": "F2L 35",
+      "primary": "R U R' U2 R U' R' U R U' R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "exists_other_id",
+      "scdb_elsewhere_ids": [
+        "15"
+      ],
+      "scdb_elsewhere_ranks": {
+        "15": "exact"
+      },
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 36,
+      "name": "F2L 36",
+      "primary": "L' U' L U2 L' U L U' L' U L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 37,
+      "name": "F2L 37",
+      "primary": "R U' R' U R U R' U R U' R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 38,
+      "name": "F2L 38",
+      "primary": "L' U L U' L' U' L U' L' U L",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 39,
+      "name": "F2L 39",
+      "primary": "R U2 R2 U' R2 U' R2 U2 R",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 40,
+      "name": "F2L 40",
+      "primary": "R U R' U' R U' R' U2 R U' R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    },
+    {
+      "id": 41,
+      "name": "F2L 41",
+      "primary": "R U' R' U R U R' U' R U' R'",
+      "jperm": "source_unavailable",
+      "scdb_same_id": "unresolved",
+      "scdb_elsewhere": "unresolved",
+      "scdb_elsewhere_ids": [],
+      "scdb_elsewhere_ranks": {},
+      "cubeskills_case": "not_in_verified_set",
+      "cubeskills_corpus": "not_in_verified_set"
+    }
+  ]
+}
