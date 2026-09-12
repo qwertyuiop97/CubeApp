@@ -14,10 +14,10 @@ Keep changes small enough to review. Include a regression test with a bug fix, a
 - `Sources/App/`: application lifecycle and windows.
 - `Sources/Core/`: cube data, move engine, preferences, and shared services.
 - `Sources/Features/`: timer, trainer, library, diagrams, and settings.
-- `Sources/UI/`: the main overlay and shared views.
+- `Sources/UI/`: the main overlay, dismissal routing, and shared views.
 - `Tests/CubeNotchTests/`: Swift tests.
 - `Scripts/`: icon generation and source-comparison tools.
-- `Resources/`: artwork for future app packaging; the current Swift executable does not bundle these assets.
+- `Resources/`: canonical app artwork; `make app` builds the icon into the macOS bundle.
 - `docs/`: technical notes and saved UI renders.
 
 `NEXT.md` is the current task list. Agent-specific instructions are in `AGENTS.md`.

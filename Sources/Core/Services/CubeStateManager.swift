@@ -25,6 +25,7 @@ public enum Anchor: String, CaseIterable, Codable {
 extension Notification.Name {
     static let cubeStateDidChange = Notification.Name("cubeStateDidChange")
     static let requestAnimatedHide = Notification.Name("requestAnimatedHide")
+    static let requestImmediateHide = Notification.Name("requestImmediateHide")
     static let requestHotkeyRebind = Notification.Name("requestHotkeyRebind")
     static let requestAccessibilityPrompt = Notification.Name("requestAccessibilityPrompt")
     static let requestRetryEventTap = Notification.Name("requestRetryEventTap")

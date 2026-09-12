@@ -76,7 +76,11 @@ public final class TimeStore: ObservableObject {
     public func clearSession() {
         solves.removeAll()
         defaults.removeObject(forKey: storageKey(for: currentSessionName))
+        absorbDisplayedPBsIntoFloor()
+        clearPBSources()
         save()
+        savePBs()
+        saveProvenance()
     }
 
     public func startNewNamedSession(name: String) {
@@ -200,14 +204,56 @@ public final class TimeStore: ObservableObject {
     private var solveDateKeys: Set<String> = []
 
     private func updatePersonalBests() {
-        if let b = bestTime { pbSingle = min(pbSingle ?? .greatestFiniteMagnitude, b) }
-        if let a5 = ao5 { pbAo5 = min(pbAo5 ?? .greatestFiniteMagnitude, a5) }
-        if let a12 = ao12 { pbAo12 = min(pbAo12 ?? .greatestFiniteMagnitude, a12) }
-        if let a100 = ao100 { pbAo100 = min(pbAo100 ?? .greatestFiniteMagnitude, a100) }
+        pbSingle = minPresent(pbFloor.single, bestSingleAcrossSessions())
+        if let a5 = ao5, a5 < (pbAo5 ?? .greatestFiniteMagnitude) {
+            if let previous = pbAo5, !isCurrentPrefix(sourceIDs: ao5SourceIDs) {
+                pbFloor.ao5 = minPresent(pbFloor.ao5, previous)
+            }
+            pbAo5 = a5
+            ao5SourceIDs = windowIDs(count: 5)
+        }
+        if let a12 = ao12, a12 < (pbAo12 ?? .greatestFiniteMagnitude) {
+            if let previous = pbAo12, !isCurrentPrefix(sourceIDs: ao12SourceIDs) {
+                pbFloor.ao12 = minPresent(pbFloor.ao12, previous)
+            }
+            pbAo12 = a12
+            ao12SourceIDs = windowIDs(count: 12)
+        }
+        if let a100 = ao100, a100 < (pbAo100 ?? .greatestFiniteMagnitude) {
+            if let previous = pbAo100, !isCurrentPrefix(sourceIDs: ao100SourceIDs) {
+                pbFloor.ao100 = minPresent(pbFloor.ao100, previous)
+            }
+            pbAo100 = a100
+            ao100SourceIDs = windowIDs(count: 100)
+        }
         savePBs()
+        saveProvenance()
     }
 
     private let pbKey = UDKey.cubeNotchPersonalBests
+    private let pbProvenanceKey = UDKey.cubeNotchPersonalBests + ".provenance"
+
+    private struct PBFloor {
+        var single: TimeInterval?
+        var ao5: TimeInterval?
+        var ao12: TimeInterval?
+        var ao100: TimeInterval?
+    }
+
+    private struct StoredPBProvenance: Codable {
+        var floorSingle: TimeInterval
+        var floorAo5: TimeInterval
+        var floorAo12: TimeInterval
+        var floorAo100: TimeInterval
+        var ao5SolveIDs: [UUID]?
+        var ao12SolveIDs: [UUID]?
+        var ao100SolveIDs: [UUID]?
+    }
+
+    private var pbFloor = PBFloor()
+    private var ao5SourceIDs: [UUID]?
+    private var ao12SourceIDs: [UUID]?
+    private var ao100SourceIDs: [UUID]?
 
     private func savePBs() {
         let dict: [String: TimeInterval] = [
@@ -226,6 +272,202 @@ public final class TimeStore: ObservableObject {
             pbAo12   = dict["ao12"].flatMap   { $0 < 0 ? nil : $0 }
             pbAo100  = dict["ao100"].flatMap  { $0 < 0 ? nil : $0 }
         }
+        loadProvenance()
+    }
+
+    private func saveProvenance() {
+        let payload = StoredPBProvenance(
+            floorSingle: pbFloor.single ?? -1,
+            floorAo5: pbFloor.ao5 ?? -1,
+            floorAo12: pbFloor.ao12 ?? -1,
+            floorAo100: pbFloor.ao100 ?? -1,
+            ao5SolveIDs: ao5SourceIDs,
+            ao12SolveIDs: ao12SourceIDs,
+            ao100SolveIDs: ao100SourceIDs
+        )
+        if let data = try? JSONEncoder().encode(payload) {
+            defaults.set(data, forKey: pbProvenanceKey)
+        }
+    }
+
+    private func loadProvenance() {
+        if let data = defaults.data(forKey: pbProvenanceKey),
+           let loaded = try? JSONDecoder().decode(StoredPBProvenance.self, from: data) {
+            pbFloor.single = loaded.floorSingle < 0 ? nil : loaded.floorSingle
+            pbFloor.ao5 = loaded.floorAo5 < 0 ? nil : loaded.floorAo5
+            pbFloor.ao12 = loaded.floorAo12 < 0 ? nil : loaded.floorAo12
+            pbFloor.ao100 = loaded.floorAo100 < 0 ? nil : loaded.floorAo100
+            ao5SourceIDs = loaded.ao5SolveIDs
+            ao12SourceIDs = loaded.ao12SolveIDs
+            ao100SourceIDs = loaded.ao100SolveIDs
+            return
+        }
+        seedLegacyFloor()
+        saveProvenance()
+    }
+
+    /// Legacy aggregates have no source IDs. Keep values that current persisted
+    /// sessions cannot reconstruct; attribute current windows that still match.
+    private func seedLegacyFloor() {
+        let reconstructedSingle = bestSingleAcrossSessions()
+        if let saved = pbSingle, reconstructedSingle == nil || saved + 1e-9 < reconstructedSingle! {
+            pbFloor.single = saved
+        }
+        seedLegacyAverageFloor(saved: pbAo5, current: ao5, count: 5) { floor, ids in
+            pbFloor.ao5 = floor
+            ao5SourceIDs = ids
+        }
+        seedLegacyAverageFloor(saved: pbAo12, current: ao12, count: 12) { floor, ids in
+            pbFloor.ao12 = floor
+            ao12SourceIDs = ids
+        }
+        seedLegacyAverageFloor(saved: pbAo100, current: ao100, count: 100) { floor, ids in
+            pbFloor.ao100 = floor
+            ao100SourceIDs = ids
+        }
+    }
+
+    private func seedLegacyAverageFloor(
+        saved: TimeInterval?,
+        current: TimeInterval?,
+        count: Int,
+        assign: (TimeInterval?, [UUID]?) -> Void
+    ) {
+        guard let saved else { return }
+        if current == nil || saved + 1e-9 < current! {
+            assign(saved, nil)
+        } else if let current, abs(saved - current) <= 1e-9 {
+            assign(nil, windowIDs(count: count))
+        }
+    }
+
+    private func absorbDisplayedPBsIntoFloor() {
+        pbFloor.single = minPresent(pbFloor.single, pbSingle)
+        pbFloor.ao5 = minPresent(pbFloor.ao5, pbAo5)
+        pbFloor.ao12 = minPresent(pbFloor.ao12, pbAo12)
+        pbFloor.ao100 = minPresent(pbFloor.ao100, pbAo100)
+    }
+
+    private func clearPBSources() {
+        ao5SourceIDs = nil
+        ao12SourceIDs = nil
+        ao100SourceIDs = nil
+    }
+
+    private func recomputePersonalBestsAfterPenalty() {
+        pbSingle = minPresent(pbFloor.single, bestSingleAcrossSessions())
+        let ao5Next = recomputeAverageAfterPenalty(
+            count: 5,
+            displayed: pbAo5,
+            floor: pbFloor.ao5,
+            sourceIDs: ao5SourceIDs
+        )
+        pbAo5 = ao5Next.value
+        ao5SourceIDs = ao5Next.sourceIDs
+        let ao12Next = recomputeAverageAfterPenalty(
+            count: 12,
+            displayed: pbAo12,
+            floor: pbFloor.ao12,
+            sourceIDs: ao12SourceIDs
+        )
+        pbAo12 = ao12Next.value
+        ao12SourceIDs = ao12Next.sourceIDs
+        let ao100Next = recomputeAverageAfterPenalty(
+            count: 100,
+            displayed: pbAo100,
+            floor: pbFloor.ao100,
+            sourceIDs: ao100SourceIDs
+        )
+        pbAo100 = ao100Next.value
+        ao100SourceIDs = ao100Next.sourceIDs
+        savePBs()
+        saveProvenance()
+    }
+
+    private func recomputeAverageAfterPenalty(
+        count: Int,
+        displayed: TimeInterval?,
+        floor: TimeInterval?,
+        sourceIDs: [UUID]?
+    ) -> (value: TimeInterval?, sourceIDs: [UUID]?) {
+        let lastID = solves.first?.id
+        let sourceHit = sourceIDs.map { ids in lastID.map { ids.contains($0) } ?? false } ?? false
+        let bestCurrent = bestAverageAcrossSessions(count: count)
+        if sourceHit {
+            let next = minPresent(floor, bestCurrent.value)
+            if let next, let bestValue = bestCurrent.value, abs(next - bestValue) <= 1e-9 {
+                return (next, bestCurrent.sourceIDs)
+            }
+            return (next, nil)
+        }
+        if let bestValue = bestCurrent.value, bestValue < (displayed ?? .greatestFiniteMagnitude) {
+            return (bestValue, bestCurrent.sourceIDs)
+        }
+        return (displayed, sourceIDs)
+    }
+
+    private func minPresent(_ a: TimeInterval?, _ b: TimeInterval?) -> TimeInterval? {
+        switch (a, b) {
+        case (nil, nil): return nil
+        case (let x?, nil): return x
+        case (nil, let y?): return y
+        case (let x?, let y?): return min(x, y)
+        }
+    }
+
+    private func windowIDs(count: Int) -> [UUID]? {
+        guard solves.count >= count else { return nil }
+        return Array(solves.prefix(count).map(\.id))
+    }
+
+    private func isCurrentPrefix(sourceIDs: [UUID]?) -> Bool {
+        guard let sourceIDs, !sourceIDs.isEmpty else { return false }
+        for name in sessionNames() {
+            let sessionRecords = records(for: name)
+            guard sessionRecords.count >= sourceIDs.count else { continue }
+            if Array(sessionRecords.prefix(sourceIDs.count).map(\.id)) == sourceIDs {
+                return true
+            }
+        }
+        return false
+    }
+
+    private func sessionNames() -> Set<String> {
+        Set(knownSessions + [currentSessionName])
+    }
+
+    private func records(for sessionName: String) -> [SolveRecord] {
+        if sessionName == currentSessionName { return solves }
+        guard let data = defaults.data(forKey: storageKey(for: sessionName)),
+              let decoded = try? JSONDecoder().decode([SolveRecord].self, from: data) else {
+            return []
+        }
+        return decoded
+    }
+
+    private func bestSingleAcrossSessions() -> TimeInterval? {
+        var best: TimeInterval?
+        for name in sessionNames() {
+            let sessionBest = records(for: name).filter { $0.penalty != .dnf }.map { effectiveTime($0) }.min()
+            best = minPresent(best, sessionBest)
+        }
+        return best
+    }
+
+    private func bestAverageAcrossSessions(count: Int) -> (value: TimeInterval?, sourceIDs: [UUID]?) {
+        var best: TimeInterval?
+        var bestIDs: [UUID]?
+        for name in sessionNames() {
+            let sessionRecords = records(for: name)
+            guard let avg = trimmedMean(from: sessionRecords, count: count, trim: 1) else { continue }
+            if best == nil || avg + 1e-9 < best! {
+                best = avg
+                bestIDs = sessionRecords.count >= count
+                    ? Array(sessionRecords.prefix(count).map(\.id))
+                    : nil
+            }
+        }
+        return (best, bestIDs)
     }
 
     public func updateLastSolve(addPenalty: Penalty) {
@@ -241,6 +483,7 @@ public final class TimeStore: ObservableObject {
         }
         solves[0] = first
         save()
+        recomputePersonalBestsAfterPenalty()
     }
 
     private func effectiveTime(_ rec: SolveRecord) -> TimeInterval {
@@ -252,8 +495,12 @@ public final class TimeStore: ObservableObject {
     }
 
     private func trimmedMean(count: Int, trim: Int) -> TimeInterval? {
-        guard solves.count >= count else { return nil }
-        let window = Array(solves.prefix(count))
+        trimmedMean(from: solves, count: count, trim: trim)
+    }
+
+    private func trimmedMean(from records: [SolveRecord], count: Int, trim: Int) -> TimeInterval? {
+        guard records.count >= count else { return nil }
+        let window = Array(records.prefix(count))
         let times = window.map { effectiveTime($0) }.sorted()
         let trimmed = Array(times.dropFirst(trim).dropLast(trim))
         guard !trimmed.isEmpty else { return nil }

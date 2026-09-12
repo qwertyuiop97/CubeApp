@@ -1,4 +1,4 @@
-.PHONY: build run test clean
+.PHONY: build app run test clean
 
 # Keep the SDK paired with the selected Xcode toolchain, rather than inheriting
 # a CommandLineTools SDK from the launching shell. Override on make's command
@@ -8,8 +8,12 @@ export SDKROOT := $(shell xcrun --sdk macosx --show-sdk-path)
 build:
 	swift build -Xswiftc -warnings-as-errors
 
-run:
-	swift run
+app: build
+	python3 Scripts/build_app.py
+	python3 Scripts/verify_app_bundle.py
+
+run: app
+	open build/CubeNotch.app
 
 test:
 	swift test -Xswiftc -warnings-as-errors

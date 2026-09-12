@@ -117,10 +117,8 @@ public struct ContentView: View {
         .padding(8)
         .onReceive(NotificationCenter.default.publisher(for: .cubeStateDidChange)) { _ in }
         .onTapGesture(count: 2) {
-            // Double-click anywhere on the overlay -> spring hide
-            if !reduceMotion {
-                NotificationCenter.default.post(name: .requestAnimatedHide, object: nil)
-            }
+            // Double-click anywhere on the overlay hides it, with or without animations.
+            OverlayDismissal.request(reduceMotion: reduceMotion)
         }
         .sheet(isPresented: $showOnboarding) {
             OnboardingView {
@@ -293,6 +291,15 @@ public struct ContentView: View {
                     .foregroundStyle(.secondary)
                     .transition(.opacity)
             }
+
+            Button(action: { OverlayDismissal.request(reduceMotion: reduceMotion) }) {
+                Image(systemName: "xmark")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .help("Hide overlay")
+            .accessibilityLabel("Hide overlay")
+            .cubeNotchGlass(cornerRadius: 6)
 
             Button(action: { showSettings.toggle() }) {
                 Image(systemName: "gearshape")

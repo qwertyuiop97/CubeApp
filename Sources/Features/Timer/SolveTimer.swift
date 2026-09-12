@@ -51,7 +51,11 @@ public final class SolveTimer: ObservableObject {
     }
 
     public var formattedTime: String {
-        let t = (state == .running ? displayElapsed : (finalTime ?? 0))
+        if state != .running, lastSolvePenalty == .dnf {
+            return "DNF"
+        }
+        let raw = (state == .running ? displayElapsed : (finalTime ?? 0))
+        let t = (state != .running && lastSolvePenalty == .plusTwo) ? raw + 2.0 : raw
         let minutes = Int(t) / 60
         let seconds = t.truncatingRemainder(dividingBy: 60)
         if minutes > 0 {
@@ -129,15 +133,18 @@ public final class SolveTimer: ObservableObject {
     }
 
     public func applyPenalty(_ penalty: Penalty) {
-        guard state == .stopped, let current = finalTime else { return }
-        lastSolvePenalty = penalty
+        guard state == .stopped, finalTime != nil else { return }
         switch penalty {
         case .plusTwo:
-            finalTime = current + 2.0
+            if lastSolvePenalty == .plusTwo {
+                lastSolvePenalty = .none
+            } else if lastSolvePenalty != .dnf {
+                lastSolvePenalty = .plusTwo
+            }
         case .dnf:
-            finalTime = -1
+            lastSolvePenalty = .dnf
         case .none:
-            break
+            lastSolvePenalty = .none
         }
     }
 

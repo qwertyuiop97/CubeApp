@@ -78,6 +78,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.animatedHideWindow()
         }
 
+        // Reduce Motion and the keyboard take this path: same outcome, no animation.
+        NotificationCenter.default.addObserver(
+            forName: .requestImmediateHide,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.hideWindowImmediately()
+        }
+
         // Global hotkey: Ctrl+Shift+Space (or saved) toggles visibility
         GlobalHotKeyManager.shared.rebindIfSaved { [weak self] in
             self?.window?.toggleVisibility()
@@ -212,6 +221,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let size = stateManager.sizeMode.windowSize
         let scr = stateManager.followActiveScreen ? getActiveScreen() : nil
         window.animatedHideTo(anchor: anchor, size: size, screen: scr)
+    }
+
+    private func hideWindowImmediately() {
+        solveTimer?.isTimerTabActive = false
+        window?.orderOut(nil)
     }
 
     private func animatedToggleWindow() {

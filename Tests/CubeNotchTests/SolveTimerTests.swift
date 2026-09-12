@@ -107,4 +107,91 @@ final class SolveTimerTests: XCTestCase {
         XCTAssertNil(timer.finalTime)
         defaults.removeObject(forKey: UDKey.wcaInspection)
     }
+
+    func testRepeatedPlusTwoTogglesDisplayWithoutChangingRawElapsed() throws {
+        let timer = SolveTimer(defaults: defaults)
+        timer.start()
+        timer.stop()
+        let raw = try XCTUnwrap(timer.finalTime)
+        let rawDisplay = timer.formattedTime
+
+        timer.applyPenalty(.plusTwo)
+        XCTAssertEqual(timer.finalTime ?? -1, raw, accuracy: 0.000_001)
+        XCTAssertEqual(timer.lastSolvePenalty, .plusTwo)
+        XCTAssertEqual(timer.formattedTime, Self.formatElapsed(raw + 2))
+        XCTAssertNotEqual(timer.formattedTime, rawDisplay)
+
+        timer.applyPenalty(.plusTwo)
+        XCTAssertEqual(timer.finalTime ?? -1, raw, accuracy: 0.000_001)
+        XCTAssertEqual(timer.lastSolvePenalty, .none)
+        XCTAssertEqual(timer.formattedTime, rawDisplay)
+    }
+
+    func testDNFAndPlusTwoTransitionsKeepRawElapsed() throws {
+        let timer = SolveTimer(defaults: defaults)
+        timer.start()
+        timer.stop()
+        let raw = try XCTUnwrap(timer.finalTime)
+
+        timer.applyPenalty(.dnf)
+        XCTAssertEqual(timer.finalTime ?? -1, raw, accuracy: 0.000_001)
+        XCTAssertEqual(timer.lastSolvePenalty, .dnf)
+        XCTAssertEqual(timer.formattedTime, "DNF")
+
+        timer.applyPenalty(.plusTwo)
+        XCTAssertEqual(timer.finalTime ?? -1, raw, accuracy: 0.000_001)
+        XCTAssertEqual(timer.lastSolvePenalty, .dnf)
+        XCTAssertEqual(timer.formattedTime, "DNF")
+
+        timer.applyPenalty(.none)
+        XCTAssertEqual(timer.finalTime ?? -1, raw, accuracy: 0.000_001)
+        XCTAssertEqual(timer.lastSolvePenalty, .none)
+        XCTAssertEqual(timer.formattedTime, Self.formatElapsed(raw))
+
+        timer.applyPenalty(.plusTwo)
+        timer.applyPenalty(.dnf)
+        XCTAssertEqual(timer.finalTime ?? -1, raw, accuracy: 0.000_001)
+        XCTAssertEqual(timer.lastSolvePenalty, .dnf)
+        XCTAssertEqual(timer.formattedTime, "DNF")
+    }
+
+    func testStoppedPenaltyButtonsKeepTimerDisplayAlignedWithStore() throws {
+        let timer = SolveTimer(defaults: defaults)
+        let store = TimeStore(defaults: defaults)
+        timer.start()
+        timer.stop()
+        let raw = try XCTUnwrap(timer.finalTime)
+        store.addSolve(time: raw, scramble: timer.scramble, penalty: timer.lastSolvePenalty)
+
+        TimerPenaltyControls.apply(.plusTwo, timer: timer, store: store)
+        XCTAssertEqual(timer.finalTime ?? -1, raw, accuracy: 0.000_001)
+        XCTAssertEqual(store.solves[0].time, raw, accuracy: 0.000_001)
+        XCTAssertEqual(timer.lastSolvePenalty, store.solves[0].penalty)
+        XCTAssertEqual(timer.lastSolvePenalty, .plusTwo)
+        XCTAssertEqual(timer.formattedTime, Self.formatElapsed(raw + 2))
+
+        TimerPenaltyControls.apply(.plusTwo, timer: timer, store: store)
+        XCTAssertEqual(timer.finalTime ?? -1, raw, accuracy: 0.000_001)
+        XCTAssertEqual(store.solves[0].time, raw, accuracy: 0.000_001)
+        XCTAssertEqual(timer.lastSolvePenalty, .none)
+        XCTAssertEqual(store.solves[0].penalty, .none)
+        XCTAssertEqual(timer.formattedTime, Self.formatElapsed(raw))
+
+        TimerPenaltyControls.apply(.dnf, timer: timer, store: store)
+        XCTAssertEqual(timer.finalTime ?? -1, raw, accuracy: 0.000_001)
+        XCTAssertEqual(store.solves[0].time, raw, accuracy: 0.000_001)
+        XCTAssertEqual(timer.lastSolvePenalty, .dnf)
+        XCTAssertEqual(store.solves[0].penalty, .dnf)
+        XCTAssertEqual(timer.formattedTime, "DNF")
+        XCTAssertNil(store.bestTime)
+    }
+
+    private static func formatElapsed(_ t: TimeInterval) -> String {
+        let minutes = Int(t) / 60
+        let seconds = t.truncatingRemainder(dividingBy: 60)
+        if minutes > 0 {
+            return String(format: "%d:%05.2f", minutes, seconds)
+        }
+        return String(format: "%.2f", seconds)
+    }
 }

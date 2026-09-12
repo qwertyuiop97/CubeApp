@@ -135,6 +135,12 @@ public final class FloatingOverlayWindow: NSPanel {
         }
     }
 
+    /// Escape hides the overlay. AppKit routes the Escape key here for panels that
+    /// hold the keyboard, including while a shortcut is being recorded.
+    public override func cancelOperation(_ sender: Any?) {
+        OverlayDismissal.request(reduceMotion: false)
+    }
+
     public func beginTemporaryKeyboardFocus() {
         allowsTemporaryKeyboardFocus = true
         becomesKeyOnlyIfNeeded = false

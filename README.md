@@ -21,16 +21,17 @@ The overlay stays above other windows without taking keyboard focus during norma
 
 ## Build and run
 
-You need Xcode 26 and Python 3. The app targets macOS 14 or later. There is no packaged, signed release yet.
+You need Xcode 26 and Python 3. The app targets macOS 14 or later. `make app` creates a local app bundle with the custom icon and an ad-hoc signature. There is no Developer ID-signed or notarized release yet.
 
 ```sh
 git clone https://github.com/qwertyuiop97/CubeApp.git
 cd CubeApp
-make build
 make run
 ```
 
-Use the menu bar item to show or hide the overlay. The default shortcut is **Control–Shift–Space**; change it in Settings. The global spacebar timer needs macOS Accessibility permission.
+`make run` builds and opens `build/CubeNotch.app`. You can also open that bundle in Finder. The app uses an accessory window, so it intentionally has no Dock icon; Finder uses the bundled cube artwork, while the menu bar uses a monochrome cube symbol.
+
+Hide the overlay with its close button, a double-click, the menu bar item, or the keyboard shortcut. Escape hides it whenever it holds the keyboard. Reduce Motion makes hiding instant instead of animated. Use the menu bar item to show it again. The default shortcut is **Control–Shift–Space**; change it in Settings. The global spacebar timer needs macOS Accessibility permission.
 
 The Makefile selects the macOS SDK from your active Xcode installation. If the compiler or SDK cannot be found, check `xcode-select -p` and select your installed Xcode through its settings.
 

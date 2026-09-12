@@ -119,16 +119,14 @@ public struct TimerView: View {
 
             if timer.state == .stopped {
                 Button("+2") {
-                    timer.applyPenalty(.plusTwo)
-                    store.updateLastSolve(addPenalty: .plusTwo)
+                    TimerPenaltyControls.apply(.plusTwo, timer: timer, store: store)
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
                 .cubeNotchGlass(cornerRadius: 6)
 
                 Button("DNF") {
-                    timer.applyPenalty(.dnf)
-                    store.updateLastSolve(addPenalty: .dnf)
+                    TimerPenaltyControls.apply(.dnf, timer: timer, store: store)
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
@@ -309,5 +307,13 @@ public struct TimerView: View {
         let m = Int(t) / 60
         let s = t.truncatingRemainder(dividingBy: 60)
         return m > 0 ? String(format: "%d:%05.2f", m, s) : String(format: "%.2f", s)
+    }
+}
+
+/// Shared stopped-solve penalty path so the hero display and stored record stay aligned.
+public enum TimerPenaltyControls {
+    public static func apply(_ penalty: Penalty, timer: SolveTimer, store: TimeStore) {
+        timer.applyPenalty(penalty)
+        store.updateLastSolve(addPenalty: penalty)
     }
 }

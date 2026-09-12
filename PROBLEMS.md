@@ -7,6 +7,6 @@ The current task queue lives in [NEXT.md](NEXT.md). This file records product li
 - **Playback scope:** Moves advance discretely. Smooth intra-move animation and a 3D F2L slot view are not implemented.
 - **Older timer records:** Earlier builds could store a manually applied +2 in both elapsed time and the penalty flag. New edits keep these separate; existing records are not rewritten because manual and inspection penalties cannot be distinguished reliably.
 - **Practice scrambles:** Scrambles use random moves, not the official WCA random-state generator.
-- **Distribution:** Source builds are tested. No signed/notarized release package is promised.
+- **Distribution:** Local app bundles include the icon and an ad-hoc signature. Developer ID signing and notarization are not configured.
 
 Resolved parser, diagram, search/history, hotkey, and screenshot regressions are covered by the test suite. Run `make build && make test` for current results.
