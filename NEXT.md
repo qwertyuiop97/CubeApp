@@ -10,10 +10,11 @@
 
 ## Current continuation — 2026-09-11
 
-**Status: implementation, local verification and final focused review complete; push pending.** Parent verified 123 Swift tests and 17 Python audit tests. See `HANDOFF.md` for evidence, `docs/VISUAL-VERIFICATION.md` for actual-width native renders, and `docs/ALGORITHM-VERIFICATION.md` for unresolved content identity. The historical “NOT STARTED” flags below lag the actual code; do not reimplement completed features.
+**Status: delivered to main as `e86968d`; local verification, final focused review and hosted CI passed.** Parent verified 123 Swift tests and 17 Python audit tests. See `HANDOFF.md` for evidence, `docs/VISUAL-VERIFICATION.md` for actual-width native renders, and `docs/ALGORITHM-VERIFICATION.md` for unresolved content identity. The historical “NOT STARTED” flags below lag the actual code; do not reimplement completed features.
 
 - Baseline: 39 tests pass, but print-only diagnostics reveal 52 incorrect OLL U-face patterns.
-- Active work: real engine-derived diagrams; literal inverse/forward playback; strict wide-move parsing and STM counts; lossless recent/pinned search; safe hotkey persistence/rebinding.
+- Delivered: real engine-derived diagrams; literal inverse/forward playback; strict wide-move parsing and STM counts; lossless recent/pinned search; safe hotkey persistence/rebinding; actual-width light/dark playback polish.
+- Next bounded work: interactive foreground hotkey/material smoke checks and resolving source-identity gaps (especially F2L numbering), without changing protected algorithms on notation matches alone. Intra-move animation and 3D F2L slot display remain future features.
 - Preserve both protected algorithm databases. Public-source content verification is separate from parser and cube-mechanics tests.
 - Build with `make build`; verify with `make test`. SDK selection is project-local; no global Xcode settings changed.
 - Phase 11A/11C remain historical completed handoffs, not a new audit assignment.

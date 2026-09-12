@@ -5,7 +5,7 @@ Use `NEXT.md` for current continuation status, `PROBLEMS.md` for open findings, 
 
 ## Continuation work log — 2026-09-11
 
-This section records observed work, not a release certificate. Final integration/review/push are pending.
+Implementation delivered as `e86968d8dbe953256c6993d484e462fb01c37591` on `origin/main`; parent read back the exact remote SHA. [GitHub CI run 34677833175](https://github.com/qwertyuiop97/CubeApp/actions/runs/34677833175) passed build and tests. Local verification: 123 Swift tests + 17 Python tests, warnings-as-errors. Final focused review passed. The area table below is a chronological work log, not current pending status; latest results supersede intermediate failures. This delivery note follows in a documentation-only commit.
 
 | Area | Work and evidence |
 | --- | --- |
@@ -25,7 +25,7 @@ This section records observed work, not a release certificate. Final integration
 
 ### Latest integration result
 
-Parent reran `make build && make test` after the focus implementation: **123 tests, zero failures**, warnings-as-errors, exit 0. Evidence: `/tmp/cubeapp-final-integration.log`. This supersedes the intermediate failing checkpoint below. Final focused review passed with no scoped blockers. Parent reran 17 Python audit tests and confirmed persisted comparison results match fresh computation. Source-identity gaps remain documented, not silently corrected. Commit/push is the remaining delivery step. Focus coverage is offscreen AppKit plus lifecycle seams, not a foreground typing smoke test.
+Parent reran `make build && make test` after the focus implementation: **123 tests, zero failures**, warnings-as-errors, exit 0. Evidence: `/tmp/cubeapp-final-integration.log`. This supersedes the intermediate failing checkpoint below. Final focused review passed with no scoped blockers. Parent reran 17 Python audit tests and confirmed persisted comparison results match fresh computation. Source-identity gaps remain documented, not silently corrected. Implementation commit and remote push are verified; hosted CI also passed (link above). Focus coverage is offscreen AppKit plus lifecycle seams, not a foreground typing smoke test.
 
 ### Review integration checkpoint (intermediate; superseded)
 
